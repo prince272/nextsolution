@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using NextSolution.Core.Entities;
+using NextSolution.Infrastructure.Data.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,7 +28,8 @@ namespace NextSolution.Infrastructure.Data
         {
             base.OnModelCreating(builder);
 
-            builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+            builder.ApplyEntities();
+            builder.ApplyConfigurations();
         }
     }
 }
