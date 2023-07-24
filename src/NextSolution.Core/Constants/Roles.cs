@@ -10,6 +10,8 @@ namespace NextSolution.Core.Constants
     {
         public const string Admin = nameof(Admin);
 
-        public const string Member = nameof(Member);  
+        public const string Member = nameof(Member);
+
+        public static IEnumerable<string> All => new[] { Admin, Member };
     }
 }

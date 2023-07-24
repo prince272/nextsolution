@@ -10,12 +10,12 @@ namespace NextSolution.Core.Helpers
 {
     public static class TypeHelper
     {
-        public static Type[] GetTypesFromApplicationDependencies()
+        public static IEnumerable<Type> GetTypesFromApplicationDependencies()
         {
             return GetTypesFromApplicationDependencies(_ => true);
         }
 
-        public static Type[] GetTypesFromApplicationDependencies(Func<Assembly, bool> predicate)
+        public static IEnumerable<Type> GetTypesFromApplicationDependencies(Func<Assembly, bool> predicate)
         {
             try
             {
@@ -30,12 +30,12 @@ namespace NextSolution.Core.Helpers
             }
         }
 
-        public static Type[] GetTypesFromDependencyContext(DependencyContext context)
+        public static IEnumerable<Type> GetTypesFromDependencyContext(DependencyContext context)
         {
             return GetTypesFromDependencyContext(context, _ => true);
         }
 
-        public static Type[] GetTypesFromDependencyContext(DependencyContext context, Func<Assembly, bool> predicate)
+        public static IEnumerable<Type> GetTypesFromDependencyContext(DependencyContext context, Func<Assembly, bool> predicate)
         {
             var assemblyNames = context.RuntimeLibraries
                 .SelectMany(library => library.GetDefaultAssemblyNames(context));
@@ -46,7 +46,7 @@ namespace NextSolution.Core.Helpers
         }
 
 
-        public static Type[] GetTypesFromAssemblyDependencies(Assembly assembly)
+        public static IEnumerable<Type> GetTypesFromAssemblyDependencies(Assembly assembly)
         {
             var assemblies = new List<Assembly> { assembly };
 
@@ -64,23 +64,23 @@ namespace NextSolution.Core.Helpers
             }
         }
 
-        public static Type[] GetTypesFromAssembliesOf(IEnumerable<Type> types)
+        public static IEnumerable<Type> GetTypesFromAssembliesOf(IEnumerable<Type> types)
         {
             return GetTypesFromAssemblies(types.Select(t => t.Assembly));
         }
 
-        public static Type[] GetTypesFromAssemblyOf<T>()
+        public static IEnumerable<Type> GetTypesFromAssemblyOf<T>()
         {
             return GetTypesFromAssembliesOf(new[] { typeof(T) });
         }
 
-        public static Type[] GetTypesFromAssemblies(params Assembly[] assemblies)
+        public static IEnumerable<Type> GetTypesFromAssemblies(params Assembly[] assemblies)
         {
             return GetTypesFromAssemblies(assemblies.AsEnumerable());
         }
 
 
-        public   static Type[] GetTypesFromAssemblies(IEnumerable<Assembly> assemblies)
+        public   static IEnumerable<Type> GetTypesFromAssemblies(IEnumerable<Assembly> assemblies)
         {
             return assemblies.SelectMany(asm => asm.DefinedTypes).Select(x => x.AsType()).ToArray();
         }

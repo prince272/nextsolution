@@ -19,5 +19,22 @@ namespace NextSolution.Core
             services.AddScoped<AccountService>();
             return services;
         }
+
+        public static IServiceCollection AddApplicationValidators(this IServiceCollection services)
+        {
+            var validatorTypes = TypeHelper.GetTypesFromApplicationDependencies().Where(type => type.IsClass && !type.IsAbstract && !type.IsGenericType && type.IsCompatibleWith(typeof(IValidator<>)));
+
+            foreach (var concreteType in validatorTypes)
+            {
+                var matchingInterfaceType = concreteType.GetInterfaces().FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IValidator<>));
+
+                if (matchingInterfaceType != null)
+                {
+                    services.AddScoped(matchingInterfaceType, concreteType);
+                }
+            }
+
+            return services;
+        }
     }
 }

@@ -17,6 +17,9 @@ namespace NextSolution.Core.Entities
         public User(string userName) : base(userName)
         {
         }
+        public string FirstName { get; set; } = default!;
+
+        public string LastName { get; set; } = default!;
 
         public virtual ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
     }

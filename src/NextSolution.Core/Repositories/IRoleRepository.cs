@@ -10,5 +10,6 @@ namespace NextSolution.Core.Repositories
 {
     public interface IRoleRepository : IRepository<Role>
     {
+        Task<Role?> FindByNameAsync(string name);
     }
 }

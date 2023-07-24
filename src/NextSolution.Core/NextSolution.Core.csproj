@@ -7,8 +7,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="FluentValidation" Version="11.6.0" />
+    <PackageReference Include="Humanizer" Version="2.14.1" />
+    <PackageReference Include="libphonenumber-csharp" Version="8.13.16" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="7.0.9" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="FluentValidation" />
+    <Using Include="Humanizer" />
   </ItemGroup>
 
 </Project>

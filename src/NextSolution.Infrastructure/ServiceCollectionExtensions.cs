@@ -13,14 +13,18 @@ namespace NextSolution.Infrastructure
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddRepositories(this IServiceCollection services)
+        public static IServiceCollection AddApplicationRepositories(this IServiceCollection services)
         {
             var repositoryTypes = TypeHelper.GetTypesFromApplicationDependencies().Where(type => type.IsClass && !type.IsAbstract && type.IsCompatibleWith(typeof(IRepository<>)));
 
             foreach (var concreteType in repositoryTypes)
             {
-                foreach (var interfaceType in concreteType.FindMatchingInterfaces())
-                    services.AddScoped(interfaceType, concreteType);
+                var matchingInterfaceType = concreteType.GetInterfaces().FirstOrDefault(x => string.Equals(x.Name, $"I{concreteType.Name}", StringComparison.Ordinal));
+               
+                if (matchingInterfaceType != null)
+                {
+                    services.AddScoped(matchingInterfaceType, concreteType);
+                }
             }
 
             return services;

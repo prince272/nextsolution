@@ -18,7 +18,7 @@ namespace NextSolution.Infrastructure.Data.Extensions
         public static ModelBuilder ApplyEntities(this ModelBuilder modelBuilder, Func<Type, bool>? predicate = null)
         {
             var entityTypes = TypeHelper.GetTypesFromApplicationDependencies()
-                .Where(type => type.IsClass && !type.IsAbstract && type.IsCompatibleWith(typeof(IEntity)) && (predicate?.Invoke(type) ?? true));
+                .Where(type => type.IsClass && !type.IsAbstract && !type.IsGenericType && type.IsCompatibleWith(typeof(IEntity)) && (predicate?.Invoke(type) ?? true));
 
             foreach (var entityType in entityTypes)
             {
@@ -31,7 +31,7 @@ namespace NextSolution.Infrastructure.Data.Extensions
         public static ModelBuilder ApplyConfigurations(this ModelBuilder modelBuilder, Func<Type, bool>? predicate = null)
         {
             var entityTypeConfigurationTypes = TypeHelper.GetTypesFromApplicationDependencies()
-                .Where(type => type.IsClass && !type.IsAbstract && type.IsCompatibleWith(typeof(IEntityTypeConfiguration<>)) && (predicate?.Invoke(type) ?? true));
+                .Where(type => type.IsClass && !type.IsAbstract && !type.IsGenericType && type.IsCompatibleWith(typeof(IEntityTypeConfiguration<>)) && (predicate?.Invoke(type) ?? true));
 
             var applyEntityConfigurationMethod = typeof(ModelBuilder)
                 .GetMethods()

@@ -57,7 +57,9 @@ builder.Services.AddIdentity<User, Role>(options => {
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddRepositories()
+builder.Services
+    .AddApplicationValidators()
+    .AddApplicationRepositories()
     .AddApplicationServices();
 
 var app = builder.Build();

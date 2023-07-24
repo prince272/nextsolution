@@ -18,28 +18,28 @@ namespace NextSolution.Infrastructure.Data
         }
 
 
-        public virtual async Task CreateAsync(TEntity entity, CancellationToken cancellationToken = default)
+        public virtual async Task CreateAsync(TEntity entity)
         {
             if (entity == null) throw new ArgumentNullException(nameof(entity));
 
-            await _dbContext.AddAsync(entity, cancellationToken);
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            await _dbContext.AddAsync(entity);
+            await _dbContext.SaveChangesAsync();
         }
 
-        public virtual async Task UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
+        public virtual async Task UpdateAsync(TEntity entity)
         {
             if (entity == null) throw new ArgumentNullException(nameof(entity));
 
             _dbContext.Update(entity);
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            await _dbContext.SaveChangesAsync();
         }
 
-        public virtual async Task DeleteAsync(TEntity entity, CancellationToken cancellationToken = default)
+        public virtual async Task DeleteAsync(TEntity entity)
         {
             if (entity == null) throw new ArgumentNullException(nameof(entity));
          
             _dbContext.Remove(entity);
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            await _dbContext.SaveChangesAsync();
         }
 
         public virtual async Task<TEntity?> FindByIdAsync(long id)

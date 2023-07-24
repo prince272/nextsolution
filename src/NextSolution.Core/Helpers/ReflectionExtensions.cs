@@ -49,58 +49,5 @@ namespace NextSolution.Core.Helpers
 
             return baseType.IsAssignableToGenericTypeDefinition(genericType);
         }
-
-        public static IEnumerable<Type> FindMatchingInterfaces(this Type type)
-        {
-            var matchingInterfaceName = $"I{type.Name}";
-            var matchedInterfaces = GetImplementedInterfacesToMap(type).Where(x => string.Equals(x.Name, matchingInterfaceName, StringComparison.Ordinal)).ToArray();
-            return matchedInterfaces;
-        }
-
-        private static IEnumerable<Type> GetImplementedInterfacesToMap(Type type)
-        {
-            if (!type.IsGenericType)
-            {
-                return type.GetInterfaces();
-            }
-
-            if (!type.IsGenericTypeDefinition)
-            {
-                return type.GetInterfaces();
-            }
-
-            return FilterMatchingGenericInterfaces(type);
-        }
-
-        private static IEnumerable<Type> FilterMatchingGenericInterfaces(Type type)
-        {
-            var genericArguments = type.GetGenericArguments();
-
-            foreach (var current in type.GetInterfaces())
-            {
-                if (current.IsGenericType && current.ContainsGenericParameters && GenericParametersMatch(genericArguments, current.GetGenericArguments()))
-                {
-                    yield return current.GetGenericTypeDefinition();
-                }
-            }
-        }
-
-        private static bool GenericParametersMatch(IReadOnlyList<Type> parameters, IReadOnlyList<Type> interfaceArguments)
-        {
-            if (parameters.Count != interfaceArguments.Count)
-            {
-                return false;
-            }
-
-            for (var i = 0; i < parameters.Count; i++)
-            {
-                if (parameters[i] != interfaceArguments[i])
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
     }
 }

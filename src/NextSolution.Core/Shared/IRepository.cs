@@ -8,11 +8,11 @@ namespace NextSolution.Core.Shared
 {
     public interface IRepository<TEntity> where TEntity : class, IEntity
     {
-        Task CreateAsync(TEntity entity, CancellationToken cancellationToken = default);
+        Task CreateAsync(TEntity entity);
 
-        Task UpdateAsync(TEntity entity, CancellationToken cancellationToken = default);
+        Task UpdateAsync(TEntity entity);
 
-        Task DeleteAsync(TEntity entity, CancellationToken cancellationToken = default);
+        Task DeleteAsync(TEntity entity);
 
         Task<TEntity?> FindByIdAsync(long id);
     }
