@@ -54,6 +54,8 @@ namespace NextSolution.Core.Services
             user = new User();
             user.FirstName = form.FirstName;
             user.LastName = form.LastName;
+            user.Email = formUsernameFormat == TextFormat.EmailAddress ? form.Username : user.Email;
+            user.PhoneNumber = formUsernameFormat == TextFormat.PhoneNumber ? form.Username : user.PhoneNumber;
             await _userRepository.GenerateUserNameAsync(user);
             await _userRepository.CreateAsync(user, form.Password);
             await AddUserToQualifiedRolesAsync(user);
