@@ -13,7 +13,6 @@ namespace NextSolution.WebApi.Endpoints
         {
             endpoints = endpoints
                 .MapGroup("/accounts")
-                .WithTags(Name)
                 .WithOpenApi();
 
             endpoints.MapPost("/", SignUpAsync).WithName(nameof(SignUpAsync));

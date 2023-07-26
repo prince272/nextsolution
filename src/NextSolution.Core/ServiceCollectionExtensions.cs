@@ -22,6 +22,29 @@ namespace NextSolution.Core
 
         public static IServiceCollection AddApplicationValidators(this IServiceCollection services)
         {
+            ValidatorOptions.Global.DefaultClassLevelCascadeMode = CascadeMode.Continue;
+            ValidatorOptions.Global.DefaultRuleLevelCascadeMode = CascadeMode.Stop;
+            ValidatorOptions.Global.DisplayNameResolver = (type, memberInfo, expression) =>
+            {
+                string? RelovePropertyName()
+                {
+                    if (expression != null)
+                    {
+                        var chain = FluentValidation.Internal.PropertyChain.FromExpression(expression);
+                        if (chain.Count > 0) return chain.ToString();
+                    }
+
+                    if (memberInfo != null)
+                    {
+                        return memberInfo.Name;
+                    }
+
+                    return null;
+                }
+
+                return RelovePropertyName()?.Humanize();
+            };
+
             var validatorTypes = TypeHelper.GetTypesFromApplicationDependencies().Where(type => type.IsClass && !type.IsAbstract && !type.IsGenericType && type.IsCompatibleWith(typeof(IValidator<>)));
 
             foreach (var concreteType in validatorTypes)

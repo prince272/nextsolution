@@ -36,7 +36,7 @@ namespace NextSolution.Core.Services
             var formValidationResult = (await formValidator.ValidateAsync(form));
 
             if (!formValidationResult.IsValid)
-                throw new BadRequestException(formValidationResult.ToDictionary());
+                throw new Exceptions.ValidationException(formValidationResult.ToDictionary());
 
             var formUsernameFormat = ValidationHelper.CheckFormat(form.Username);
 
@@ -47,7 +47,7 @@ namespace NextSolution.Core.Services
                 _ => null
             };
 
-            if (user != null) throw new BadRequestException(new Dictionary<string, string[]> {
+            if (user != null) throw new Exceptions.ValidationException(new Dictionary<string, string[]> {
                 { nameof(form.Username), new[] { $"'{formUsernameFormat.Humanize()}' is already in use." } }
             });
 

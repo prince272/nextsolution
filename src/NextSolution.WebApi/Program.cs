@@ -8,12 +8,15 @@ using NextSolution.WebApi.Shared;
 using Serilog;
 using Serilog.Settings.Configuration;
 using System.Security.Claims;
+using System.Text.Json.Serialization;
+using System.Text.Json;
 
 try
 {
     Log.Information("Starting web application...");
 
     var builder = WebApplication.CreateBuilder(args);
+
     Log.Logger = new LoggerConfiguration()
          .ReadFrom.Configuration(builder.Configuration, new ConfigurationReaderOptions()
          {
@@ -79,7 +82,26 @@ try
         .AddApplicationRepositories()
         .AddApplicationServices();
 
+    builder.Services.ConfigureHttpJsonOptions(options =>
+    {
+        options.SerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
+        options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+
+        options.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        options.SerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
+
+        options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+    });
+
     var app = builder.Build();
+
+    app.UseStatusCodePagesWithReExecute("/errors/{0}");
+    app.UseExceptionHandler(new ExceptionHandlerOptions()
+    {
+        AllowStatusCode404Response = true,
+        ExceptionHandler = null,
+        ExceptionHandlingPath = "/errors/500"
+    });
 
     // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())
