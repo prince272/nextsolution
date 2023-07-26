@@ -6,24 +6,13 @@ using System.Threading.Tasks;
 
 namespace NextSolution.Core.Exceptions
 {
-    public class NotFoundException : InvalidOperationException
+    public class NotFoundException : StatusCodeException
     {
-        public NotFoundException()
+        public NotFoundException(string? message = "The specified resource was not found.", Exception? innerException = null) : base(404, message, innerException)
         {
         }
 
-        public NotFoundException(string message)
-            : base(message)
-        {
-        }
-
-        public NotFoundException(string message, Exception innerException)
-            : base(message, innerException)
-        {
-        }
-
-        public NotFoundException(string name, object key)
-            : base($"Entity \"{name}\" ({key}) was not found.")
+        public NotFoundException(string name, object key, Exception? innerException = null) : base(404, $"Entity \"{name}\" ({key}) was not found.", innerException)
         {
         }
     }

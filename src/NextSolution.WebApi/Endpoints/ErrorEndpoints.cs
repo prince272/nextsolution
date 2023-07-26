@@ -31,12 +31,12 @@ namespace NextSolution.WebApi.Endpoints
                 .CacheOutput(_ => _.NoCache())
                 .WithOpenApi();
 
-            endpoints.Map("/{statusCode}", HandleStatusCode).WithName(nameof(HandleStatusCode));
-            endpoints.Map("/throw", ThrowInvalidOperationException).WithName(nameof(ThrowInvalidOperationException));
+            endpoints.Map("/{statusCode}", HandleException).WithName(nameof(HandleException));
+            endpoints.MapGet("/throw", ThrowServerException).WithName(nameof(ThrowServerException));
+            endpoints.MapGet("/not-found", ThrowNotFoundException).WithName(nameof(ThrowNotFoundException));
         }
 
-
-        public IResult HandleStatusCode(HttpContext httpContext)
+        public IResult HandleException(HttpContext httpContext)
         {
             IDictionary<string, TValue> ApplyDictionaryKeyPolicy<TValue>(IDictionary<string, TValue> dictionary)
             {
@@ -45,75 +45,64 @@ namespace NextSolution.WebApi.Endpoints
                 return dictionary;
             }
 
-            var environment = httpContext.RequestServices.GetRequiredService<IWebHostEnvironment>();
+            int statusCode = Enum.TryParse<HttpStatusCode>(httpContext.GetRouteValue(nameof(statusCode))?.ToString(), out var status) ? (int)status : (int)HttpStatusCode.NotFound;
             var statusCodeFeature = httpContext.Features.Get<IStatusCodeReExecuteFeature>();
             var exceptionFeature = httpContext.Features.Get<IExceptionHandlerFeature>();
 
-            var statusCode = (exceptionFeature?.Error) switch
+            Exception? exception;
+            string? instance;
+
+            if (exceptionFeature is null)
             {
-                ValidationException => StatusCodes.Status400BadRequest,
-                Exception => StatusCodes.Status500InternalServerError,
-                _ => int.TryParse(httpContext.GetRouteValue("statusCode")?.ToString(), out int __) ? __ : StatusCodes.Status404NotFound
-            };
+                instance = statusCodeFeature?.OriginalPath ?? httpContext.Request.Path;
 
-            var instance = string.Join(":", new[] { environment.ApplicationName, environment.EnvironmentName, "Error", Activity.Current?.Id ?? httpContext?.TraceIdentifier }
-            .Where(_ => !string.IsNullOrEmpty(_)));
-
-
-            switch (statusCode)
+                exception = statusCode switch
+                {
+                    StatusCodes.Status400BadRequest => new BadRequestException(),
+                    StatusCodes.Status404NotFound => new NotFoundException(),
+                    _ => new StatusCodeException(statusCode)
+                };
+            }
+            else
             {
-                case StatusCodes.Status400BadRequest:
-                    {
-                        if (exceptionFeature?.Error is ValidationException)
-                        {
-                            var exception = (ValidationException)exceptionFeature.Error;
+                instance = exceptionFeature.Path;
 
-                            var title = ReasonPhrases.GetReasonPhrase(statusCode);
-                            var detail = exception.Message;
-                            var errors = ApplyDictionaryKeyPolicy(exception.Errors);
-
-                            return Results.ValidationProblem(
-                                errors: errors,
-                                title: title,
-                                detail: detail,
-                                instance: instance,
-                                statusCode: statusCode);
-                        }
-                        else
-                        {
-                            var title = ReasonPhrases.GetReasonPhrase(statusCode);
-                            var detail = "The request object format is not valid.";
-
-                            return Results.Problem(title: title, detail: detail, instance: instance, statusCode: statusCode);
-                        }
-                    }
-
-                case StatusCodes.Status404NotFound:
-                    {
-                        if (exceptionFeature?.Error is NotFoundException)
-                        {
-                            var exception = (NotFoundException)exceptionFeature.Error;
-                            var title = ReasonPhrases.GetReasonPhrase(statusCode);
-                            var detail = exception.Message;
-
-                            return Results.Problem(title: title, detail: detail, instance: instance, statusCode: statusCode);
-                        }
-                        else
-                        {
-                            var title = ReasonPhrases.GetReasonPhrase(statusCode);
-                            var detail = "The specified resource was not found.";
-
-                            return Results.Problem(title: title, detail: detail, instance: instance, statusCode: statusCode);
-                        }
-                    }
+                if (exceptionFeature.Error is StatusCodeException statusCodeException)
+                {
+                    exception = statusCodeException;
+                    statusCode = statusCodeException.StatusCode;
+                }
+                else
+                {
+                    exception = new StatusCodeException(statusCode, null, exceptionFeature?.Error);
+                }
             }
 
-            return Results.Problem(title: ReasonPhrases.GetReasonPhrase(statusCode), detail: "Oops! Something went wrong.", instance: instance, statusCode: statusCode);
+            var title = ReasonPhrases.GetReasonPhrase(statusCode);
+            var detail = exception.Message;
+            var extensions = ApplyDictionaryKeyPolicy(exception.Data.Cast<DictionaryEntry>().ToDictionary(entry => entry.Key.ToString()!, entry => entry.Value));
+
+            switch (exception)
+            {
+                case BadRequestException:
+                    {
+                        var errors = ApplyDictionaryKeyPolicy(((BadRequestException)exception).Errors);
+                        return Results.ValidationProblem(errors: errors, title: title, detail: detail, instance: instance, statusCode: statusCode, extensions: extensions);
+                    }
+
+                default:
+                    return Results.Problem(title: title, detail: detail, instance: instance, statusCode: statusCode, extensions: extensions);
+            }
         }
 
-        public IResult ThrowInvalidOperationException()
+        public IResult ThrowServerException()
         {
             throw new InvalidOperationException();
+        }
+
+        public IResult ThrowNotFoundException()
+        {
+            throw new NotFoundException();
         }
     }
 }
