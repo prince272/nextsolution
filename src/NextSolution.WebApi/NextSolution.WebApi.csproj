@@ -28,6 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\NextSolution.Infrastructure.Data\NextSolution.Infrastructure.Data.csproj" />
     <ProjectReference Include="..\NextSolution.Infrastructure\NextSolution.Infrastructure.csproj" />
   </ItemGroup>
 
