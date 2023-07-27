@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using NextSolution.Core.Helpers;
+using NextSolution.Core.Utilities;
 using NextSolution.Core.Services;
 using NextSolution.Core.Shared;
 using System;

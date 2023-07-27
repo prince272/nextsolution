@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NextSolution.Core.Helpers
+namespace NextSolution.Core.Utilities
 {
     public static class ReflectionExtensions
     {

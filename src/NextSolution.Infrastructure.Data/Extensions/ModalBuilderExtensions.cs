@@ -9,7 +9,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using NextSolution.Core.Shared;
-using NextSolution.Core.Helpers;
+using NextSolution.Core.Utilities;
 
 namespace NextSolution.Infrastructure.Data.Extensions
 {

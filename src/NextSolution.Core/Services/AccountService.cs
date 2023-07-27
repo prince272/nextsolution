@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NextSolution.Core.Constants;
 using NextSolution.Core.Entities;
 using NextSolution.Core.Exceptions;
-using NextSolution.Core.Helpers;
+using NextSolution.Core.Utilities;
 using NextSolution.Core.Models.Accounts;
 using NextSolution.Core.Repositories;
 using NextSolution.Core.Shared;

@@ -9,7 +9,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NextSolution.Core.Helpers
+namespace NextSolution.Core.Utilities
 {
     public static class ExpressionHelper
     {

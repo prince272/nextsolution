@@ -4,7 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace NextSolution.Core.Helpers
+namespace NextSolution.Core.Utilities
 {
     public static class AlgorithmHelper
     {

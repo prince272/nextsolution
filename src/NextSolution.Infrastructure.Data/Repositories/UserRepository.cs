@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using NextSolution.Core.Entities;
-using NextSolution.Core.Helpers;
+using NextSolution.Core.Utilities;
 using NextSolution.Core.Repositories;
 using NextSolution.Infrastructure.Data;
 using NextSolution.Infrastructure.Data.Extensions;

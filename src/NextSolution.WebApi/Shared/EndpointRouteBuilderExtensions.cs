@@ -1,4 +1,4 @@
-﻿using NextSolution.Core.Helpers;
+﻿using NextSolution.Core.Utilities;
 
 namespace NextSolution.WebApi.Shared
 {
