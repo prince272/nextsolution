@@ -19,21 +19,36 @@ using System.Text.Json;
 
 namespace NextSolution.WebApi.Endpoints
 {
-    public class ErrorEndpoints : IEndpoints
+    public class ErrorEndpoints : Shared.Endpoints
     {
-        public string Name => "Error";
-
-        public void Map(IEndpointRouteBuilder endpoints)
+        public ErrorEndpoints(IEndpointRouteBuilder endpointRouteBuilder)
+            : base(endpointRouteBuilder)
         {
-            endpoints = endpoints
-                .MapGroup("/errors")
-                .AllowAnonymous()
-                .CacheOutput(_ => _.NoCache())
-                .WithOpenApi();
+            endpointRouteBuilder = endpointRouteBuilder.MapGroup("");
+        }
 
-            endpoints.Map("/{statusCode}", HandleException).WithName(nameof(HandleException));
-            endpoints.MapGet("/throw", ThrowServerException).WithName(nameof(ThrowServerException));
-            endpoints.MapGet("/not-found", ThrowNotFoundException).WithName(nameof(ThrowNotFoundException));
+
+        protected override RouteGroupBuilder MapGroup(string prefix)
+        {
+            var group = base.MapGroup(prefix)
+                .AllowAnonymous()
+                .CacheOutput(_ => _.NoCache());
+                            
+            return group;
+        }
+
+        public override void Configure()
+        {
+            var endpoints = MapGroup("/errors");
+
+            endpoints.Map("/{statusCode}", HandleException)
+                .WithName(nameof(HandleException));
+
+            endpoints.MapGet("/throw", ThrowServerException)
+                .WithName(nameof(ThrowServerException));
+
+            endpoints.MapGet("/not-found", ThrowNotFoundException)
+                .WithName(nameof(ThrowNotFoundException));
         }
 
         public IResult HandleException(HttpContext httpContext)

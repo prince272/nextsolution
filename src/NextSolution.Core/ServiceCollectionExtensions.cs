@@ -14,13 +14,15 @@ namespace NextSolution.Core
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddApplicationServices(this IServiceCollection services)
+        public static IServiceCollection AddApplication(this IServiceCollection services)
         {
+            services.AddAutoMapper(TypeHelper.GetTypesFromApplicationDependencies().ToArray());
+            services.AddValidators();
             services.AddScoped<AccountService>();
             return services;
         }
 
-        public static IServiceCollection AddApplicationValidators(this IServiceCollection services)
+        private static IServiceCollection AddValidators(this IServiceCollection services)
         {
             ValidatorOptions.Global.DefaultClassLevelCascadeMode = CascadeMode.Continue;
             ValidatorOptions.Global.DefaultRuleLevelCascadeMode = CascadeMode.Stop;
@@ -53,7 +55,7 @@ namespace NextSolution.Core
 
                 if (matchingInterfaceType != null)
                 {
-                    services.AddScoped(matchingInterfaceType, concreteType);
+                    services.AddScoped(concreteType);
                 }
             }
 

@@ -50,6 +50,8 @@ namespace NextSolution.Infrastructure.Data.Repositories
 
         public Task<Role?> FindByNameAsync(string name)
         {
+            if (name == null) throw new ArgumentNullException(nameof(name));
+
             return _roleManager.FindByNameAsync(name);
         }
     }

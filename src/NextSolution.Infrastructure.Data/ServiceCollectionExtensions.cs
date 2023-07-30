@@ -9,11 +9,11 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NextSolution.Infrastructure
+namespace NextSolution.Infrastructure.Data
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddApplicationRepositories(this IServiceCollection services)
+        public static IServiceCollection AddRepositories(this IServiceCollection services)
         {
             var repositoryTypes = TypeHelper.GetTypesFromApplicationDependencies().Where(type => type.IsClass && !type.IsAbstract && type.IsCompatibleWith(typeof(IRepository<>)));
 

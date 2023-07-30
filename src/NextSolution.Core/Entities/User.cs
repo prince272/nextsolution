@@ -17,9 +17,14 @@ namespace NextSolution.Core.Entities
         public User(string userName) : base(userName)
         {
         }
+
         public string FirstName { get; set; } = default!;
 
         public string LastName { get; set; } = default!;
+
+        public bool Active { get; set; }
+
+        public DateTimeOffset ActiveAt { get; set; }
 
         public virtual ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
     }
@@ -31,5 +36,22 @@ namespace NextSolution.Core.Entities
         public virtual Role Role { get; set; } = default!;
 
         long IEntity.Id { get; }
+    }
+
+    public class UserSession : IEntity
+    {
+        public virtual User User { get; set; } = default!;
+
+        public long UserId { get; set; }
+
+        public long Id { get; set; }
+
+        public string AccessTokenHash { get; set; } = default!;
+
+        public DateTimeOffset AccessTokenExpiresAt { get; set; }
+
+        public string RefreshTokenHash { get; set; } = default!;
+
+        public DateTimeOffset RefreshTokenExpiresAt { get; set; }
     }
 }

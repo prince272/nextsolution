@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 
 namespace NextSolution.Core.Models.Accounts
 {
-    public class SignInAccountForm
+    public class GenerateSessionForm
     {
         public string Username { get; set; } = default!;
 
         public string Password { get; set; } = default!;
 
-        public class Validator : AbstractValidator<SignInAccountForm>
+        public class Validator : AbstractValidator<GenerateSessionForm>
         {
             public Validator()
             {

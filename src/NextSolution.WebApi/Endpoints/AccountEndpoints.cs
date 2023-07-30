@@ -1,26 +1,46 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NextSolution.Core.Models.Accounts;
 using NextSolution.Core.Services;
-using NextSolution.WebApi.Shared;
 
 namespace NextSolution.WebApi.Endpoints
 {
-    public class AccountEndpoints : IEndpoints
+    public class AccountEndpoints : Shared.Endpoints
     {
-        public string Name => "Account";
-
-        public void Map(IEndpointRouteBuilder endpoints)
+        public AccountEndpoints(IEndpointRouteBuilder endpointRouteBuilder)
+            : base(endpointRouteBuilder)
         {
-            endpoints = endpoints
-                .MapGroup("/accounts")
-                .WithOpenApi();
-
-            endpoints.MapPost("/", SignUpAsync).WithName(nameof(SignUpAsync));
         }
 
-        public async Task<IResult> SignUpAsync([FromServices] AccountService accountService, [FromBody] CreateAccountForm form)
+        public override void Configure()
+        {
+            var endpoints = MapGroup("/accounts");
+
+            endpoints.MapPost("/", CreateAccountAsync);
+            endpoints.MapPost("/sessions/generate", GenerateSessionAsync);
+            endpoints.MapPost("/sessions/refresh", RefreshSessionAsync);
+            endpoints.MapPost("/sessions/revoke", RevokeSessionAsync);
+            endpoints.MapPost("/authorize", () => "Authorized").RequireAuthorization();
+        }
+
+        public async Task<IResult> CreateAccountAsync([FromServices] AccountService accountService, [FromBody] CreateAccountForm form)
         {
             await accountService.CreateAsync(form);
+            return Results.Ok();
+        }
+
+        public async Task<IResult> GenerateSessionAsync([FromServices] AccountService accountService, [FromBody] GenerateSessionForm form)
+        {
+            return Results.Ok(await accountService.GenerateSessionAsync(form));
+        }
+
+        public async Task<IResult> RefreshSessionAsync([FromServices] AccountService accountService, [FromBody] RefreshSessionForm form)
+        {
+            return Results.Ok(await accountService.RefreshSessionAsync(form));
+        }
+
+        public async Task<IResult> RevokeSessionAsync([FromServices] AccountService accountService, [FromBody] RevokeSessionForm form)
+        {
+            await accountService.RevokeSessionAsync(form);
             return Results.Ok();
         }
     }

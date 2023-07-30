@@ -1,15 +1,17 @@
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using NextSolution.Core;
-using NextSolution.Core.Entities;
-using NextSolution.Infrastructure;
 using NextSolution.Infrastructure.Data;
 using NextSolution.WebApi.Shared;
 using Serilog;
 using Serilog.Settings.Configuration;
-using System.Security.Claims;
 using System.Text.Json.Serialization;
 using System.Text.Json;
+using NextSolution.Infrastructure.Identity;
+using Microsoft.AspNetCore.Identity;
+using NextSolution.Core.Entities;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using NextSolution.Core.Utilities;
 
 try
 {
@@ -17,25 +19,21 @@ try
 
     var builder = WebApplication.CreateBuilder(args);
 
-    Log.Logger = new LoggerConfiguration()
-         .ReadFrom.Configuration(builder.Configuration, new ConfigurationReaderOptions()
-         {
-             SectionName = "SerilogSettings"
-         })
-         .Enrich.FromLogContext()
-         .CreateLogger();
+    Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration).Enrich.FromLogContext().CreateLogger();
 
     builder.Logging.ClearProviders();
     builder.Host.UseSerilog(Log.Logger);
 
-    // Add services to the container.
-
+    // Add database services.
     builder.Services.AddDbContext<AppDbContext>(options =>
     {
         var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
         options.UseSqlServer(connectionString, sqlOptions => sqlOptions.MigrationsAssembly(typeof(AppDbContext).Assembly.GetName().Name));
     });
 
+    builder.Services.AddRepositories();
+
+    // Add identity services.
     builder.Services.AddIdentity<User, Role>(options =>
     {
         // Password settings. (Will be using fluent validation)
@@ -72,27 +70,46 @@ try
         options.ClaimsIdentity.SecurityStampClaimType = ClaimTypes.SerialNumber;
     })
         .AddEntityFrameworkStores<AppDbContext>()
-        .AddDefaultTokenProviders();
+        .AddDefaultTokenProviders()
+        .AddUserSession(options =>
+        {
+            options.AccessTokenExpiresIn = TimeSpan.FromHours(1);
+            options.RefreshTokenExpiresIn = TimeSpan.FromDays(60);
+            options.AllowMultipleSessions = true;
+        });
 
-    builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddSwaggerGen();
-
-    builder.Services
-        .AddApplicationValidators()
-        .AddApplicationRepositories()
-        .AddApplicationServices();
-
-    builder.Services.ConfigureHttpJsonOptions(options =>
+    builder.Services.AddAuthentication(options =>
     {
-        options.SerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
-        options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultSignInScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
 
-        options.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-        options.SerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
+    })
+        .AddJwtBearer();
 
-        options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
-    });
+    builder.Services.ConfigureOptions<ConfigureJwtBearerOptions>();
 
+    builder.Services.AddAuthorization();
+
+    // Add application services.
+    builder.Services.AddApplication();
+
+    // Configure serialization services.
+    builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
+    options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+
+    options.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
+
+    options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+});
+
+    // Add documentation services.
+    builder.Services.AddDocumentation();
+
+    // Build application.
     var app = builder.Build();
 
     app.UseStatusCodePagesWithReExecute("/errors/{0}");
@@ -111,6 +128,12 @@ try
     }
 
     app.UseHttpsRedirection();
+
+    app.UseAuthentication();
+
+    // app.UseCors();
+
+    app.UseAuthorization();
 
     app.MapEndpoints();
 

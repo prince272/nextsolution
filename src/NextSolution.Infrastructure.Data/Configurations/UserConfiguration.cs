@@ -43,4 +43,9 @@ namespace NextSolution.Infrastructure.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<IdentityUserToken<long>> builder) => builder.ToTable("UserToken");
     }
+
+    public class UserSessionConfiguration : IEntityTypeConfiguration<UserSession>
+    {
+        public void Configure(EntityTypeBuilder<UserSession> builder) => builder.ToTable(nameof(UserSession));
+    }
 }
