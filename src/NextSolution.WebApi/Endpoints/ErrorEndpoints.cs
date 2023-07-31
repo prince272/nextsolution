@@ -64,7 +64,7 @@ namespace NextSolution.WebApi.Endpoints
             var statusCodeFeature = httpContext.Features.Get<IStatusCodeReExecuteFeature>();
             var exceptionFeature = httpContext.Features.Get<IExceptionHandlerFeature>();
 
-            Exception? exception;
+            StatusCodeException? exception;
             string? instance;
 
             if (exceptionFeature is null)
