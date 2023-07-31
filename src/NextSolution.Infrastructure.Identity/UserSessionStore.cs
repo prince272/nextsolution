@@ -50,14 +50,21 @@ namespace NextSolution.Infrastructure.Identity
 
         public async Task RemoveSessionAsync(User user, string token)
         {
-            var tokenHash = AlgorithmHelper.GenerateHash(token);
-            var current = DateTimeOffset.UtcNow;
+            if (!_userSessionOptions.Value.AllowMultipleSessions)
+            {
+                await _dbContext.Set<UserSession>().Where(_ => _.UserId == user.Id).ForEachAsync(session => _dbContext.Remove(session));
+            }
+            else
+            {
+                var tokenHash = AlgorithmHelper.GenerateHash(token);
+                var current = DateTimeOffset.UtcNow;
 
-            await _dbContext.Set<UserSession>()
-                .Where(_ => _.UserId == user.Id)
-                .Where(_ => _.AccessTokenHash == tokenHash || _.RefreshTokenHash == tokenHash)
-                .Where(_ => _.AccessTokenExpiresAt >= current || _.RefreshTokenExpiresAt >= current)
-                .ForEachAsync(session => _dbContext.Remove(session));
+                await _dbContext.Set<UserSession>()
+                    .Where(_ => _.UserId == user.Id)
+                    .Where(_ => _.AccessTokenHash == tokenHash || _.RefreshTokenHash == tokenHash)
+                    .Where(_ => _.AccessTokenExpiresAt >= current || _.RefreshTokenExpiresAt >= current)
+                    .ForEachAsync(session => _dbContext.Remove(session));
+            }
 
             await _dbContext.SaveChangesAsync();
         }

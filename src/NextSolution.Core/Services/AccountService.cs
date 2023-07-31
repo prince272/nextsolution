@@ -144,6 +144,14 @@ namespace NextSolution.Core.Services
 
             if (!formValidationResult.IsValid)
                 throw new BadRequestException(formValidationResult.ToDictionary());
+
+            var user = await _userRepository.FindByRefreshTokenAsync(form.RefreshToken);
+
+            if (user == null) throw new BadRequestException(new Dictionary<string, string[]> {
+                { nameof(form.RefreshToken), new[] { $"'{form.RefreshToken.Humanize()}' is not valid." } }
+            });
+
+            await _userRepository.RemoveSessionAsync(user, form.RefreshToken);
         }
 
         private async Task AddUserToQualifiedRolesAsync(User user)
