@@ -15,9 +15,9 @@ namespace NextSolution.Infrastructure.Data.Extensions
 {
     public static class ModalBuilderExtensions
     {
-        public static ModelBuilder ApplyEntities(this ModelBuilder modelBuilder, Func<Type, bool>? predicate = null)
+        public static ModelBuilder ApplyEntities(this ModelBuilder modelBuilder, IEnumerable<Assembly> assemblies, Func<Type, bool>? predicate = null)
         {
-            var entityTypes = TypeHelper.GetTypesFromApplicationDependencies()
+            var entityTypes = assemblies.SelectMany(_ => _.DefinedTypes).Select(_ => _.AsType())
                 .Where(type => type.IsClass && !type.IsAbstract && !type.IsGenericType && type.IsCompatibleWith(typeof(IEntity)) && (predicate?.Invoke(type) ?? true));
 
             foreach (var entityType in entityTypes)
@@ -28,9 +28,9 @@ namespace NextSolution.Infrastructure.Data.Extensions
             return modelBuilder;
         }
 
-        public static ModelBuilder ApplyConfigurations(this ModelBuilder modelBuilder, Func<Type, bool>? predicate = null)
+        public static ModelBuilder ApplyConfigurations(this ModelBuilder modelBuilder, IEnumerable<Assembly> assemblies, Func<Type, bool>? predicate = null)
         {
-            var entityTypeConfigurationTypes = TypeHelper.GetTypesFromApplicationDependencies()
+            var entityTypeConfigurationTypes = assemblies.SelectMany(_ => _.DefinedTypes).Select(_ => _.AsType())
                 .Where(type => type.IsClass && !type.IsAbstract && !type.IsGenericType && type.IsCompatibleWith(typeof(IEntityTypeConfiguration<>)) && (predicate?.Invoke(type) ?? true));
 
             var applyEntityConfigurationMethod = typeof(ModelBuilder)

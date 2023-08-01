@@ -16,13 +16,14 @@ namespace NextSolution.Core
     {
         public static IServiceCollection AddApplication(this IServiceCollection services)
         {
-            services.AddAutoMapper(TypeHelper.GetTypesFromApplicationDependencies().ToArray());
-            services.AddValidators();
+            var assemblies = AssemblyHelper.GetAssemblies();
+            services.AddAutoMapper(assemblies);
+            services.AddValidators(assemblies);
             services.AddScoped<AccountService>();
             return services;
         }
 
-        private static IServiceCollection AddValidators(this IServiceCollection services)
+        private static IServiceCollection AddValidators(this IServiceCollection services, IEnumerable<Assembly> assemblies)
         {
             ValidatorOptions.Global.DefaultClassLevelCascadeMode = CascadeMode.Continue;
             ValidatorOptions.Global.DefaultRuleLevelCascadeMode = CascadeMode.Stop;
@@ -47,7 +48,7 @@ namespace NextSolution.Core
                 return RelovePropertyName()?.Humanize();
             };
 
-            var validatorTypes = TypeHelper.GetTypesFromApplicationDependencies().Where(type => type.IsClass && !type.IsAbstract && !type.IsGenericType && type.IsCompatibleWith(typeof(IValidator<>)));
+            var validatorTypes = assemblies.SelectMany(_ => _.DefinedTypes).Select(_ => _.AsType()).Where(type => type.IsClass && !type.IsAbstract && !type.IsGenericType && type.IsCompatibleWith(typeof(IValidator<>)));
 
             foreach (var concreteType in validatorTypes)
             {

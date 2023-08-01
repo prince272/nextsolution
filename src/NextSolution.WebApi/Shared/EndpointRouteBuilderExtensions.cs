@@ -6,7 +6,10 @@ namespace NextSolution.WebApi.Shared
     {
         public static IEndpointRouteBuilder MapEndpoints(this IEndpointRouteBuilder endpointRouteBuilder)
         {
-            var endpointTypes = TypeHelper.GetTypesFromApplicationDependencies().Where(type => type.IsClass && !type.IsAbstract && !type.IsGenericType && type.IsCompatibleWith(typeof(Endpoints)));
+            var assemblies = AssemblyHelper.GetAssemblies();
+
+            var endpointTypes = assemblies.SelectMany(_ => _.DefinedTypes).Select(_ => _.AsType())
+                .Where(type => type.IsClass && !type.IsAbstract && !type.IsGenericType && type.IsCompatibleWith(typeof(Endpoints)));
 
             foreach (var concreteType in endpointTypes)
             {

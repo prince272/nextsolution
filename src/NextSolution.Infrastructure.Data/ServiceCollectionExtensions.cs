@@ -15,7 +15,9 @@ namespace NextSolution.Infrastructure.Data
     {
         public static IServiceCollection AddRepositories(this IServiceCollection services)
         {
-            var repositoryTypes = TypeHelper.GetTypesFromApplicationDependencies().Where(type => type.IsClass && !type.IsAbstract && type.IsCompatibleWith(typeof(IRepository<>)));
+            var assemblies = AssemblyHelper.GetAssemblies();
+            var repositoryTypes = assemblies.SelectMany(_ => _.DefinedTypes).Select(_ => _.AsType())
+                .Where(type => type.IsClass && !type.IsAbstract && type.IsCompatibleWith(typeof(IRepository<>)));
 
             foreach (var concreteType in repositoryTypes)
             {
