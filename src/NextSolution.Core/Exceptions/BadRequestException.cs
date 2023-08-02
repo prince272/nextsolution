@@ -16,18 +16,24 @@ namespace NextSolution.Core.Exceptions
             Errors = new Dictionary<string, string[]>();
         }
 
-        public BadRequestException(string? reason) : base(STATUS_CODE, reason)
+        public BadRequestException(string? title) : base(STATUS_CODE, title)
         {
             Errors = new Dictionary<string, string[]>();
         }
 
-        public BadRequestException(IDictionary<string, string[]> errors, string? reason = "One or more validation errors occurred.", Exception? innerException = null)
-            : base(STATUS_CODE, reason, innerException)
+        public BadRequestException(IDictionary<string, string[]> errors, string? title = "One or more validation errors occurred.", Exception? innerException = null)
+            : base(STATUS_CODE, title, innerException)
         {
             Errors = errors.AsReadOnly();
         }
 
-        public BadRequestException(string? reason, Exception? innerException) : base(STATUS_CODE, reason, innerException)
+        public BadRequestException(string propertyName, string propertyMessage, string? title = "One or more validation errors occurred.", Exception? innerException = null)
+            : base(STATUS_CODE, title, innerException)
+        {
+            Errors = new Dictionary<string, string[]> { { propertyName, new[] { propertyMessage } } };
+        }
+
+        public BadRequestException(string? title, Exception? innerException) : base(STATUS_CODE, title, innerException)
         {
             Errors = new Dictionary<string, string[]>();
         }

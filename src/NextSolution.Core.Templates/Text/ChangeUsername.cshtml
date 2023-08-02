@@ -1,0 +1,4 @@
+﻿@model (User User, string Code, ContactType ContactType)
+
+<h4>Hi @(Model.User.FirstName),</h4>
+<p>Kindly use this verification code <b>@(Model.Code)</b> to change your @(Model.ContactType.Humanize(LetterCasing.LowerCase)).</p>

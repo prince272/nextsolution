@@ -28,11 +28,12 @@ namespace NextSolution.Infrastructure.Identity
 
         public void Configure(JwtBearerOptions options)
         {
-            IEnumerable<string> Include(IEnumerable<string> values)
+            IEnumerable<string> IncludeServer(IEnumerable<string> values)
             {
+                values ??= Array.Empty<string>();
                 var context = _httpContextAccessor.HttpContext;
-                var server = context != null ? string.Concat(context.Request.Scheme, "://", context.Request.Host.ToUriComponent()) : null;
-                return values.Append(server).Distinct().SkipWhile(string.IsNullOrEmpty).ToArray()!;
+                var server = context != null ? string.Concat(context.Request.Scheme, "://", context.Request.Host.ToUriComponent()) : string.Empty;
+                return values.Append(server).Distinct().SkipWhile(string.IsNullOrEmpty).ToArray();
             }
 
             options.RequireHttpsMetadata = false;
@@ -41,10 +42,10 @@ namespace NextSolution.Infrastructure.Identity
             options.TokenValidationParameters ??= new TokenValidationParameters();
 
             options.TokenValidationParameters.ValidateIssuer = true;
-            options.TokenValidationParameters.ValidIssuers = Include(options.TokenValidationParameters.ValidIssuers);
+            options.TokenValidationParameters.ValidIssuers = IncludeServer(options.TokenValidationParameters.ValidIssuers);
 
             options.TokenValidationParameters.ValidateAudience = true;
-            options.TokenValidationParameters.ValidAudiences = Include(options.TokenValidationParameters.ValidAudiences);
+            options.TokenValidationParameters.ValidAudiences = IncludeServer(options.TokenValidationParameters.ValidAudiences);
 
             options.TokenValidationParameters.ValidateLifetime = true;
             options.TokenValidationParameters.ValidateIssuerSigningKey = true;

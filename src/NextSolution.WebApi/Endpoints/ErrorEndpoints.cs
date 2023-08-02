@@ -89,11 +89,11 @@ namespace NextSolution.WebApi.Endpoints
                 }
                 else
                 {
-                    exception = new StatusCodeException(statusCode, null, exceptionFeature?.Error);
+                    exception = new StatusCodeException(statusCode, innerException: exceptionFeature?.Error);
                 }
             }
 
-            var title = ReasonPhrases.GetReasonPhrase(statusCode);
+            var title = exception.Title;
             var detail = exception.Message;
             var extensions = ApplyDictionaryKeyPolicy(exception.Data.Cast<DictionaryEntry>().ToDictionary(entry => entry.Key.ToString()!, entry => entry.Value));
 

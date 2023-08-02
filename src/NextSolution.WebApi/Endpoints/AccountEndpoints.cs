@@ -19,6 +19,8 @@ namespace NextSolution.WebApi.Endpoints
             endpoints.MapPost("/sessions/generate", GenerateSessionAsync);
             endpoints.MapPost("/sessions/refresh", RefreshSessionAsync);
             endpoints.MapPost("/sessions/revoke", RevokeSessionAsync);
+            endpoints.MapPost("/username/send", SendUsernameAsync);
+            endpoints.MapPost("/username/verify", VerifyUsernameAsync);
             endpoints.MapPost("/authorize", () => "Authorized").RequireAuthorization();
         }
 
@@ -41,6 +43,18 @@ namespace NextSolution.WebApi.Endpoints
         public async Task<IResult> RevokeSessionAsync([FromServices] AccountService accountService, [FromBody] RevokeSessionForm form)
         {
             await accountService.RevokeSessionAsync(form);
+            return Results.Ok();
+        }
+
+        public async Task<IResult> SendUsernameAsync([FromServices] AccountService accountService, [FromBody] SendUsernameForm form)
+        {
+            await accountService.SendUsernameAsync(form);
+            return Results.Ok();
+        }
+
+        public async Task<IResult> VerifyUsernameAsync([FromServices] AccountService accountService, [FromBody] VerifyUsernameForm form)
+        {
+            await accountService.VerifyUsernameAsync(form);
             return Results.Ok();
         }
     }

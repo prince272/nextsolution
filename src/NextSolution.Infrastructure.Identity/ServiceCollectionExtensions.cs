@@ -11,7 +11,6 @@ using NextSolution.Core.Entities;
 using NextSolution.Core.Extensions.Identity;
 using NextSolution.Core.Repositories;
 using NextSolution.Core.Utilities;
-using NextSolution.Infrastructure.Data;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -25,16 +24,13 @@ namespace NextSolution.Infrastructure.Identity
 {
     public static class ServiceCollectionExtensions
     {
-        public static IdentityBuilder AddUserSession(this IdentityBuilder builder, Action<UserSessionOptions>? options = null)
+        public static IdentityBuilder AddUserSession(this IdentityBuilder builder, Action<UserSessionOptions> options)
         {
+            builder.Services.Configure(options);
             builder.Services.AddScoped<IUserClaimsPrincipalFactory<User>, UserClaimsPrincipalFactory>();
-
             builder.Services.AddScoped<IUserSessionFactory, UserSessionFactory>();
             builder.Services.AddScoped<IUserSessionStore, UserSessionStore>();
             builder.Services.AddScoped<IUserSessionContext, UserSessionContext>();
-
-            if (options != null) builder.Services.Configure(options);
-
             return builder;
         }
     }

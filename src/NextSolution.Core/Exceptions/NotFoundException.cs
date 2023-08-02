@@ -15,11 +15,11 @@ namespace NextSolution.Core.Exceptions
         {
         }
 
-        public NotFoundException(string? reason) : base(STATUS_CODE, reason)
+        public NotFoundException(string? title) : base(STATUS_CODE, title)
         {
         }
 
-        public NotFoundException(string? reason, Exception? innerException) : base(STATUS_CODE, reason, innerException)
+        public NotFoundException(string? title, Exception? innerException) : base(STATUS_CODE, title, innerException)
         {
         }
     }

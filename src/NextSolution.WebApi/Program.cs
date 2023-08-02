@@ -12,6 +12,8 @@ using NextSolution.Core.Entities;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using NextSolution.Core.Utilities;
+using NextSolution.Infrastructure.EmailSender.MailKit;
+using NextSolution.Infrastructure.ViewRenderer.Razor;
 
 try
 {
@@ -78,6 +80,8 @@ try
             options.AllowMultipleSessions = true;
         });
 
+    builder.Services.ConfigureOptions<ConfigureJwtBearerOptions>();
+
     builder.Services.AddAuthentication(options =>
     {
         options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -87,9 +91,10 @@ try
     })
         .AddJwtBearer();
 
-    builder.Services.ConfigureOptions<ConfigureJwtBearerOptions>();
-
     builder.Services.AddAuthorization();
+
+    builder.Services.AddMailKitEmailSender();
+    builder.Services.AddRazorViewRenderer();
 
     // Add application services.
     builder.Services.AddApplication();

@@ -15,11 +15,11 @@ namespace NextSolution.Core.Exceptions
         {
         }
 
-        public UnauthorizedException(string? reason) : base(STATUS_CODE, reason)
+        public UnauthorizedException(string? title) : base(STATUS_CODE, title)
         {
         }
 
-        public UnauthorizedException(string? reason, Exception? innerException) : base(STATUS_CODE, reason, innerException)
+        public UnauthorizedException(string? title, Exception? innerException) : base(STATUS_CODE, title, innerException)
         {
         }
     }

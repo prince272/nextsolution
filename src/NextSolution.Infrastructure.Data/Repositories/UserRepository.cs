@@ -178,6 +178,70 @@ namespace NextSolution.Infrastructure.Data.Repositories
             if (!result.Succeeded) throw new InvalidOperationException(result.Errors.GetMessage());
         }
 
+        public Task<string> GenerateEmailTokenAsync(User user)
+        {
+            if (user == null) throw new ArgumentNullException(nameof(user));
+            return _userManager.GenerateChangeEmailTokenAsync(user, user.Email!);
+        }
+
+        public async Task VerifyEmailTokenAsync(User user, string token)
+        {
+            if (user == null) throw new ArgumentNullException(nameof(user));
+            if (token == null) throw new ArgumentNullException(nameof(token));
+
+            var result = await _userManager.ChangeEmailAsync(user, user.Email!, token);
+            if (!result.Succeeded) throw new InvalidOperationException(result.Errors.GetMessage());
+        }
+
+        public Task<string> GenerateChangeEmailTokenAsync(User user, string newEmail)
+        {
+            if (user == null) throw new ArgumentNullException(nameof(user));
+            if (newEmail == null) throw new ArgumentNullException(nameof(newEmail));
+
+            return _userManager.GenerateChangeEmailTokenAsync(user, newEmail);
+        }
+
+        public async Task ChangeEmailAsync(User user, string newEmail, string token)
+        {
+            if (user == null) throw new ArgumentNullException(nameof(user));
+            if (newEmail == null) throw new ArgumentNullException(nameof(newEmail));
+            if (token == null) throw new ArgumentNullException(nameof(token));
+
+            var result = await _userManager.ChangeEmailAsync(user, newEmail, token);
+            if (!result.Succeeded) throw new InvalidOperationException(result.Errors.GetMessage());
+        }
+
+        public Task<string> GeneratePhoneNumberTokenAsync(User user)
+        {
+            if (user == null) throw new ArgumentNullException(nameof(user));
+            return _userManager.GenerateChangePhoneNumberTokenAsync(user, user.PhoneNumber!);
+        }
+
+        public Task<string> GenerateChangePhoneNumberTokenAsync(User user, string newPhoneNumber)
+        {
+            if (user == null) throw new ArgumentNullException(nameof(user));
+            return _userManager.GenerateChangePhoneNumberTokenAsync(user, newPhoneNumber);
+        }
+
+        public async Task VerifyPhoneNumberTokenAsync(User user, string token)
+        {
+            if (user == null) throw new ArgumentNullException(nameof(user));
+            if (token == null) throw new ArgumentNullException(nameof(token));
+
+            var result = await _userManager.ChangePhoneNumberAsync(user, user.PhoneNumber!, token);
+            if (!result.Succeeded) throw new InvalidOperationException(result.Errors.GetMessage());
+        }
+
+        public async Task ChangePhoneNumberAsync(User user, string newPhoneNumber, string token)
+        {
+            if (user == null) throw new ArgumentNullException(nameof(user));
+            if (newPhoneNumber == null) throw new ArgumentNullException(nameof(newPhoneNumber));
+            if (token == null) throw new ArgumentNullException(nameof(token));
+
+            var result = await _userManager.ChangePhoneNumberAsync(user, newPhoneNumber, token);
+            if (!result.Succeeded) throw new InvalidOperationException(result.Errors.GetMessage());
+        }
+
         public Task<UserSessionInfo> GenerateSessionAsync(User user)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));

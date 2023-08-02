@@ -11,41 +11,29 @@ namespace NextSolution.Core.Exceptions
 {
     public class StatusCodeException : InvalidOperationException
     {
-        public StatusCodeException(int statusCode) : base(GetMessage(statusCode))
+        public StatusCodeException(int statusCode, string? title = null, Exception? innerException = null) : base(GetMessage(statusCode), innerException)
         {
             StatusCode = statusCode;
-            Reason = GetReason(statusCode);
-        }
-
-        public StatusCodeException(int statusCode, string? reason) : base(GetMessage(statusCode))
-        {
-            StatusCode = statusCode;
-            Reason = GetReason(statusCode, reason);
-        }
-
-        public StatusCodeException(int statusCode, string? reason, Exception? innerException) : base(GetMessage(statusCode), innerException)
-        {
-            StatusCode = statusCode;
-            Reason = GetReason(statusCode, reason);
+            Title = GetTitle(statusCode, title);
         }
 
         public int StatusCode { get; }
 
-        public string Reason
+        public string Title
         {
             get => GetDataValue<string>(this) ?? string.Empty;
             protected set => SetDataValue(this, value);
         }
 
-        private static string GetReason(int statusCode, string? reason = null)
+        private static string GetTitle(int statusCode, string? title = null)
         {
-            var reasons = new Dictionary<int, string>()
+            var titles = new Dictionary<int, string>()
             {
             };
 
-            if (reason == null) reasons.TryGetValue(statusCode, out reason);
+            if (title == null) titles.TryGetValue(statusCode, out title);
 
-            return reason ?? statusCode switch
+            return title ?? statusCode switch
             {
                 int sc when sc >= 400 && sc <= 499 => "A client-side error occurred.",
                 int sc when sc >= 500 && sc <= 599 => "An internal server error occurred.",

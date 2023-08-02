@@ -117,7 +117,7 @@ namespace NextSolution.Core.Utilities
             return PhoneNumberUtil.GetInstance().Format(phoneNumber, PhoneNumberFormat.INTERNATIONAL);
         }
 
-        public static ContactType CheckContact(string value)
+        public static ContactType GetContactType(string value)
         {
             ArgumentException.ThrowIfNullOrEmpty(value?.Trim(), nameof(value));
 

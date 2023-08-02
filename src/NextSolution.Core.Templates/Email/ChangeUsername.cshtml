@@ -1,0 +1,11 @@
+﻿@model (User User, string Code, ContactType ContactType)
+
+<h4>Hi @(Model.User.FirstName),</h4>
+<p>Kindly use this verification code <b>@(Model.Code)</b> to change your @(Model.ContactType.Humanize(LetterCasing.LowerCase)).</p>
+
+<p>In case you were not trying to access your Account & you're seeing this email, please follow the instructions below:</p>
+<ul>
+    <li>Reset your password.</li>
+    <li>Check if any changes were made to your account & user settings. If yes, revert them immediately.</li>
+    <li>If you are unable to access your Account, you can always report suspicious behavior to our support team.</li>
+</ul>

@@ -15,11 +15,11 @@ namespace NextSolution.Core.Exceptions
         {
         }
 
-        public ForbiddenException(string? reason) : base(STATUS_CODE, reason)
+        public ForbiddenException(string? title) : base(STATUS_CODE, title)
         {
         }
 
-        public ForbiddenException(string? reason, Exception? innerException) : base(STATUS_CODE, reason, innerException)
+        public ForbiddenException(string? title, Exception? innerException) : base(STATUS_CODE, title, innerException)
         {
         }
     }

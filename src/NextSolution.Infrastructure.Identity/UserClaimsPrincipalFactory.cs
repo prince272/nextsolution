@@ -8,7 +8,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NextSolution.Infrastructure.Data
+namespace NextSolution.Infrastructure.Identity
 {
     public class UserClaimsPrincipalFactory : UserClaimsPrincipalFactory<User, Role>
     {

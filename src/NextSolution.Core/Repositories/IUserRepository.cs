@@ -38,6 +38,23 @@ namespace NextSolution.Core.Repositories
 
         Task RemovePasswordAsync(User user);
 
+        Task<string> GenerateEmailTokenAsync(User user);
+
+        Task VerifyEmailTokenAsync(User user, string token);
+
+        Task<string> GenerateChangeEmailTokenAsync(User user, string newEmail);
+
+        Task ChangeEmailAsync(User user, string newEmail, string token);
+
+
+        Task<string> GeneratePhoneNumberTokenAsync(User user);
+
+        Task VerifyPhoneNumberTokenAsync(User user, string token);
+
+        Task<string> GenerateChangePhoneNumberTokenAsync(User user, string newPhoneNumber);
+
+        Task ChangePhoneNumberAsync(User user, string newPhoneNumber, string token);  
+
         Task<UserSessionInfo> GenerateSessionAsync(User user);
 
         Task AddSessionAsync(User user, UserSessionInfo session);

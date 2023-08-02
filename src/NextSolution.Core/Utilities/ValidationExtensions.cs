@@ -13,7 +13,7 @@ namespace NextSolution.Core.Utilities
         {
             ruleBuilder.Custom((value, context) =>
             {
-                var contactType = TextHelper.CheckContact(value);
+                var contactType = TextHelper.GetContactType(value);
 
                 if (contactType == ContactType.EmailAddress)
                 {
