@@ -8,16 +8,15 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using NextSolution.Infrastructure.EmailSender.MailKit;
 using NextSolution.Core.Extensions.EmailSender;
 
-namespace NextSolution.Infrastructure.Data
+namespace NextSolution.Infrastructure.EmailSender.MailKit
 {
-    public static class ServiceCollectionExtensions
+    public static class MailKitEmailSenderExtensions
     {
-        public static IServiceCollection AddMailKitEmailSender(this IServiceCollection services, Action<MailKitEmailOptions> options)
+        public static IServiceCollection AddMailKitEmailSender(this IServiceCollection services, Action<MailKitEmailOptions>? options = null)
         {
-            services.Configure(options);
+            if (options != null) services.Configure(options);
             services.AddTransient<IEmailSender, MailKitEmailSender>();
             return services;
         }

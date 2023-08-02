@@ -63,5 +63,42 @@ namespace NextSolution.Core.Utilities
             return returnAssemblies;
         }
 
+        public static IEnumerable<Assembly> GetRclAssemblies()
+        {
+            var rclAssemblies = new List<Assembly>();
+            var allAssemblies = GetAssemblies();
+
+            foreach (var assembly in allAssemblies)
+            {
+                var hasAnyMvcReference = assembly.GetReferencedAssemblies().Select(x => x.Name).Intersect(RclReferences).Any();
+                if (hasAnyMvcReference)
+                {
+                    rclAssemblies.Add(assembly);
+                }
+            }
+
+            return rclAssemblies;
+        }
+
+        /// <summary>
+        /// If any of the following references are added to library, then the library is said to RCL library
+        /// </summary>
+        private static readonly List<string> RclReferences = new()
+        {
+            "Microsoft.AspNetCore.Mvc",
+            "Microsoft.AspNetCore.Mvc.Abstractions",
+            "Microsoft.AspNetCore.Mvc.ApiExplorer",
+            "Microsoft.AspNetCore.Mvc.Core",
+            "Microsoft.AspNetCore.Mvc.Cors",
+            "Microsoft.AspNetCore.Mvc.DataAnnotations",
+            "Microsoft.AspNetCore.Mvc.Formatters.Json",
+            "Microsoft.AspNetCore.Mvc.Formatters.Xml",
+            "Microsoft.AspNetCore.Mvc.Localization",
+            "Microsoft.AspNetCore.Mvc.NewtonsoftJson",
+            "Microsoft.AspNetCore.Mvc.Razor",
+            "Microsoft.AspNetCore.Mvc.RazorPages",
+            "Microsoft.AspNetCore.Mvc.TagHelpers",
+            "Microsoft.AspNetCore.Mvc.ViewFeatures"
+        };
     }
 }
