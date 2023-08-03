@@ -40,7 +40,7 @@ namespace NextSolution.Core.Repositories
 
         Task<string> GenerateEmailTokenAsync(User user);
 
-        Task VerifyEmailTokenAsync(User user, string token);
+        Task VerifyEmailAsync(User user, string token);
 
         Task<string> GenerateChangeEmailTokenAsync(User user, string newEmail);
 
@@ -53,7 +53,11 @@ namespace NextSolution.Core.Repositories
 
         Task<string> GenerateChangePhoneNumberTokenAsync(User user, string newPhoneNumber);
 
-        Task ChangePhoneNumberAsync(User user, string newPhoneNumber, string token);  
+        Task ChangePhoneNumberAsync(User user, string newPhoneNumber, string token);
+
+        Task<string> GeneratePasswordResetTokenAsync(User user);
+
+        Task ResetPasswordAsync(User user, string newPassword, string token);
 
         Task<UserSessionInfo> GenerateSessionAsync(User user);
 

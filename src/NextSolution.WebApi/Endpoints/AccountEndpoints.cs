@@ -13,14 +13,19 @@ namespace NextSolution.WebApi.Endpoints
 
         public override void Configure()
         {
-            var endpoints = MapGroup("/accounts");
+            var endpoints = MapGroup("/users");
 
             endpoints.MapPost("/", CreateAccountAsync);
             endpoints.MapPost("/sessions/generate", GenerateSessionAsync);
             endpoints.MapPost("/sessions/refresh", RefreshSessionAsync);
             endpoints.MapPost("/sessions/revoke", RevokeSessionAsync);
-            endpoints.MapPost("/username/send", SendUsernameAsync);
+
+            endpoints.MapPost("/username/verify/send-code", SendUsernameTokenAsync);
             endpoints.MapPost("/username/verify", VerifyUsernameAsync);
+
+            endpoints.MapPost("/password/reset/send-code", SendPasswordResetTokenAsync);
+            endpoints.MapPost("/password/reset", ResetPasswordAsync);
+
             endpoints.MapPost("/authorize", () => "Authorized").RequireAuthorization();
         }
 
@@ -46,15 +51,27 @@ namespace NextSolution.WebApi.Endpoints
             return Results.Ok();
         }
 
-        public async Task<IResult> SendUsernameAsync([FromServices] AccountService accountService, [FromBody] SendUsernameForm form)
+        public async Task<IResult> SendUsernameTokenAsync([FromServices] AccountService accountService, [FromBody] SendUsernameTokenForm form)
         {
-            await accountService.SendUsernameAsync(form);
+            await accountService.SendUsernameTokenAsync(form);
             return Results.Ok();
         }
 
         public async Task<IResult> VerifyUsernameAsync([FromServices] AccountService accountService, [FromBody] VerifyUsernameForm form)
         {
             await accountService.VerifyUsernameAsync(form);
+            return Results.Ok();
+        }
+
+        public async Task<IResult> SendPasswordResetTokenAsync([FromServices] AccountService accountService, [FromBody] SendPasswordResetTokenForm form)
+        {
+            await accountService.SendPasswordResetTokenAsync(form);
+            return Results.Ok();
+        }
+
+        public async Task<IResult> ResetPasswordAsync([FromServices] AccountService accountService, [FromBody] ResetPasswordForm form)
+        {
+            await accountService.ResetPasswordAsync(form);
             return Results.Ok();
         }
     }

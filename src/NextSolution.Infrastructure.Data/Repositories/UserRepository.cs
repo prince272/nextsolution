@@ -184,7 +184,7 @@ namespace NextSolution.Infrastructure.Data.Repositories
             return _userManager.GenerateChangeEmailTokenAsync(user, user.Email!);
         }
 
-        public async Task VerifyEmailTokenAsync(User user, string token)
+        public async Task VerifyEmailAsync(User user, string token)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
             if (token == null) throw new ArgumentNullException(nameof(token));
@@ -217,12 +217,6 @@ namespace NextSolution.Infrastructure.Data.Repositories
             return _userManager.GenerateChangePhoneNumberTokenAsync(user, user.PhoneNumber!);
         }
 
-        public Task<string> GenerateChangePhoneNumberTokenAsync(User user, string newPhoneNumber)
-        {
-            if (user == null) throw new ArgumentNullException(nameof(user));
-            return _userManager.GenerateChangePhoneNumberTokenAsync(user, newPhoneNumber);
-        }
-
         public async Task VerifyPhoneNumberTokenAsync(User user, string token)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
@@ -232,6 +226,12 @@ namespace NextSolution.Infrastructure.Data.Repositories
             if (!result.Succeeded) throw new InvalidOperationException(result.Errors.GetMessage());
         }
 
+        public Task<string> GenerateChangePhoneNumberTokenAsync(User user, string newPhoneNumber)
+        {
+            if (user == null) throw new ArgumentNullException(nameof(user));
+            return _userManager.GenerateChangePhoneNumberTokenAsync(user, newPhoneNumber);
+        }
+
         public async Task ChangePhoneNumberAsync(User user, string newPhoneNumber, string token)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
@@ -239,6 +239,20 @@ namespace NextSolution.Infrastructure.Data.Repositories
             if (token == null) throw new ArgumentNullException(nameof(token));
 
             var result = await _userManager.ChangePhoneNumberAsync(user, newPhoneNumber, token);
+            if (!result.Succeeded) throw new InvalidOperationException(result.Errors.GetMessage());
+        }
+
+        public async Task<string> GeneratePasswordResetTokenAsync(User user)
+        {
+            if (user == null) throw new ArgumentNullException(nameof(user));
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            return token;
+        }
+
+        public async Task ResetPasswordAsync(User user, string newPassword, string token)
+        {
+            if (user == null) throw new ArgumentNullException(nameof(user));
+            var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
             if (!result.Succeeded) throw new InvalidOperationException(result.Errors.GetMessage());
         }
 

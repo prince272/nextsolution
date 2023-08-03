@@ -8,14 +8,14 @@ using System.Threading.Tasks;
 
 namespace NextSolution.Core.Models.Accounts
 {
-    public class SendUsernameForm
+    public class SendUsernameTokenForm
     {
         public string Username { get; set; } = default!;
 
         [JsonIgnore]
         public ContactType UsernameType => TextHelper.GetContactType(Username);
 
-        public class Validator : AbstractValidator<SendUsernameForm>
+        public class Validator : AbstractValidator<SendUsernameTokenForm>
         {
             public Validator()
             {

@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using NextSolution.Core.Utilities;
 using NextSolution.Infrastructure.EmailSender.MailKit;
 using NextSolution.Infrastructure.ViewRenderer.Razor;
+using NextSolution.Infrastructure.SmsSender;
 
 try
 {
@@ -90,6 +91,7 @@ try
     builder.Services.AddAuthorization();
 
     builder.Services.AddMailKitEmailSender(builder.Configuration.GetRequiredSection("Mailing:MailKit"));
+    builder.Services.AddFakeSmsSender();
     builder.Services.AddRazorViewRenderer();
 
     // Add application services.
