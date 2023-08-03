@@ -72,13 +72,9 @@ try
         options.ClaimsIdentity.SecurityStampClaimType = ClaimTypes.SerialNumber;
     })
         .AddEntityFrameworkStores<AppDbContext>()
-        .AddDefaultTokenProviders()
-        .AddUserSession(options =>
-        {
-            options.AccessTokenExpiresIn = TimeSpan.FromHours(1);
-            options.RefreshTokenExpiresIn = TimeSpan.FromDays(60);
-            options.AllowMultipleSessions = true;
-        });
+        .AddDefaultTokenProviders();
+
+    builder.Services.AddUserSession(builder.Configuration.GetRequiredSection("Authentication:Bearer"));
 
     builder.Services.ConfigureOptions<ConfigureJwtBearerOptions>();
 
@@ -93,7 +89,7 @@ try
 
     builder.Services.AddAuthorization();
 
-    builder.Services.AddMailKitEmailSender();
+    builder.Services.AddMailKitEmailSender(builder.Configuration.GetRequiredSection("Mailing:MailKit"));
     builder.Services.AddRazorViewRenderer();
 
     // Add application services.

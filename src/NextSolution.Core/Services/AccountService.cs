@@ -179,11 +179,11 @@ namespace NextSolution.Core.Services
                     Body = await _viewRenderer.RenderAsync("/Email/VerifyUsername", (user, new VerifyUsernameForm { Username = form.Username, Code = code }))
                 };
 
-                await _emailSender.SendAsync(account: EmailAccounts.Support, message);
+                await _emailSender.SendAsync(account: "Notification", message);
             }
             else if (form.UsernameType == ContactType.PhoneNumber)
             {
-                var code = await _userRepository.GeneratePhoneNumberTokenAsync(user);
+                throw new NotImplementedException();
             }
             else
             {
@@ -213,10 +213,10 @@ namespace NextSolution.Core.Services
             try
             {
                 if (form.UsernameType == ContactType.EmailAddress)
-                    await _userRepository.VerifyEmailTokenAsync(user, "");
+                    await _userRepository.VerifyEmailTokenAsync(user, form.Code);
 
                 else if (form.UsernameType == ContactType.PhoneNumber)
-                    await _userRepository.VerifyPhoneNumberTokenAsync(user, "");
+                    await _userRepository.VerifyPhoneNumberTokenAsync(user, form.Code);
                 else
                     throw new InvalidOperationException($"The value '{form.UsernameType}' of enum '{nameof(ContactType)}' is not supported.");
             }

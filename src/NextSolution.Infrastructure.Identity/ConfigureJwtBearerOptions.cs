@@ -19,38 +19,25 @@ namespace NextSolution.Infrastructure.Identity
 {
     public class ConfigureJwtBearerOptions : IConfigureNamedOptions<JwtBearerOptions>
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IOptions<UserSessionOptions> _userSessionOptions;
 
-        public ConfigureJwtBearerOptions(IHttpContextAccessor httpContextAccessor)
+        public ConfigureJwtBearerOptions(IOptions<UserSessionOptions> userSessionOptions)
         {
-            _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
+            _userSessionOptions = userSessionOptions ?? throw new ArgumentNullException(nameof(userSessionOptions));
         }
 
         public void Configure(JwtBearerOptions options)
         {
-            IEnumerable<string> IncludeServer(IEnumerable<string> values)
-            {
-                values ??= Array.Empty<string>();
-                var context = _httpContextAccessor.HttpContext;
-                var server = context != null ? string.Concat(context.Request.Scheme, "://", context.Request.Host.ToUriComponent()) : string.Empty;
-                return values.Append(server).Distinct().SkipWhile(string.IsNullOrEmpty).ToArray();
-            }
-
             options.RequireHttpsMetadata = false;
             options.SaveToken = true;
-
             options.TokenValidationParameters ??= new TokenValidationParameters();
-
             options.TokenValidationParameters.ValidateIssuer = true;
-            options.TokenValidationParameters.ValidIssuers = IncludeServer(options.TokenValidationParameters.ValidIssuers);
-
+            options.TokenValidationParameters.ValidIssuers = _userSessionOptions.Value.GetIssuers();
             options.TokenValidationParameters.ValidateAudience = true;
-            options.TokenValidationParameters.ValidAudiences = IncludeServer(options.TokenValidationParameters.ValidAudiences);
-
+            options.TokenValidationParameters.ValidAudiences = _userSessionOptions.Value.GetAudiences();
             options.TokenValidationParameters.ValidateLifetime = true;
             options.TokenValidationParameters.ValidateIssuerSigningKey = true;
-            options.TokenValidationParameters.IssuerSigningKey = options.TokenValidationParameters.IssuerSigningKey
-                ?? new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Secrets.Key));
+            options.TokenValidationParameters.IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_userSessionOptions.Value.Secret));
 
             options.TokenValidationParameters.ClockSkew = TimeSpan.Zero;
 

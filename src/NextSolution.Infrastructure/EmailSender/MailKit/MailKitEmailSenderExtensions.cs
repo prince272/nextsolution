@@ -9,14 +9,28 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using NextSolution.Core.Extensions.EmailSender;
+using Microsoft.Extensions.Configuration;
 
 namespace NextSolution.Infrastructure.EmailSender.MailKit
 {
     public static class MailKitEmailSenderExtensions
     {
-        public static IServiceCollection AddMailKitEmailSender(this IServiceCollection services, Action<MailKitEmailOptions>? options = null)
+        public static IServiceCollection AddMailKitEmailSender(this IServiceCollection services, Action<MailKitEmailOptions> options)
         {
-            if (options != null) services.Configure(options);
+            services.Configure(options);
+            services.AddMailKitEmailSender();
+            return services;
+        }
+
+        public static IServiceCollection AddMailKitEmailSender(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.Configure<MailKitEmailOptions>(configuration);
+            services.AddMailKitEmailSender();
+            return services;
+        }
+
+        public static IServiceCollection AddMailKitEmailSender(this IServiceCollection services)
+        {
             services.AddTransient<IEmailSender, MailKitEmailSender>();
             return services;
         }

@@ -48,11 +48,11 @@ namespace NextSolution.Infrastructure.EmailSender.MailKit
 
             if (_emailOptions.Value.EnableSsl)
             {
-                await client.ConnectAsync(_emailOptions.Value.SmtpHost, _emailOptions.Value.SmtpPort, SecureSocketOptions.SslOnConnect);
+                await client.ConnectAsync(_emailOptions.Value.Host, _emailOptions.Value.Port, SecureSocketOptions.SslOnConnect);
             }
             else
             {
-                await client.ConnectAsync(_emailOptions.Value.SmtpHost, _emailOptions.Value.SmtpPort, SecureSocketOptions.StartTls);
+                await client.ConnectAsync(_emailOptions.Value.Host, _emailOptions.Value.Port, SecureSocketOptions.StartTls);
             }
 
             await client.AuthenticateAsync(account.Username, account.Password);

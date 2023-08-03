@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.FileProviders;
@@ -8,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
 using NextSolution.Core.Extensions.ViewRenderer;
 using NextSolution.Core.Utilities;
+using NextSolution.Infrastructure.EmailSender.MailKit;
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -17,7 +19,21 @@ namespace NextSolution.Infrastructure.ViewRenderer.Razor
 {
     public static class RazorViewRendererExtensions
     {
-        public static IServiceCollection AddRazorViewRenderer(this IServiceCollection services, Action<RazorViewRendererOptions>? options = null)
+        public static IServiceCollection AddRazorViewRenderer(this IServiceCollection services, Action<RazorViewRendererOptions> options)
+        {
+            services.Configure(options);
+            services.AddRazorViewRenderer();
+            return services;
+        }
+
+        public static IServiceCollection AddRazorViewRenderer(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.Configure<RazorViewRendererOptions>(configuration);
+            services.AddRazorViewRenderer();
+            return services;
+        }
+
+        public static IServiceCollection AddRazorViewRenderer(this IServiceCollection services)
         {
 
             if (services == null) throw new ArgumentNullException(nameof(services));
@@ -27,12 +43,8 @@ namespace NextSolution.Infrastructure.ViewRenderer.Razor
             // source: https://docs.microsoft.com/en-us/dotnet/core/deploying/single-file#api-incompatibility
             var assembliesBaseDirectory = AppContext.BaseDirectory;
 
-            //in .net 5, RCL assemblies are located next the main executable even if /p:IncludeAllContentForSelfExtract=true is provided while publishing
-            //also when .net core 3.1 project is published using .net 5 sdk, above scenario happens
-            //so, additionally look for RCL assemblies at the main executable directory as well
             var mainExecutableDirectory = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule?.FileName);
 
-            //To add support for MVC application
             var webRootName = "wwwroot";
             var webRootDirectory = Directory.Exists(Path.Combine(assembliesBaseDirectory, webRootName)) ? Path.Combine(assembliesBaseDirectory, webRootName) : assembliesBaseDirectory;
 
@@ -63,8 +75,7 @@ namespace NextSolution.Infrastructure.ViewRenderer.Razor
             services.AddLogging();
             services.AddHttpContextAccessor();
             var builder = services.AddMvcCore().AddRazorViewEngine();
-            //ref: https://stackoverflow.com/questions/52041011/aspnet-core-2-1-correct-way-to-load-precompiled-views
-            //load view assembly application parts to find the view from shared libraries
+
             builder.ConfigureApplicationPartManager(manager =>
             {
                 var applicationParts = new List<ApplicationPart>();
@@ -92,7 +103,6 @@ namespace NextSolution.Infrastructure.ViewRenderer.Razor
                 }
             });
 
-            if (options != null) services.Configure(options);
             services.TryAddTransient<IViewRenderer, RazorViewRenderer>();
             return services;
         }

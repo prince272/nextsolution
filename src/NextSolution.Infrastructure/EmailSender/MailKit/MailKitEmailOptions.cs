@@ -10,9 +10,9 @@ namespace NextSolution.Infrastructure.EmailSender.MailKit
 {
     public class MailKitEmailOptions
     {
-        public string SmtpHost { get; set; } = default!;
+        public string Host { get; set; } = default!;
 
-        public int SmtpPort { get; set; }
+        public int Port { get; set; }
 
         public bool EnableSsl { get; set; }
 
