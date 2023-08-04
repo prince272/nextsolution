@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "@prince-owusu-799438108",
+  "classifications": [ "Web", "SPA", "ASP.NET", "Next Solution" ],
+  "identity": "NextSolution.Template",
+  "name": "ASP.NET Next Solution with React",
+  "description": "ASP.NET Next Solution with React is a user-friendly template that helps developers create secure, fast, strong, and flexible web applications effortlessly.",
+  "shortName": "next-soln",
+  "sourceName": "NextSolution",
+  "preferNameDirectory": true,
+  "tags": {
+    "type": "solution",
+    "language": "C#"
+  },
+  "sources": [
+    {
+      "exclude": [
+
+        "**/*.filelist",
+        "**/*.lock.json",
+
+        // User-specific files 
+        "**/*.rsuser",
+        "**/*.suo",
+        "**/*.user",
+        "**/*.userosscache",
+        "**/*.sln.docstates",
+
+        // Build directories
+        "**/[Dd]ebug/**",
+        "**/[Dd]ebugPublic/**",
+        "**/[Rr]elease/**",
+        "**/[Rr]eleases/**",
+        "**/x64/**",
+        "**/x86/**",
+        "**/[Ww][Ii][Nn]32/**",
+        "**/[Aa][Rr][Mm]/**",
+        "**/[Aa][Rr][Mm]64/**",
+        "**/bld/**",
+        "**/[Bb]in/**",
+        "**/[Oo]bj/**",
+        "**/[Oo]ut/**",
+        "**/[Ll]og/**",
+        "**/[Ll]ogs/**",
+
+        // Template directories
+        ".template.config/**/*",
+
+        // Visual Studio 2015/2017 cache/options directories
+        "**/.vs/**",
+
+        // Git directories
+        "**/.git/**",
+        "**/*.gitattributes",
+        "**/*.gitignore",
+
+        "**/*.nuspec"
+      ]
+    }
+  ]
+}
