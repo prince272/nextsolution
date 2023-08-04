@@ -1,10 +1,10 @@
 {
   "$schema": "http://json.schemastore.org/template",
   "author": "@prince-owusu-799438108",
-  "classifications": [ "Web", "SPA", "ASP.NET", "Next Solution" ],
+  "classifications": [ "Web", "SPA", "ASP.NET", "Next Solution", "React" ],
   "identity": "NextSolution.Template",
-  "name": "ASP.NET Next Solution with React",
-  "description": "ASP.NET Next Solution with React is a user-friendly template that helps developers create secure, fast, strong, and flexible web applications effortlessly.",
+  "name": "Next Solution (ASP.NET API & Next.js)",
+  "description": "A starter solution template for creating a modern codebase for your upcoming application.",
   "shortName": "next-soln",
   "sourceName": "NextSolution",
   "preferNameDirectory": true,
@@ -57,5 +57,15 @@
         "**/*.nuspec"
       ]
     }
-  ]
+  ],
+  "symbols": {
+    "DefaultDatabaseId": {
+      "type": "generated",
+      "generator": "guid",
+      "replaces": "{{DefaultDatabaseId}}",
+      "parameters": {
+        "format": "N"
+      }
+    }
+  }
 }
