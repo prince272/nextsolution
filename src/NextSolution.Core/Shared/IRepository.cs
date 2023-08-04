@@ -17,25 +17,25 @@ namespace NextSolution.Core.Shared
 
         Task<TEntity?> FindByIdAsync(long id);
 
+         Task<TEntity?> FindAsync(
+                    Expression<Func<TEntity, bool>> predicate,
+                    Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
+                    params Expression<Func<TEntity, object>>[]? include);
+
         Task<TResult?> FindAsync<TResult>(
             Expression<Func<TEntity, TResult>> selector,
-            Expression<Func<TEntity, bool>>? predicate = null,
+            Expression<Func<TEntity, bool>> predicate,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
             params Expression<Func<TEntity, object>>[]? include);
 
-        Task<TEntity?> FindAsync(
-                    Expression<Func<TEntity, bool>>? predicate = null,
+        Task<IEnumerable<TEntity>> FindManyAsync(
+                    Expression<Func<TEntity, bool>> predicate,
                     Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
                     params Expression<Func<TEntity, object>>[]? include);
 
         Task<IEnumerable<TResult>> FindManyAsync<TResult>(
                     Expression<Func<TEntity, TResult>> selector,
-                    Expression<Func<TEntity, bool>>? predicate = null,
-                    Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
-                    params Expression<Func<TEntity, object>>[]? include);
-
-        Task<IEnumerable<TEntity>> FindManyAsync(
-                    Expression<Func<TEntity, bool>>? predicate = null,
+                    Expression<Func<TEntity, bool>> predicate,
                     Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
                     params Expression<Func<TEntity, object>>[]? include);
 
@@ -50,8 +50,12 @@ namespace NextSolution.Core.Shared
                     Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
                     params Expression<Func<TEntity, object>>[]? include);
 
-        Task<bool> ExistsAsync(Expression<Func<TEntity, bool>>? predicate = null);
+        Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate);
 
-        Task<long> CountAsync(Expression<Func<TEntity, bool>>? predicate = null);
+        Task<bool> AnyAsync();
+
+        Task<long> CountAsync(Expression<Func<TEntity, bool>> predicate);
+
+        Task<long> CountAsync();
     }
 }

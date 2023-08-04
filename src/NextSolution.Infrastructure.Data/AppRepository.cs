@@ -48,38 +48,38 @@ namespace NextSolution.Infrastructure.Data
             return await _dbContext.FindAsync<TEntity>(id);
         }
 
-        public Task<TResult?> FindAsync<TResult>(
-            Expression<Func<TEntity, TResult>> selector,
-            Expression<Func<TEntity, bool>>? predicate = null,
-            Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
-            params Expression<Func<TEntity, object>>[]? include)
-        {
-            return GetQueryable(predicate, orderBy, include, enableTracking: true, enableFilters: true).Select(selector).FirstOrDefaultAsync();
-        }
-
         public Task<TEntity?> FindAsync(
-            Expression<Func<TEntity, bool>>? predicate = null,
+            Expression<Func<TEntity, bool>> predicate,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
             params Expression<Func<TEntity, object>>[]? include)
         {
             return GetQueryable(predicate, orderBy, include, enableTracking: true, enableFilters: true).FirstOrDefaultAsync();
         }
 
-        public async Task<IEnumerable<TResult>> FindManyAsync<TResult>(
+        public Task<TResult?> FindAsync<TResult>(
             Expression<Func<TEntity, TResult>> selector,
-            Expression<Func<TEntity, bool>>? predicate = null,
+            Expression<Func<TEntity, bool>> predicate,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
             params Expression<Func<TEntity, object>>[]? include)
         {
-            return await GetQueryable(predicate, orderBy, include, enableTracking: true, enableFilters: true).Select(selector).ToArrayAsync();
+            return GetQueryable(predicate, orderBy, include, enableTracking: true, enableFilters: true).Select(selector).FirstOrDefaultAsync();
         }
 
         public async Task<IEnumerable<TEntity>> FindManyAsync(
-            Expression<Func<TEntity, bool>>? predicate = null,
+            Expression<Func<TEntity, bool>> predicate,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
             params Expression<Func<TEntity, object>>[]? include)
         {
             return await GetQueryable(predicate, orderBy, include, enableTracking: true, enableFilters: true).ToArrayAsync();
+        }
+
+        public async Task<IEnumerable<TResult>> FindManyAsync<TResult>(
+            Expression<Func<TEntity, TResult>> selector,
+            Expression<Func<TEntity, bool>> predicate,
+            Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
+            params Expression<Func<TEntity, object>>[]? include)
+        {
+            return await GetQueryable(predicate, orderBy, include, enableTracking: true, enableFilters: true).Select(selector).ToArrayAsync();
         }
 
         public async Task<IPageable<TEntity>> FindManyAsync(int pageNumber, int pageSize,
@@ -150,7 +150,7 @@ namespace NextSolution.Infrastructure.Data
             return current.Include(item);
         }
 
-        public Task<bool> ExistsAsync(Expression<Func<TEntity, bool>>? predicate)
+        public Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate)
         {
             IQueryable<TEntity> query = _dbContext.Set<TEntity>();
 
@@ -160,13 +160,26 @@ namespace NextSolution.Infrastructure.Data
             return query.AnyAsync();
         }
 
-        public Task<long> CountAsync(Expression<Func<TEntity, bool>>? predicate)
+        public Task<bool> AnyAsync()
+        {
+            IQueryable<TEntity> query = _dbContext.Set<TEntity>();
+            return query.AnyAsync();
+        }
+
+        public Task<long> CountAsync(Expression<Func<TEntity, bool>> predicate)
         {
             IQueryable<TEntity> query = _dbContext.Set<TEntity>();
 
             if (predicate != null)
                 query = query.Where(predicate);
 
+            return query.LongCountAsync();
+        }
+
+
+        public Task<long> CountAsync()
+        {
+            IQueryable<TEntity> query = _dbContext.Set<TEntity>();
             return query.LongCountAsync();
         }
     }
