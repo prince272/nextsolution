@@ -312,7 +312,17 @@ namespace NextSolution.Core.Services
                     await _roleRepository.CreateAsync(new Role(roleName));
             }
 
-            // TODO: Determine which role to add the user to.
+
+            var totalUsers = await _userRepository.CountAsync();
+
+            if (totalUsers == 1)
+            {
+                await _userRepository.AddToRolesAsync(user, new string[] { Roles.Admin, Roles.Member });
+            }
+            else
+            {
+                await _userRepository.AddToRolesAsync(user, new string[] { Roles.Member });
+            }
         }
     }
 }
