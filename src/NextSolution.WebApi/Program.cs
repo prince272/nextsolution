@@ -130,6 +130,14 @@ try
         app.UseSwaggerUI();
     }
 
+    // Migrate database, only during development
+    if (app.Environment.IsDevelopment())
+    {
+        using var scope = app.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await db.Database.MigrateAsync();
+    }
+
     app.UseHttpsRedirection();
 
     app.UseAuthentication();
