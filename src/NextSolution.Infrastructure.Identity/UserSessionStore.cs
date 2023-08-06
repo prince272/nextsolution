@@ -62,7 +62,6 @@ namespace NextSolution.Infrastructure.Identity
                 await _dbContext.Set<UserSession>()
                     .Where(_ => _.UserId == user.Id)
                     .Where(_ => _.AccessTokenHash == tokenHash || _.RefreshTokenHash == tokenHash)
-                    .Where(_ => _.AccessTokenExpiresAt >= current || _.RefreshTokenExpiresAt >= current)
                     .ForEachAsync(session => _dbContext.Remove(session));
             }
 
@@ -77,7 +76,7 @@ namespace NextSolution.Infrastructure.Identity
 
             var session = await _dbContext.Set<UserSession>().FirstOrDefaultAsync(_ => _.RefreshTokenHash == accessTokenHash);
 
-            if (session == null || session.AccessTokenExpiresAt >= DateTimeOffset.UtcNow) return null;
+            if (session == null || session.AccessTokenExpiresAt < DateTimeOffset.UtcNow) return null;
             return await _dbContext.FindAsync<User>(session.UserId);
         }
 
@@ -89,7 +88,7 @@ namespace NextSolution.Infrastructure.Identity
 
             var session = await _dbContext.Set<UserSession>().FirstOrDefaultAsync(_ => _.RefreshTokenHash == refreshTokenHash);
 
-            if (session == null || session.RefreshTokenExpiresAt >= DateTimeOffset.UtcNow) return null;
+            if (session == null || session.RefreshTokenExpiresAt < DateTimeOffset.UtcNow) return null;
             return await _dbContext.FindAsync<User>(session.UserId);
         }
     }
