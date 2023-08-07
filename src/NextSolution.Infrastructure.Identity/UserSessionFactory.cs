@@ -55,6 +55,8 @@ namespace NextSolution.Infrastructure.Identity
 
             return new UserSessionInfo
             {
+                TokenType = JwtBearerDefaults.AuthenticationScheme,
+
                 AccessToken = accessToken,
                 AccessTokenExpiresAt = accessTokenExpiresAt,
 

@@ -31,6 +31,8 @@ namespace NextSolution.Core.Models.Accounts
 
         public string? RefreshToken { get; set; }
 
+        public string? TokenType { get; set; }
+
         public IEnumerable<string> Roles { get; set; } = Array.Empty<string>(); 
 
         public class Profile : AbstractProfile

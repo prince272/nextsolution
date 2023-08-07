@@ -17,6 +17,8 @@ namespace NextSolution.Core.Extensions.Identity
 
         public DateTimeOffset RefreshTokenExpiresAt { get; set; }
 
+        public string TokenType { get; set; } = default!;
+
         public ClaimsPrincipal User { get; set; } = default!;
     }
 }
