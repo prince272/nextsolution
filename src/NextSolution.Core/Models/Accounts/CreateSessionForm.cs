@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace NextSolution.Core.Models.Accounts
 {
-    public class GenerateSessionForm
+    public class CreateSessionForm
     {
         public string Username { get; set; } = default!;
 
@@ -17,7 +17,7 @@ namespace NextSolution.Core.Models.Accounts
 
         public string Password { get; set; } = default!;
 
-        public class Validator : AbstractValidator<GenerateSessionForm>
+        public class Validator : AbstractValidator<CreateSessionForm>
         {
             public Validator()
             {

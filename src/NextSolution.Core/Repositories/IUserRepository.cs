@@ -1,4 +1,5 @@
-﻿using NextSolution.Core.Entities;
+﻿using Microsoft.AspNetCore.Identity;
+using NextSolution.Core.Entities;
 using NextSolution.Core.Extensions.Identity;
 using NextSolution.Core.Shared;
 using System;
@@ -64,6 +65,10 @@ namespace NextSolution.Core.Repositories
         Task AddSessionAsync(User user, UserSessionInfo session);
 
         Task RemoveSessionAsync(User user, string token);
+
+        Task AddLoginAsync(User user, UserLoginInfo login);
+
+        Task RemoveLoginAsync(User user, string providerName, string providerKey);
 
         Task<User?> FindByAccessTokenAsync(string accessToken);
 

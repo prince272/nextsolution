@@ -17,6 +17,7 @@ using AutoMapper;
 using NextSolution.Core.Extensions.ViewRenderer;
 using NextSolution.Core.Extensions.EmailSender;
 using NextSolution.Core.Extensions.SmsSender;
+using System.Security.Claims;
 
 namespace NextSolution.Core.Services
 {
@@ -51,17 +52,15 @@ namespace NextSolution.Core.Services
             if (!formValidationResult.IsValid)
                 throw new BadRequestException(formValidationResult.ToDictionary());
 
-            var user = form.UsernameType switch
+            // Throws an exception if the username already exists.
+            if (form.UsernameType switch
             {
                 ContactType.EmailAddress => await _userRepository.FindByEmailAsync(form.Username),
                 ContactType.PhoneNumber => await _userRepository.FindByPhoneNumberAsync(form.Username),
                 _ => null
-            };
+            } != null) throw new BadRequestException(nameof(form.Username), $"'{form.UsernameType.Humanize(LetterCasing.Title)}' is already in use.");
 
-            if (user != null)
-                throw new BadRequestException(nameof(form.Username), $"The {form.UsernameType.Humanize(LetterCasing.LowerCase)} is already in use.");
-
-            user = new User();
+            var user = new User();
             user.FirstName = form.FirstName;
             user.LastName = form.LastName;
             user.Email = form.UsernameType == ContactType.EmailAddress ? form.Username : user.Email;
@@ -70,14 +69,30 @@ namespace NextSolution.Core.Services
             user.ActiveAt = DateTimeOffset.UtcNow;
             await _userRepository.GenerateUserNameAsync(user);
             await _userRepository.CreateAsync(user, form.Password);
-            await AddUserToQualifiedRolesAsync(user);
+
+            foreach (var roleName in Roles.All)
+            {
+                if (await _roleRepository.FindByNameAsync(roleName) is null)
+                    await _roleRepository.CreateAsync(new Role(roleName));
+            }
+
+            var totalUsers = await _userRepository.CountAsync();
+
+            if (totalUsers == 1)
+            {
+                await _userRepository.AddToRolesAsync(user, new string[] { Roles.Admin, Roles.Member });
+            }
+            else
+            {
+                await _userRepository.AddToRolesAsync(user, new string[] { Roles.Member });
+            }
         }
 
-        public async Task<UserSessionModel> GenerateSessionAsync(GenerateSessionForm form)
+        public async Task<UserSessionModel> CreateSessionAsync(CreateSessionForm form)
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 
-            var formValidator = _validatorProvider.GetRequiredService<GenerateSessionForm.Validator>();
+            var formValidator = _validatorProvider.GetRequiredService<CreateSessionForm.Validator>();
             var formValidationResult = await formValidator.ValidateAsync(form);
 
             if (!formValidationResult.IsValid)
@@ -91,16 +106,59 @@ namespace NextSolution.Core.Services
             };
 
             if (user == null)
-                throw new BadRequestException(nameof(form.Username), $"The {form.UsernameType.Humanize(LetterCasing.LowerCase)} is not found.");
-
-
-            if (!user.EmailConfirmed && !user.PhoneNumberConfirmed) 
-                throw new BadRequestException(nameof(form.Username), $"The {form.UsernameType.Humanize(LetterCasing.LowerCase)} is not verified.");
-
+                throw new BadRequestException(nameof(form.Username), $"'{form.UsernameType.Humanize(LetterCasing.Title)}' does not exist.");
 
             if (!await _userRepository.CheckPasswordAsync(user, form.Password))
-                throw new BadRequestException(nameof(form.Password), $"The {nameof(form.Password).Humanize(LetterCasing.LowerCase)} is not correct.");
+                throw new BadRequestException(nameof(form.Password), $"'{nameof(form.Password).Humanize(LetterCasing.Title)}' is not correct.");
 
+            var session = await _userRepository.GenerateSessionAsync(user);
+            await _userRepository.AddSessionAsync(user, session);
+
+            var model = _mapper.Map(user, _mapper.Map<UserSessionModel>(session));
+            model.Roles = await _userRepository.GetRolesAsync(user);
+            return model;
+        }
+
+        public async Task<UserSessionModel> CreateExternalSessionAsync(CreateExternalSessionForm form)
+        {
+            if (form == null) throw new ArgumentNullException(nameof(form));
+
+            var formValidator = _validatorProvider.GetRequiredService<CreateExternalSessionForm.Validator>();
+            var formValidationResult = await formValidator.ValidateAsync(form);
+
+            if (!formValidationResult.IsValid)
+                throw new BadRequestException(formValidationResult.ToDictionary());
+
+            var username =
+                form.Principal.FindFirstValue(ClaimTypes.Email) ??
+                form.Principal.FindFirstValue(ClaimTypes.MobilePhone) ??
+                form.Principal.FindFirstValue(ClaimTypes.OtherPhone) ??
+                form.Principal.FindFirstValue(ClaimTypes.HomePhone) ?? throw new InvalidOperationException();
+
+            var usernameType = TextHelper.GetContactType(username);
+
+            var user = usernameType switch
+            {
+                ContactType.EmailAddress => await _userRepository.FindByEmailAsync(username),
+                ContactType.PhoneNumber => await _userRepository.FindByPhoneNumberAsync(username),
+                _ => null
+            };
+
+            if (user == null)
+            {
+                user ??= new User();
+                user.FirstName = form.Principal.FindFirstValue(ClaimTypes.GivenName) ?? string.Empty;
+                user.LastName = form.Principal.FindFirstValue(ClaimTypes.Surname) ?? string.Empty;
+                user.Email = usernameType == ContactType.EmailAddress ? username : user.Email;
+                user.PhoneNumber = usernameType == ContactType.PhoneNumber ? username : user.PhoneNumber;
+                user.Active = true;
+                user.ActiveAt = DateTimeOffset.UtcNow;
+                await _userRepository.GenerateUserNameAsync(user);
+                await _userRepository.CreateAsync(user);
+            }
+
+            await _userRepository.RemoveLoginAsync(user, form.ProviderName, form.ProviderKey);
+            await _userRepository.AddLoginAsync(user, new UserLoginInfo(form.ProviderName, form.ProviderKey, form.ProviderDisplayName));
 
             var session = await _userRepository.GenerateSessionAsync(user);
             await _userRepository.AddSessionAsync(user, session);
@@ -122,7 +180,7 @@ namespace NextSolution.Core.Services
 
             var user = await _userRepository.FindByRefreshTokenAsync(form.RefreshToken);
 
-            if (user == null) throw new BadRequestException(nameof(form.RefreshToken), $"The {nameof(form.RefreshToken).Humanize(LetterCasing.LowerCase)} is not valid.");
+            if (user == null) throw new BadRequestException(nameof(form.RefreshToken), $"'{nameof(form.RefreshToken).Humanize(LetterCasing.Title)}' is not valid.");
 
             await _userRepository.RemoveSessionAsync(user, form.RefreshToken);
 
@@ -146,7 +204,7 @@ namespace NextSolution.Core.Services
 
             var user = await _userRepository.FindByRefreshTokenAsync(form.RefreshToken);
 
-            if (user == null) throw new BadRequestException(nameof(form.RefreshToken), $"The {nameof(form.RefreshToken).Humanize(LetterCasing.LowerCase)} is not valid.");
+            if (user == null) throw new BadRequestException(nameof(form.RefreshToken), $"'{nameof(form.RefreshToken).Humanize(LetterCasing.Title)}' is not valid.");
 
             await _userRepository.RemoveSessionAsync(user, form.RefreshToken);
         }
@@ -168,7 +226,7 @@ namespace NextSolution.Core.Services
                 _ => null
             };
 
-            if (user == null) throw new BadRequestException(nameof(form.Username), $"The {form.UsernameType.Humanize(LetterCasing.LowerCase)} is not found.");
+            if (user == null) throw new BadRequestException(nameof(form.Username), $"'{form.UsernameType.Humanize(LetterCasing.Title)}' does not exist.");
 
 
             if (form.UsernameType == ContactType.EmailAddress)
@@ -213,7 +271,7 @@ namespace NextSolution.Core.Services
                 _ => null
             };
 
-            if (user == null) throw new BadRequestException(nameof(form.Username), $"The {form.UsernameType.Humanize(LetterCasing.LowerCase)} is not found.");
+            if (user == null) throw new BadRequestException(nameof(form.Username), $"'{form.UsernameType.Humanize(LetterCasing.LowerCase)}' is not found.");
 
             try
             {
@@ -227,7 +285,7 @@ namespace NextSolution.Core.Services
             }
             catch (InvalidOperationException ex)
             {
-                throw new BadRequestException(nameof(form.Code), $"The verification {nameof(form.Code).Humanize(LetterCasing.LowerCase)} is not valid.", innerException: ex);
+                throw new BadRequestException(nameof(form.Code), $"'{nameof(form.Code).Humanize(LetterCasing.Title)}' is not valid.", innerException: ex);
             }
         }
 
@@ -248,7 +306,7 @@ namespace NextSolution.Core.Services
                 _ => null
             };
 
-            if (user == null) throw new BadRequestException(nameof(form.Username), $"The {form.UsernameType.Humanize(LetterCasing.LowerCase)} is not found.");
+            if (user == null) throw new BadRequestException(nameof(form.Username), $"'{form.UsernameType.Humanize(LetterCasing.Title)}' does not exist.");
 
             if (form.UsernameType == ContactType.EmailAddress)
             {
@@ -292,7 +350,7 @@ namespace NextSolution.Core.Services
                 _ => null
             };
 
-            if (user == null) throw new BadRequestException(nameof(form.Username), $"The {form.UsernameType.Humanize(LetterCasing.LowerCase)} is not found.");
+            if (user == null) throw new BadRequestException(nameof(form.Username), $"'{form.UsernameType.Humanize(LetterCasing.Title)}' does not exist.");
 
             try
             {
@@ -300,28 +358,7 @@ namespace NextSolution.Core.Services
             }
             catch (InvalidOperationException ex)
             {
-                throw new BadRequestException(nameof(form.Code), $"The verification {nameof(form.Code).Humanize(LetterCasing.LowerCase)} is not valid.", innerException: ex);
-            }
-        }
-
-        private async Task AddUserToQualifiedRolesAsync(User user)
-        {
-            foreach (var roleName in Roles.All)
-            {
-                if (await _roleRepository.FindByNameAsync(roleName) is null)
-                    await _roleRepository.CreateAsync(new Role(roleName));
-            }
-
-
-            var totalUsers = await _userRepository.CountAsync();
-
-            if (totalUsers == 1)
-            {
-                await _userRepository.AddToRolesAsync(user, new string[] { Roles.Admin, Roles.Member });
-            }
-            else
-            {
-                await _userRepository.AddToRolesAsync(user, new string[] { Roles.Member });
+                throw new BadRequestException(nameof(form.Code), $"'{nameof(form.Code).Humanize(LetterCasing.Title)}' is not valid.", innerException: ex);
             }
         }
     }

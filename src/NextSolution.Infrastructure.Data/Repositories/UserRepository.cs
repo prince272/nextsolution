@@ -276,6 +276,17 @@ namespace NextSolution.Infrastructure.Data.Repositories
             return _userSessionStore.RemoveSessionAsync(user, token);
         }
 
+        public Task AddLoginAsync(User user, UserLoginInfo login)
+        {
+            return _userManager.AddLoginAsync(user, login);
+        }
+
+        public Task RemoveLoginAsync(User user, string providerName, string providerKey)
+        {
+            return _userManager.RemoveLoginAsync(user, providerName, providerKey);
+        }
+
+
         public Task<User?> FindByAccessTokenAsync(string accessToken)
         {
             if (accessToken == null) throw new ArgumentNullException(nameof(accessToken));
