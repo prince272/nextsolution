@@ -15,6 +15,7 @@ using NextSolution.Core.Utilities;
 using NextSolution.Infrastructure.EmailSender.MailKit;
 using NextSolution.Infrastructure.ViewRenderer.Razor;
 using NextSolution.Infrastructure.SmsSender;
+using Microsoft.AspNetCore.Authentication.Google;
 
 try
 {
@@ -86,7 +87,13 @@ try
         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
 
     })
-        .AddJwtBearer();
+        .AddJwtBearer()
+        .AddGoogle(GoogleDefaults.AuthenticationScheme, options =>
+        {
+            options.SignInScheme = IdentityConstants.ExternalScheme;
+            options.ClientId = builder.Configuration.GetValue<string>("Authentication:Google:ClientId")!;
+            options.ClientSecret = builder.Configuration.GetValue<string>("Authentication:Google:ClientSecret")!;
+        });
 
     builder.Services.AddAuthorization();
 
