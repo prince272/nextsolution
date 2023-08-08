@@ -97,6 +97,19 @@ try
     // Add application services.
     builder.Services.AddApplication();
 
+    builder.Services.AddCors(options =>
+    {
+        options.AddDefaultPolicy(policy =>
+        {
+            policy
+            .AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .WithExposedHeaders("Content-Disposition")
+            .SetPreflightMaxAge(TimeSpan.FromMinutes(10));
+        });
+    });
+
     // Configure serialization services.
     builder.Services.ConfigureHttpJsonOptions(options =>
 {
@@ -142,7 +155,7 @@ try
 
     app.UseAuthentication();
 
-    // app.UseCors();
+    app.UseCors();
 
     app.UseAuthorization();
 
