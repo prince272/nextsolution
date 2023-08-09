@@ -16,6 +16,8 @@ using NextSolution.Infrastructure.EmailSender.MailKit;
 using NextSolution.Infrastructure.ViewRenderer.Razor;
 using NextSolution.Infrastructure.SmsSender;
 using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.Extensions.Configuration;
+using Humanizer.Configuration;
 
 try
 {
@@ -108,10 +110,13 @@ try
     {
         options.AddDefaultPolicy(policy =>
         {
+            var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins")?.Get<string[]>() ?? Array.Empty<string>();
+
             policy
-            .AllowAnyOrigin()
+            .WithOrigins(allowedOrigins)
             .AllowAnyMethod()
             .AllowAnyHeader()
+            .AllowCredentials()
             .WithExposedHeaders("Content-Disposition")
             .SetPreflightMaxAge(TimeSpan.FromMinutes(10));
         });
@@ -160,9 +165,9 @@ try
 
     app.UseHttpsRedirection();
 
-    app.UseAuthentication();
-
     app.UseCors();
+
+    app.UseAuthentication();
 
     app.UseAuthorization();
 

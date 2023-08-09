@@ -80,7 +80,7 @@ namespace NextSolution.WebApi.Endpoints
         public IResult ConnectSession(
             [FromServices] AccountService accountService,
             [FromServices] SignInManager<User> signInManager,
-            [FromServices] IOptions<UserSessionOptions> userSessionOptions,
+            [FromServices] IConfiguration configuration,
             [FromRoute] string provider,
             [FromQuery] string returnUrl)
         {
@@ -93,7 +93,9 @@ namespace NextSolution.WebApi.Endpoints
 
             provider = provider.Pascalize();
 
-            if (!userSessionOptions.Value.GetAudiences().Any(origin => Uri.Compare(
+            var allowedOrigins = configuration.GetSection("AllowedOrigins")?.Get<string[]>() ?? Array.Empty<string>();
+
+            if (!allowedOrigins.Any(origin => Uri.Compare(
                 new Uri(origin, UriKind.Absolute),
                 new Uri(origin), UriComponents.SchemeAndServer, UriFormat.UriEscaped, StringComparison.OrdinalIgnoreCase) == 0))
                 throw new BadRequestException(nameof(returnUrl), $"'{nameof(returnUrl)}' is not allowed.");
