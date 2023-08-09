@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "dev:ssl":"node cert.js && concurrently \"next dev\" \"local-ssl-proxy --key localhost-key.pem --cert localhost-cert.pem --source 3001 --target 3000\"",
+    "dev:ssl":"node localhost-cert.js && concurrently \"next dev\" \"local-ssl-proxy --key localhost-key.pem --cert localhost-cert.pem --source 3001 --target 3000\"",
     "start": "next start",
     "lint": "next lint",
     "format:check": "prettier --check .",
