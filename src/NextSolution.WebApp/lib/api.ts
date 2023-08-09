@@ -129,7 +129,7 @@ export class Api {
     );
   }
 
-  public signIn<T extends UserSession, R extends AxiosResponse<T>, D extends any>(
+  public async signIn<T extends UserSession, R extends AxiosResponse<T>, D extends any>(
     credentials: UserCredentials,
     config?: AxiosRequestConfig<D>
   ): Promise<R> {
@@ -139,10 +139,9 @@ export class Api {
       data: credentials,
       ...config
     } as AxiosRequestConfig<D>;
-    return this.axiosInstance.request<T, R, D>(config).then((response) => {
-      this.userSubject.next(response.data);
-      return response;
-    });
+    const response = await this.axiosInstance.request<T, R, D>(config);
+    this.userSubject.next(response.data);
+    return response;
   }
 
   public async signInWith<T extends UserSession, R extends AxiosResponse<T>, D extends any>(
@@ -167,7 +166,7 @@ export class Api {
     return response;
   }
 
-  public refresh<T extends UserSession, R extends AxiosResponse<T>, D extends any>(
+  public async refresh<T extends UserSession, R extends AxiosResponse<T>, D extends any>(
     refreshToken: string,
     config?: AxiosRequestConfig<D>
   ): Promise<R> {
@@ -177,16 +176,20 @@ export class Api {
       data: { refreshToken },
       ...config
     } as AxiosRequestConfig<D>;
-    return this.axiosInstance.request<T, R, D>(config);
+    const response = await this.axiosInstance.request<T, R, D>(config);
+    this.userSubject.next(response.data);
+    return response;;
   }
 
-  public signOut<T extends any, R extends AxiosResponse<T>, D extends any>(config?: AxiosRequestConfig<D>): Promise<R> {
+  public async signOut<T extends any, R extends AxiosResponse<T>, D extends any>(config?: AxiosRequestConfig<D>): Promise<R> {
     config = {
       url: `/users/sessions/revoke`,
       method: "POST",
       ...config
     } as AxiosRequestConfig<D>;
-    return this.axiosInstance.request<T, R, D>(config);
+    const response = await this.axiosInstance.request<T, R, D>(config);
+    this.userSubject.next(null);
+    return response;;
   }
 
   public request<T extends any, R extends AxiosResponse<T>, D extends any>(config: AxiosRequestConfig<D>): Promise<R> {
