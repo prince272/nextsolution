@@ -3,6 +3,8 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 
+import { ApiProvider, AppProvider } from "./provider";
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -12,8 +14,16 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>{children}</body>
+    <html lang="en" className="dark" suppressHydrationWarning>
+      <body className={inter.className}>
+        <ApiProvider
+          config={{
+            baseURL: process.env.SERVER_URL
+          }}
+        >
+          <AppProvider>{children}</AppProvider>
+        </ApiProvider>
+      </body>
     </html>
   );
 }

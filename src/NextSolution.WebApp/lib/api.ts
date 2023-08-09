@@ -12,24 +12,20 @@ import { BehaviorSubject } from "rxjs";
 
 import { ExternalWindow } from "./external-window";
 
-export type UserCredentials = {
-  username: string;
-  password: string;
-};
-
-export type UserSession = {
+export type ApiTokens = {
+  tokenType: string,
   accessToken: string;
   refreshToken: string;
   [key: string]: any;
 };
 
 export interface ApiConfig extends CreateAxiosDefaults {
-  initialUser?: UserSession;
+  initialUser?: ApiTokens;
 }
 
 export class Api {
   private axiosInstance: AxiosInstance;
-  public userSubject: BehaviorSubject<UserSession | undefined | null>;
+  public tokenStore: BehaviorSubject<ApiTokens | undefined | null>;
 
   private refreshing: boolean;
   private retryRequests: Array<() => void>;
@@ -45,7 +41,7 @@ export class Api {
     const { initialUser, ...axiosConfig } = { ...defaultConfig, ...config };
 
     this.axiosInstance = axios.create(axiosConfig);
-    this.userSubject = new BehaviorSubject<UserSession | undefined | null>(initialUser);
+    this.tokenStore = new BehaviorSubject<ApiTokens | undefined | null>(initialUser);
 
     this.refreshing = false;
     this.retryRequests = [];
@@ -53,7 +49,7 @@ export class Api {
     // Add request interceptor
     this.axiosInstance.interceptors.request.use(
       (requestConfig) => {
-        const existingUser = this.userSubject.getValue();
+        const existingUser = this.tokenStore.getValue();
 
         if (existingUser) {
           requestConfig.headers.setAuthorization(`Bearer ${existingUser.accessToken}`);
@@ -93,7 +89,7 @@ export class Api {
             return Promise.reject(error);
           }
 
-          const existingUser = this.userSubject.getValue();
+          const existingUser = this.tokenStore.getValue();
           if (!existingUser) {
             return Promise.reject(error);
           }
@@ -109,14 +105,14 @@ export class Api {
           this.refreshing = true;
           return this.refresh(existingUser.refreshToken)
             .then(({ data: user }) => {
-              this.userSubject.next(user);
+              this.tokenStore.next(user);
               this.refreshing = false;
               this.retryRequests.forEach((prom) => prom());
               this.retryRequests = [];
               return this.axiosInstance.request(originalRequest);
             })
             .catch(() => {
-              this.userSubject.next(null);
+              this.tokenStore.next(null);
               this.refreshing = false;
               this.retryRequests.forEach((prom) => prom());
               this.retryRequests = [];
@@ -129,8 +125,8 @@ export class Api {
     );
   }
 
-  public async signIn<T extends UserSession, R extends AxiosResponse<T>, D extends any>(
-    credentials: UserCredentials,
+  public async signIn<T extends ApiTokens, R extends AxiosResponse<T>, D extends any>(
+    credentials: { username: string; password: string },
     config?: AxiosRequestConfig<D>
   ): Promise<R> {
     config = {
@@ -140,11 +136,11 @@ export class Api {
       ...config
     } as AxiosRequestConfig<D>;
     const response = await this.axiosInstance.request<T, R, D>(config);
-    this.userSubject.next(response.data);
+    this.tokenStore.next(response.data);
     return response;
   }
 
-  public async signInWith<T extends UserSession, R extends AxiosResponse<T>, D extends any>(
+  public async signInWith<T extends ApiTokens, R extends AxiosResponse<T>, D extends any>(
     provider: string,
     config?: AxiosRequestConfig<D>
   ): Promise<R> {
@@ -162,11 +158,11 @@ export class Api {
     } catch {}
 
     const response = await this.axiosInstance.request<T, R, D>(config);
-    this.userSubject.next(response.data);
+    this.tokenStore.next(response.data);
     return response;
   }
 
-  public async refresh<T extends UserSession, R extends AxiosResponse<T>, D extends any>(
+  public async refresh<T extends ApiTokens, R extends AxiosResponse<T>, D extends any>(
     refreshToken: string,
     config?: AxiosRequestConfig<D>
   ): Promise<R> {
@@ -177,8 +173,8 @@ export class Api {
       ...config
     } as AxiosRequestConfig<D>;
     const response = await this.axiosInstance.request<T, R, D>(config);
-    this.userSubject.next(response.data);
-    return response;;
+    this.tokenStore.next(response.data);
+    return response;
   }
 
   public async signOut<T extends any, R extends AxiosResponse<T>, D extends any>(config?: AxiosRequestConfig<D>): Promise<R> {
@@ -188,8 +184,8 @@ export class Api {
       ...config
     } as AxiosRequestConfig<D>;
     const response = await this.axiosInstance.request<T, R, D>(config);
-    this.userSubject.next(null);
-    return response;;
+    this.tokenStore.next(null);
+    return response;
   }
 
   public request<T extends any, R extends AxiosResponse<T>, D extends any>(config: AxiosRequestConfig<D>): Promise<R> {
