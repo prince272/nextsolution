@@ -2,7 +2,7 @@
 "use client";
 
 import React, { PropsWithChildren, useContext, useEffect, useRef, useState } from "react";
-import { NextUIProvider } from "@nextui-org/react";
+import { CircularProgress, NextUIProvider } from "@nextui-org/react";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import * as rx from "rxjs";
 
@@ -26,15 +26,26 @@ export const ApiProvider: React.FC<PropsWithChildren<{ config: ApiConfig }>> = (
 };
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    ExternalWindow.notify();
+    setTimeout(() => {
+      setMounted(true);
+      ExternalWindow.notify();
+    }, 1500);
   }, []);
-  
+
   return (
     <NextUIProvider>
       <NextThemesProvider attribute="class" defaultTheme="dark">
-        <UserProvider>{children}</UserProvider>
+        <UserProvider>
+          {!mounted && (
+            <div className="absolute z-[99999] flex h-full w-full flex-col items-center justify-center bg-background">
+              <CircularProgress id="app-progress" aria-label="Loading..." />
+            </div>
+          )}
+          <div className={`${mounted ? "block" : "hidden"}`}>{children}</div>
+        </UserProvider>
       </NextThemesProvider>
     </NextUIProvider>
   );
