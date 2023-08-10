@@ -150,11 +150,11 @@ export class Api {
       ...config
     } as AxiosRequestConfig<D>;
 
-    const externalURL = new URL(`${this.axiosInstance.defaults.baseURL}/users/sessions/${provider}`);
-    externalURL.searchParams.set("returnUrl", window.origin);
+    const externalUrl = new URL(`${this.axiosInstance.defaults.baseURL}/users/sessions/${provider}`);
+    externalUrl.searchParams.set("returnUrl", window.location.href);
 
     try {
-      await ExternalWindow.open(externalURL.toString(), { center: true });
+      await ExternalWindow.open(externalUrl, { center: true });
     } catch {}
 
     const response = await this.axiosInstance.request<T, R, D>(config);

@@ -13,14 +13,14 @@ export interface ExternalWindowFeatures {
 }
 
 export class ExternalWindow {
-  private windowUrl: string | null = null;
+  private windowUrl: URL | null = null;
   private windowRef: Window | null = null;
   private watcherId: any | null = null;
 
   private resolve: (value?: any) => void = () => {};
   private reject: (reason?: any) => void = () => {};
 
-  public open(url: string, features: ExternalWindowFeatures): Promise<void> {
+  public open(url: URL, features: ExternalWindowFeatures): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       if (this.windowRef) this.close(new Error("Reopening another external window."));
 
@@ -28,10 +28,10 @@ export class ExternalWindow {
       this.reject = reject;
 
       this.windowUrl = url;
-      this.windowRef = window.open(this.windowUrl, "_blank", this.stringifyFeatures(features));
+      this.windowRef = window.open(this.windowUrl.href, "_blank", this.stringifyFeatures(features));
 
       if (this.windowRef) {
-        window.addEventListener("message", this.onPostMessage, true);
+        (window as any)["external-window"] = this;
 
         // Start tracking the window using an interval
         this.watcherId = setInterval(() => {
@@ -47,7 +47,7 @@ export class ExternalWindow {
   }
 
   public close(reason?: any): void {
-    window.removeEventListener("message", this.onPostMessage);
+    (window as any)["external-window"] = null;
 
     if (this.windowRef) {
       this.windowRef.close();
@@ -93,31 +93,27 @@ export class ExternalWindow {
       .join(",");
   }
 
-  private onPostMessage = (event: MessageEvent<unknown>) => {
-    const expectedOrigin = this.windowUrl ? new URL(this.windowUrl).searchParams.get("origin") || location.origin : location.origin;
-    if (this.windowRef === event.source && event.origin === expectedOrigin) {
-      if (typeof event.data === "object" && event.data !== null && "error" in event.data) {
-        this.close(event.data.error);
-      } else {
-        this.close(event.data);
+  public static notify(reason?: any): void {
+    const origin: string = window.location.origin;
+
+    // Check if the external window is defined
+    if (window.opener && window.opener["external-window"]) {
+      const externalWindow = window.opener["external-window"] as ExternalWindow;
+      const expectedOrigin: string = externalWindow.windowUrl ? externalWindow.windowUrl.searchParams.get("origin") || origin : origin;
+
+      if (expectedOrigin.startsWith(origin)) {
+        externalWindow.close(reason);
       }
     }
-  };
-
-  private static instance: ExternalWindow | null = null;
-
-  private static getInstance(): ExternalWindow {
-    if (!ExternalWindow.instance) {
-      ExternalWindow.instance = new ExternalWindow();
-    }
-    return ExternalWindow.instance;
   }
 
-  public static open(url: string, features: ExternalWindowFeatures): Promise<void> {
-    return ExternalWindow.getInstance().open(url, features);
+  private static instance: ExternalWindow = new ExternalWindow();
+
+  public static open(url: URL, features: ExternalWindowFeatures): Promise<void> {
+    return ExternalWindow.instance.open(url, features);
   }
 
   public static close(reason?: any): void {
-     ExternalWindow.getInstance().close(reason);
+    ExternalWindow.instance.close(reason);
   }
 }

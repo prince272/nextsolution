@@ -7,6 +7,7 @@ import { ThemeProvider as NextThemesProvider } from "next-themes";
 import * as rx from "rxjs";
 
 import { Api, ApiConfig, ApiTokens } from "@/lib/api";
+import { ExternalWindow } from "@/lib/external-window";
 
 export const ApiContext = React.createContext<Api>(null!);
 
@@ -25,6 +26,11 @@ export const ApiProvider: React.FC<PropsWithChildren<{ config: ApiConfig }>> = (
 };
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
+
+  useEffect(() => {
+    ExternalWindow.notify();
+  }, []);
+  
   return (
     <NextUIProvider>
       <NextThemesProvider attribute="class" defaultTheme="dark">
@@ -35,17 +41,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 }
 
 export type User = {
-  id: string,
-  userName: string
-  firstName: string,
-  lastName: string,
-  email?: string,
-  emailConfirmed: boolean,
-  phoneNumber?: string,
-  phoneNumberConfirmed: boolean,
-  active: boolean,
-  activeAt: Date,
-    // Add additional properties here.
+  id: string;
+  userName: string;
+  firstName: string;
+  lastName: string;
+  email?: string;
+  emailConfirmed: boolean;
+  phoneNumber?: string;
+  phoneNumberConfirmed: boolean;
+  active: boolean;
+  activeAt: Date;
+  // Add additional properties here.
 } & ApiTokens;
 
 export const UserContext = React.createContext<User | null | undefined>(null);
