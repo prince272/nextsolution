@@ -7,7 +7,7 @@ import axios, {
   HttpStatusCode,
   isAxiosError
 } from "axios";
-import QueryString from "qs";
+import QueryString from "query-string";
 import { BehaviorSubject } from "rxjs";
 
 import { ExternalWindow } from "./external-window";
@@ -33,7 +33,7 @@ export class Api {
   constructor(config?: ApiConfig) {
     const defaultConfig = {
       paramsSerializer: {
-        encode: (params) => QueryString.stringify(params, { arrayFormat: "brackets" })
+        encode: (params) => QueryString.stringify(params, { arrayFormat: "bracket" })
       },
       withCredentials: true
     } as ApiConfig;
