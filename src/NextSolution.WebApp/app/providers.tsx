@@ -1,9 +1,46 @@
 "use client";
 
 import React, { PropsWithChildren, useContext, useEffect, useRef, useState } from "react";
+import { DialogProvider, DialogRouter } from "@/ui/components/dialogs";
+import * as dialogComponents from "@/components/dialogs";
+import { CircularProgress, NextUIProvider } from "@nextui-org/react";
+import { ThemeProvider as NextThemesProvider } from "next-themes";
 import * as rx from "rxjs";
 
 import { Api, ApiConfig, ApiTokens } from "@/lib/api";
+import { ExternalWindow } from "@/lib/external-window";
+
+const dialogs = Object.entries(dialogComponents).map(([id, Component]) => {
+  id = id.replace(/Modal$/, "").replace(/[A-Z]/g, (char, index) => (index !== 0 ? "-" : "") + char.toLowerCase());
+  return { id, Component };
+});
+
+export function AppProvider({ children }: { children: React.ReactNode }) {
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    setTimeout(() => {
+      setLoaded(true);
+      ExternalWindow.notify();
+    }, 1500);
+  }, []);
+
+  return (
+    <NextUIProvider>
+      <NextThemesProvider attribute="class" defaultTheme="dark">
+        {!loaded && (
+          <div className="absolute z-[99999] flex h-full w-full flex-col items-center justify-center bg-background">
+            <CircularProgress id="app-progress" aria-label="Loading..." />
+          </div>
+        )}
+        <DialogProvider dialogs={dialogs}>
+          <div className={`${!loaded ? "hidden" : ""}`}> {children}</div>
+          <DialogRouter loaded={loaded} />
+        </DialogProvider>
+      </NextThemesProvider>
+    </NextUIProvider>
+  );
+}
 
 export type User = {
   id: string;

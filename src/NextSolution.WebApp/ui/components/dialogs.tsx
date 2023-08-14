@@ -1,7 +1,8 @@
-import React, { ComponentType, PropsWithChildren, useContext, useEffect, useRef, useState } from "react";
-import { ReadonlyURLSearchParams, usePathname, useRouter, useSearchParams } from "next/navigation";
-import { usePrevious, useStateAsync } from "@/utils/hooks";
+import React, { ComponentType, Fragment, PropsWithChildren, useContext, useEffect, useRef } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import queryString from "query-string";
+
+import { usePrevious, useStateAsync } from "@/lib/hooks";
 
 export interface DialogContextProps {
   open: (id: string, props?: any) => Promise<any>;
@@ -67,19 +68,16 @@ export const DialogProvider: React.FC<PropsWithChildren<DialogContextType>> = ({
   return (
     <DialogContext.Provider value={context.current}>
       {children}
-      {dialogs
-        .filter((d) => d.mounted)
-        .map(({ Component, id, props, ...dialogProps }) => {
-          return <Component key={id} {...dialogProps} {...props} />;
-        })}
-      <DialogRouter />
+      {dialogs.map(({ Component, id, mounted, props, ...dialogProps }) => {
+        return mounted ? <Component key={id} {...dialogProps} {...props} /> : <Fragment key={id}></Fragment>;
+      })}
     </DialogContext.Provider>
   );
 };
 
 export const DIALOG_QUERY_NAME = "dialogId";
 
-export const DialogRouter: React.FC = () => {
+export const DialogRouter: React.FC<{ loaded: boolean }> = ({ loaded }) => {
   const dialog = useContext(DialogContext);
 
   if (dialog === undefined) {
@@ -90,10 +88,12 @@ export const DialogRouter: React.FC = () => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const prevSearchParams = usePrevious(searchParams);
-  const tempSearchParams = usePrevious(searchParams, (prev, next) => prev.has(DIALOG_QUERY_NAME))
+  const tempSearchParams = usePrevious(searchParams, (current) => current.has(DIALOG_QUERY_NAME));
 
   useEffect(() => {
     (async () => {
+      if (!loaded) return;
+
       const prevDialogId = prevSearchParams?.get(DIALOG_QUERY_NAME);
       if (prevDialogId) await dialog.close(prevDialogId);
 
@@ -111,7 +111,7 @@ export const DialogRouter: React.FC = () => {
         });
       }
     })();
-  }, [dialog, router, pathname, searchParams, prevSearchParams, tempSearchParams]);
+  }, [loaded, dialog, router, pathname, searchParams, prevSearchParams, tempSearchParams]);
 
   return <></>;
 };

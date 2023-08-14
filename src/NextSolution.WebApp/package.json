@@ -11,12 +11,13 @@
     "format": "prettier --write ."
   },
   "dependencies": {
-    "@nextui-org/react": "^2.0.8",
+    "@nextui-org/react": "^2.0.18",
     "@types/axios": "^0.14.0",
     "@types/node": "20.4.7",
     "@types/react": "18.2.18",
     "@types/react-dom": "18.2.7",
     "axios": "^1.4.0",
+    "clsx": "^2.0.0",
     "eslint": "8.46.0",
     "eslint-config-next": "13.4.12",
     "framer-motion": "^10.15.1",
@@ -27,6 +28,7 @@
     "react-dom": "18.2.0",
     "react-hook-form": "^7.45.4",
     "rxjs": "^7.8.1",
+    "tailwind-merge": "^1.14.0",
     "typescript": "5.1.6"
   },
   "devDependencies": {
