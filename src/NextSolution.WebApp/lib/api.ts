@@ -7,13 +7,14 @@ import axios, {
   HttpStatusCode,
   isAxiosError
 } from "axios";
+import { isIdempotentRequestError, isNetworkError } from "axios-retry";
 import QueryString from "query-string";
 import { BehaviorSubject } from "rxjs";
 
 import { ExternalWindow } from "./external-window";
 
 export type ApiTokens = {
-  tokenType: string,
+  tokenType: string;
   accessToken: string;
   refreshToken: string;
   [key: string]: any;
@@ -125,14 +126,29 @@ export class Api {
     );
   }
 
-  public async signIn<T extends ApiTokens, R extends AxiosResponse<T>, D extends any>(
-    credentials: { username: string; password: string },
+  public async signUp<T extends ApiTokens, R extends AxiosResponse<T>, D extends any>(
+    data: { firstName: string; lastName: string; username: string; password: string; [key: string]: any },
     config?: AxiosRequestConfig<D>
   ): Promise<R> {
     config = {
-      url: `/users/sessions`,
+      url: `/accounts`,
       method: "POST",
-      data: credentials,
+      data,
+      ...config
+    } as AxiosRequestConfig<D>;
+    const response = await this.axiosInstance.request<T, R, D>(config);
+    this.tokenStore.next(response.data);
+    return response;
+  }
+
+  public async signIn<T extends ApiTokens, R extends AxiosResponse<T>, D extends any>(
+    data: { username: string; password: string; [key: string]: any },
+    config?: AxiosRequestConfig<D>
+  ): Promise<R> {
+    config = {
+      url: `/accounts/sessions`,
+      method: "POST",
+      data,
       ...config
     } as AxiosRequestConfig<D>;
     const response = await this.axiosInstance.request<T, R, D>(config);
@@ -145,18 +161,18 @@ export class Api {
     config?: AxiosRequestConfig<D>
   ): Promise<R> {
     config = {
-      url: `/users/sessions/${provider}`,
+      url: `/accounts/sessions/${provider}`,
       method: "POST",
       ...config
     } as AxiosRequestConfig<D>;
 
-    const externalUrl = new URL(`${this.axiosInstance.defaults.baseURL}/users/sessions/${provider}`);
-    externalUrl.searchParams.set("returnUrl", window.location.href);
-
     try {
+      const externalUrl = new URL(`${this.axiosInstance.defaults.baseURL}/accounts/sessions/${provider}`);
+      externalUrl.searchParams.set("returnUrl", window.location.href);
       await ExternalWindow.open(externalUrl, { center: true });
-    } catch {}
-
+    } catch (error) {
+      console.warn(error);
+    }
     const response = await this.axiosInstance.request<T, R, D>(config);
     this.tokenStore.next(response.data);
     return response;
@@ -167,7 +183,7 @@ export class Api {
     config?: AxiosRequestConfig<D>
   ): Promise<R> {
     config = {
-      url: `/users/sessions/refresh`,
+      url: `/accounts/sessions/refresh`,
       method: "POST",
       data: { refreshToken },
       ...config
@@ -179,12 +195,42 @@ export class Api {
 
   public async signOut<T extends any, R extends AxiosResponse<T>, D extends any>(config?: AxiosRequestConfig<D>): Promise<R> {
     config = {
-      url: `/users/sessions/revoke`,
+      url: `/accounts/sessions/revoke`,
       method: "POST",
       ...config
     } as AxiosRequestConfig<D>;
     const response = await this.axiosInstance.request<T, R, D>(config);
     this.tokenStore.next(null);
+    return response;
+  }
+
+  public async resetPasswordCode<T extends ApiTokens, R extends AxiosResponse<T>, D extends any>(
+    data: { username: string; [key: string]: any },
+    config?: AxiosRequestConfig<D>
+  ): Promise<R> {
+    config = {
+      url: `/accounts/password/reset/send-code`,
+      method: "POST",
+      data,
+      ...config
+    } as AxiosRequestConfig<D>;
+    const response = await this.axiosInstance.request<T, R, D>(config);
+    this.tokenStore.next(response.data);
+    return response;
+  }
+
+  public async resetPassword<T extends ApiTokens, R extends AxiosResponse<T>, D extends any>(
+    data: { username: string; code: string; password: string; [key: string]: any },
+    config?: AxiosRequestConfig<D>
+  ): Promise<R> {
+    config = {
+      url: `/accounts/password/reset`,
+      method: "POST",
+      data,
+      ...config
+    } as AxiosRequestConfig<D>;
+    const response = await this.axiosInstance.request<T, R, D>(config);
+    this.tokenStore.next(response.data);
     return response;
   }
 
@@ -224,3 +270,22 @@ export class Api {
     return this.axiosInstance.patch<T, R, D>(url, data, config);
   }
 }
+
+export const isApiError = isAxiosError;
+
+export const getApiErrorMessage = (error: any) => {
+  let message = "";
+
+  if (isAxiosError(error)) {
+    if (error.response) {
+      message = error.response.data?.title;
+    } else if (isNetworkError(error)) {
+      message = "Check your internet connection.";
+    } else if (isIdempotentRequestError(error)) {
+      message = "Something went wrong, Please try again.";
+    }
+  }
+
+  message = message ? message : "Something went wrong.\nPlease try again later.";
+  return message;
+};

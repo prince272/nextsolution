@@ -1,9 +1,11 @@
 import "@/styles/globals.css";
 
 import type { Metadata } from "next";
-import { AppProvider, ApiProvider } from "./providers";
-import { cn } from "@/lib/utils";
 import fonts from "@/assets/fonts";
+
+import { cn } from "@/lib/utils";
+
+import { ApiProvider, AppProvider } from "./providers";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -13,7 +15,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={cn(fonts.sansFont.variable)} suppressHydrationWarning>
-      <body>
+      <body className="bg-background text-foreground">
         <ApiProvider
           config={{
             baseURL: process.env.SERVER_URL

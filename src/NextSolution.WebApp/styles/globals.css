@@ -1,3 +1,9 @@
 @import "./base.css";
 @import "./components.css";
 @import "./utilities.css";
+
+/* Hide the eye from a password input in MS Edge and IE [duplicate] */
+input::-ms-reveal,
+input::-ms-clear {
+  display: none;
+}

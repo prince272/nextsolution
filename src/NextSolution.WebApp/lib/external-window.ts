@@ -22,7 +22,7 @@ export class ExternalWindow {
 
   public open(url: URL, features: ExternalWindowFeatures): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-      if (this.windowRef) this.close(new Error("Reopening another external window."));
+      if (this.windowRef) this.close(new ExternalWindowError("Reopening another external window.", "WINDOW_REOPENING"));
 
       this.resolve = resolve;
       this.reject = reject;
@@ -37,11 +37,11 @@ export class ExternalWindow {
         this.watcherId = setInterval(() => {
           if (this.windowRef && this.windowRef.closed) {
             // The window is closed, stop the interval
-            this.close();
+            this.close(new ExternalWindowError("External window closed unexpectedly.", "WINDOW_CLOSE_UNEXPECTEDLY"));
           }
         }, 1000);
       } else {
-        this.close(new Error("Could not open the external window."));
+        this.close(new ExternalWindowError("Could not open the external window.", "WINDOW_OPEN_FAILED"));
       }
     });
   }
@@ -115,5 +115,17 @@ export class ExternalWindow {
 
   public static close(reason?: any): void {
     ExternalWindow.instance.close(reason);
+  }
+}
+
+export type ExternalWindowErrorReasons =
+  | "WINDOW_REOPENING"
+  | "WINDOW_CLOSE_UNEXPECTEDLY"
+  | "WINDOW_OPEN_FAILED";
+
+export class ExternalWindowError extends Error {
+  constructor(message: string, public reason?: ExternalWindowErrorReasons) {
+    super(message);
+    this.name = "ExternalWindowError";
   }
 }
