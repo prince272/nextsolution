@@ -97,16 +97,14 @@ namespace NextSolution.WebApi.Endpoints
             var detail = exception.Message;
             var extensions = ApplyDictionaryKeyPolicy(exception.Data.Cast<DictionaryEntry>().ToDictionary(entry => entry.Key.ToString()!, entry => entry.Value));
 
-            switch (exception)
+            if (exception is BadRequestException)
             {
-                case BadRequestException:
-                    {
-                        var errors = ApplyDictionaryKeyPolicy(((BadRequestException)exception).Errors);
-                        return Results.ValidationProblem(errors: errors, title: title, detail: detail, instance: instance, statusCode: statusCode, extensions: extensions);
-                    }
-
-                default:
-                    return Results.Problem(title: title, detail: detail, instance: instance, statusCode: statusCode, extensions: extensions);
+                var errors = ApplyDictionaryKeyPolicy(((BadRequestException)exception).Errors);
+                return Results.ValidationProblem(errors, title: title, detail: detail, instance: instance, statusCode: statusCode, extensions: extensions);
+            }
+            else
+            {
+                return Results.Problem(title: title, detail: detail, instance: instance, statusCode: statusCode, extensions: extensions);
             }
         }
 

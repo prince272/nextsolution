@@ -129,7 +129,7 @@ namespace NextSolution.Infrastructure.Identity
             Uri? audience = null;
             audience ??= context?.Request?.Headers?.Origin is StringValues origin && !StringValues.IsNullOrEmpty(origin) ? new Uri(origin.ToString(), UriKind.Absolute) : null;
             audience ??= context?.Request?.Headers?.Referer is StringValues referer && !StringValues.IsNullOrEmpty(referer) ? new Uri(referer.ToString(), UriKind.Absolute) : null;
-            return audience?.GetLeftPart(UriPartial.Authority) ?? throw new InvalidOperationException("Unable to determine the audience.");
+            return audience?.GetLeftPart(UriPartial.Authority) ?? _userSessionOptions.Value.GetAudiences().First();
         }
 
         private string? GetDeviceId(ClaimsIdentity identity)

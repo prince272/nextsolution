@@ -19,6 +19,8 @@ namespace NextSolution.Core.Repositories
 
         Task<User?> FindByPhoneNumberAsync(string phoneNumber);
 
+        Task<bool> IsInRoleAsync(User user, string role);
+
         Task AddToRoleAsync(User user, string role);
 
         Task AddToRolesAsync(User user, IEnumerable<string> roles);
@@ -83,6 +85,8 @@ namespace NextSolution.Core.Repositories
         long? GetUserId(ClaimsPrincipal principal);
 
         string? GetUserName(ClaimsPrincipal principal);
+
+        Task<User?> GetUser(ClaimsPrincipal principal);
 
         string? GetSecurityStamp(ClaimsPrincipal principal);
 

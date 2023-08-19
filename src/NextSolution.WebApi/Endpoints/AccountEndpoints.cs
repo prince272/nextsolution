@@ -22,7 +22,7 @@ namespace NextSolution.WebApi.Endpoints
 
         public override void Configure()
         {
-            var endpoints = MapGroup("/users");
+            var endpoints = MapGroup("/accounts");
 
             endpoints.MapPost("/", CreateAccountAsync);
             endpoints.MapPost("/sessions", CreateSessionAsync);
@@ -61,10 +61,12 @@ namespace NextSolution.WebApi.Endpoints
             if (provider == null)
                 throw new BadRequestException(nameof(provider), $"'{nameof(provider)}' must not be empty.");
 
+            provider = provider.Pascalize();
+
             var signInInfo = await signInManager.GetExternalLoginInfoAsync();
 
             if (signInInfo == null)
-                throw new BadRequestException($"No external login information found.");
+                throw new BadRequestException($"{provider} authentication failed.");
 
             var form = new CreateExternalSessionForm
             {

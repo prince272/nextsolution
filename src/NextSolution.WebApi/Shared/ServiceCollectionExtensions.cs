@@ -9,7 +9,7 @@ namespace NextSolution.WebApi.Shared
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddDocumentation(this IServiceCollection services)
+        public static IServiceCollection AddDocumentations(this IServiceCollection services)
         {
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen(options =>

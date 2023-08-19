@@ -78,14 +78,10 @@ namespace NextSolution.Core.Services
 
             var totalUsers = await _userRepository.CountAsync();
 
-            if (totalUsers == 1)
-            {
-                await _userRepository.AddToRolesAsync(user, new string[] { Roles.Admin, Roles.Member });
-            }
-            else
-            {
-                await _userRepository.AddToRolesAsync(user, new string[] { Roles.Member });
-            }
+            // Assign roles to the specified user based on the total user count.
+            // If there is only one user, grant both Admin and Member roles.
+            // Otherwise, assign only the Member role.
+            await _userRepository.AddToRolesAsync(user, (totalUsers == 1) ? new[] { Roles.Admin, Roles.Member } : new[] { Roles.Member });
         }
 
         public async Task<UserSessionModel> CreateSessionAsync(CreateSessionForm form)
@@ -115,7 +111,7 @@ namespace NextSolution.Core.Services
             await _userRepository.AddSessionAsync(user, session);
 
             var model = _mapper.Map(user, _mapper.Map<UserSessionModel>(session));
-            model.Roles = await _userRepository.GetRolesAsync(user);
+            model.Roles = (await _userRepository.GetRolesAsync(user)).Select(_ => _.Camelize()).ToArray();
             return model;
         }
 
@@ -164,7 +160,7 @@ namespace NextSolution.Core.Services
             await _userRepository.AddSessionAsync(user, session);
 
             var model = _mapper.Map(user, _mapper.Map<UserSessionModel>(session));
-            model.Roles = await _userRepository.GetRolesAsync(user);
+            model.Roles = (await _userRepository.GetRolesAsync(user)).Select(_ => _.Camelize()).ToArray();
             return model;
         }
 

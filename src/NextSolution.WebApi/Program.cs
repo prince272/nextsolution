@@ -137,7 +137,7 @@ try
     builder.Services.AddApplication();
 
     // Add documentation services.
-    builder.Services.AddDocumentation();
+    builder.Services.AddDocumentations();
 
     // Build application.
     var app = builder.Build();
