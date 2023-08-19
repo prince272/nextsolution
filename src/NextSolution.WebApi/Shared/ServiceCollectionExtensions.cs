@@ -2,6 +2,7 @@
 using Microsoft.OpenApi.Models;
 using NextSolution.Core.Services;
 using NextSolution.Core.Utilities;
+using NextSolution.Infrastructure.Data;
 using System.Reflection;
 
 namespace NextSolution.WebApi.Shared
@@ -59,6 +60,24 @@ namespace NextSolution.WebApi.Shared
                 if (File.Exists(xmlFilePath)) options.IncludeXmlComments(xmlFilePath);
             });
             return services;
+        }
+
+        public static async Task UseSeeding(this IApplicationBuilder app)
+        {
+            if (app == null) throw new ArgumentNullException(nameof(app));
+
+            using var scope = app.ApplicationServices.CreateScope();
+            var services = scope.ServiceProvider;
+
+            try
+            {
+                await AppDbInitializer.InitializeAsync(services);
+            }
+            catch (Exception ex)
+            {
+                var logger = services.GetRequiredService<ILogger<Program>>();
+                logger.LogError(ex, "An error occurred while seeding the database.");
+            }
         }
     }
 }
