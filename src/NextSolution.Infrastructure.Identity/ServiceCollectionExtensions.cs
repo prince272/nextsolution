@@ -63,7 +63,7 @@ namespace NextSolution.Infrastructure.Identity
             services.AddScoped<IUserClaimsPrincipalFactory<User>, UserClaimsPrincipalFactory>();
             services.AddScoped<IUserSessionFactory, UserSessionFactory>();
             services.AddScoped<IUserSessionStore, UserSessionStore>();
-            services.AddScoped<IUserSessionContext, UserSessionContext>();
+            services.AddScoped<IUserContext, UserContext>();
             return services;
         }
     }

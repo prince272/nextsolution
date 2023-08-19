@@ -52,7 +52,7 @@ namespace NextSolution.Infrastructure.Identity
                 OnTokenValidated = async context =>
                 {
                     var userRepository = context.HttpContext.RequestServices.GetRequiredService<IUserRepository>();
-                    var userSessionContext = context.HttpContext.RequestServices.GetRequiredService<IUserSessionContext>();
+                    var userContext = context.HttpContext.RequestServices.GetRequiredService<IUserContext>();
 
                     var claimsPrincipal = context.Principal;
 
@@ -63,7 +63,7 @@ namespace NextSolution.Infrastructure.Identity
                     }
 
                     var deviceId = userRepository.GetDeviceId(claimsPrincipal);
-                    if (deviceId == null || !string.Equals(deviceId, userSessionContext.DeviceId, StringComparison.Ordinal))
+                    if (deviceId == null || !string.Equals(deviceId, userContext.DeviceId, StringComparison.Ordinal))
                     {
                         context.Fail("Detected usage of an old token from an unknown device! Please login again!");
                         return;

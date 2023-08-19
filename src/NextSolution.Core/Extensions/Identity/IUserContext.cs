@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace NextSolution.Core.Extensions.Identity
 {
-    public interface IUserSessionContext
+    public interface IUserContext
     {
         string DeviceId { get; }
 

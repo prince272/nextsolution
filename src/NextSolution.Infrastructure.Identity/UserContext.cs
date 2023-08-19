@@ -12,11 +12,11 @@ using System.Threading.Tasks;
 
 namespace NextSolution.Infrastructure.Identity
 {
-    public class UserSessionContext : IUserSessionContext
+    public class UserContext : IUserContext
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public UserSessionContext(IHttpContextAccessor httpContextAccessor)
+        public UserContext(IHttpContextAccessor httpContextAccessor)
         {
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         }

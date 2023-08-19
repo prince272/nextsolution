@@ -24,7 +24,7 @@ namespace NextSolution.Infrastructure.Identity
         private readonly JwtBearerOptions _jwtBearerOptions;
         private readonly IOptions<UserSessionOptions> _userSessionOptions;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly IUserSessionContext _userSessionContext;
+        private readonly IUserContext _userContext;
         private readonly IUserClaimsPrincipalFactory<User> _userClaimsPrincipalFactory;
         private readonly ILogger<UserSessionFactory> _logger;
 
@@ -32,13 +32,13 @@ namespace NextSolution.Infrastructure.Identity
             IOptionsSnapshot<JwtBearerOptions> jwtBearerOptions,
             IOptions<UserSessionOptions> userSessionOptions,
             IHttpContextAccessor httpContextAccessor,
-            IUserSessionContext userSessionContext,
+            IUserContext userSessionContext,
             IUserClaimsPrincipalFactory<User> userClaimsPrincipalFactory, ILogger<UserSessionFactory> logger)
         {
             _jwtBearerOptions = jwtBearerOptions.Get(JwtBearerDefaults.AuthenticationScheme) ?? throw new ArgumentNullException(nameof(jwtBearerOptions));
             _userSessionOptions = userSessionOptions ?? throw new ArgumentNullException(nameof(userSessionOptions));
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
-            _userSessionContext = userSessionContext ?? throw new ArgumentNullException(nameof(userSessionContext));
+            _userContext = userSessionContext ?? throw new ArgumentNullException(nameof(userSessionContext));
             _userClaimsPrincipalFactory = userClaimsPrincipalFactory ?? throw new ArgumentNullException(nameof(userClaimsPrincipalFactory));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -80,7 +80,7 @@ namespace NextSolution.Infrastructure.Identity
                 new(JwtRegisteredClaimNames.Iat, current.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture), ClaimValueTypes.Integer64, issuer),
                 
                 // for invalidation
-                new(ClaimTypes.System, _userSessionContext.DeviceId, ClaimValueTypes.String, issuer),
+                new(ClaimTypes.System, _userContext.DeviceId, ClaimValueTypes.String, issuer),
             });
 
             var expiresAt = current.Add(expiresIn);
@@ -104,7 +104,7 @@ namespace NextSolution.Infrastructure.Identity
                 new(JwtRegisteredClaimNames.Iat, current.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture), ClaimValueTypes.Integer64, issuer),
                 
                 // for invalidation
-                new(ClaimTypes.System, _userSessionContext.DeviceId, ClaimValueTypes.String, issuer)
+                new(ClaimTypes.System, _userContext.DeviceId, ClaimValueTypes.String, issuer)
             };
 
             var expiresAt = current.Add(expiresIn);
@@ -142,7 +142,7 @@ namespace NextSolution.Infrastructure.Identity
         {
             if (deviceId == null) throw new ArgumentNullException(nameof(deviceId));
 
-            return string.Equals(deviceId, _userSessionContext.DeviceId, StringComparison.Ordinal);
+            return string.Equals(deviceId, _userContext.DeviceId, StringComparison.Ordinal);
         }
 
         public async Task<bool> ValidateAccessTokenAsync(string accessToken)
