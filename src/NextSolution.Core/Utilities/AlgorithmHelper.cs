@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using DeviceId;
+using System.Globalization;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
@@ -8,6 +9,9 @@ namespace NextSolution.Core.Utilities
 {
     public static class AlgorithmHelper
     {
+        public static string Secret => GenerateHash(new DeviceIdBuilder().AddMachineName().AddOsVersion().AddUserName()
+            .AddFileToken(Path.ChangeExtension(Assembly.GetEntryAssembly()!.Location, nameof(Secret).ToLower())).ToString());
+
         public static async Task<string> GenerateSlugAsync(string text, Func<string, Task<bool>> exists, string separator = "-")
         {
             if (text == null)
@@ -72,12 +76,19 @@ namespace NextSolution.Core.Utilities
 
         public static string GenerateHash(string input)
         {
-            if (input == null)
-                throw new ArgumentNullException(nameof(input));
+            using (var sha256 = SHA256.Create())
+            {
+                byte[] inputBytes = Encoding.UTF8.GetBytes(input);
+                byte[] hashBytes = sha256.ComputeHash(inputBytes);
 
-            var byteValue = Encoding.UTF8.GetBytes(input);
-            var byteHash = SHA256.HashData(byteValue);
-            return Convert.ToBase64String(byteHash);
+                var hashBuilder = new StringBuilder();
+                for (int i = 0; i < hashBytes.Length; i++)
+                {
+                    hashBuilder.Append(hashBytes[i].ToString("x2"));
+                }
+
+                return hashBuilder.ToString();
+            }
         }
 
         public const string NATURAL_NUMERIC_CHARS = "123456789";

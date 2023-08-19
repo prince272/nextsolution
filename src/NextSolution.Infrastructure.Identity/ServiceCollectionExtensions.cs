@@ -53,9 +53,12 @@ namespace NextSolution.Infrastructure.Identity
 
             var separator = UserSessionOptions.ValueSeparator;
 
-            options.Secret = !string.IsNullOrEmpty(options.Secret) ? options.Secret : Secrets.Key;
-            options.Issuer = string.Join(separator, options.Issuer?.Split(separator).Append(serverUrl).Distinct().SkipWhile(string.IsNullOrEmpty).ToArray() ?? Array.Empty<string>());
-            options.Audience = string.Join(separator, options.Audience?.Split(separator).Append(serverUrl).Distinct().SkipWhile(string.IsNullOrEmpty).ToArray() ?? Array.Empty<string>());
+            options.Secret = !string.IsNullOrEmpty(options.Secret) ? options.Secret : AlgorithmHelper.Secret;
+            options.Issuer = string.Join(separator, (options.Issuer ?? string.Empty).Split(separator).Append(serverUrl).Distinct().SkipWhile(string.IsNullOrEmpty).ToArray());
+            options.Audience = string.Join(separator, (options.Issuer ?? string.Empty).Split(separator).Append(serverUrl).Distinct().SkipWhile(string.IsNullOrEmpty).ToArray());
+
+            options.AccessTokenExpiresIn = options.AccessTokenExpiresIn != TimeSpan.Zero ? options.AccessTokenExpiresIn : TimeSpan.FromDays(1);
+            options.RefreshTokenExpiresIn = options.AccessTokenExpiresIn != TimeSpan.Zero ? options.AccessTokenExpiresIn : TimeSpan.FromDays(90);
         }
 
         public static AuthenticationBuilder AddBearer(this AuthenticationBuilder builder)
