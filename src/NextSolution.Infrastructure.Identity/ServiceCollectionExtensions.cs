@@ -26,25 +26,25 @@ namespace NextSolution.Infrastructure.Identity
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddUserSession(this IServiceCollection services, Action<UserSessionOptions> options)
+        public static AuthenticationBuilder AddBearer(this AuthenticationBuilder builder, Action<UserSessionOptions> options)
         {
-            services.AddOptions<UserSessionOptions>().Configure<IHttpContextAccessor>((optionsInstance, httpContextAccessor) => {
-                ConfigureUserSession(() => options(optionsInstance), optionsInstance, httpContextAccessor);
+            builder.Services.AddOptions<UserSessionOptions>().Configure<IHttpContextAccessor>((optionsInstance, httpContextAccessor) => {
+                ConfigureBearer(() => options(optionsInstance), optionsInstance, httpContextAccessor);
             });
-            services.AddUserSession();
-            return services;
+            builder.AddBearer();
+            return builder;
         }
 
-        public static IServiceCollection AddUserSession(this IServiceCollection services, IConfiguration configuration)
+        public static AuthenticationBuilder AddBearer(this AuthenticationBuilder builder, IConfiguration configuration)
         {
-            services.AddOptions<UserSessionOptions>().Configure<IHttpContextAccessor>((options, httpContextAccessor) => {
-                ConfigureUserSession(() => configuration.Bind(options), options, httpContextAccessor);
+            builder.Services.AddOptions<UserSessionOptions>().Configure<IHttpContextAccessor>((options, httpContextAccessor) => {
+                ConfigureBearer(() => configuration.Bind(options), options, httpContextAccessor);
             });
-            services.AddUserSession();
-            return services;
+            builder.AddBearer();
+            return builder;
         }
 
-        private static void ConfigureUserSession(Action configure, UserSessionOptions options, IHttpContextAccessor httpContextAccessor)
+        private static void ConfigureBearer(Action configure, UserSessionOptions options, IHttpContextAccessor httpContextAccessor)
         {
             configure();
 
@@ -58,13 +58,15 @@ namespace NextSolution.Infrastructure.Identity
             options.Audience = string.Join(separator, options.Audience?.Split(separator).Append(serverUrl).Distinct().SkipWhile(string.IsNullOrEmpty).ToArray() ?? Array.Empty<string>());
         }
 
-        public static IServiceCollection AddUserSession(this IServiceCollection services)
+        public static AuthenticationBuilder AddBearer(this AuthenticationBuilder builder)
         {
-            services.AddScoped<IUserClaimsPrincipalFactory<User>, UserClaimsPrincipalFactory>();
-            services.AddScoped<IUserSessionFactory, UserSessionFactory>();
-            services.AddScoped<IUserSessionStore, UserSessionStore>();
-            services.AddScoped<IUserContext, UserContext>();
-            return services;
+            builder.Services.AddScoped<IUserClaimsPrincipalFactory<User>, UserClaimsPrincipalFactory>();
+            builder.Services.AddScoped<IUserSessionFactory, UserSessionFactory>();
+            builder.Services.AddScoped<IUserSessionStore, UserSessionStore>();
+            builder.Services.AddScoped<IUserContext, UserContext>();
+
+            builder.Services.ConfigureOptions<ConfigureJwtBearerOptions>();
+            return builder.AddJwtBearer();
         }
     }
 }

@@ -30,6 +30,8 @@ try
     builder.Logging.ClearProviders();
     builder.Host.UseSerilog(Log.Logger);
 
+    var assemblies = AssemblyHelper.GetAssemblies();
+
     // Add database services.
     builder.Services.AddDbContext<AppDbContext>(options =>
     {
@@ -37,7 +39,11 @@ try
         options.UseSqlServer(connectionString, sqlOptions => sqlOptions.MigrationsAssembly(typeof(AppDbContext).Assembly.GetName().Name));
     });
 
-    builder.Services.AddRepositories();
+    builder.Services.AddRepositories(assemblies);
+
+    builder.Services.AddValidators(assemblies);
+
+    builder.Services.AddAutoMapper(assemblies);
 
     // Add identity services.
     builder.Services.AddIdentity<User, Role>(options =>
@@ -78,10 +84,6 @@ try
         .AddEntityFrameworkStores<AppDbContext>()
         .AddDefaultTokenProviders();
 
-    builder.Services.AddUserSession(builder.Configuration.GetRequiredSection("Authentication:Bearer"));
-
-    builder.Services.ConfigureOptions<ConfigureJwtBearerOptions>();
-
     builder.Services.AddAuthentication(options =>
     {
         options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -89,7 +91,7 @@ try
         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
 
     })
-        .AddJwtBearer()
+        .AddBearer(builder.Configuration.GetRequiredSection("Authentication:Bearer"))
         .AddGoogle(GoogleDefaults.AuthenticationScheme, options =>
         {
             options.SignInScheme = IdentityConstants.ExternalScheme;
@@ -102,9 +104,6 @@ try
     builder.Services.AddMailKitEmailSender(builder.Configuration.GetRequiredSection("Mailing:MailKit"));
     builder.Services.AddFakeSmsSender();
     builder.Services.AddRazorViewRenderer();
-
-    // Add application services.
-    builder.Services.AddApplication();
 
     builder.Services.AddCors(options =>
     {
@@ -133,6 +132,9 @@ try
 
     options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
 });
+
+    // Add application services.
+    builder.Services.AddApplication();
 
     // Add documentation services.
     builder.Services.AddDocumentation();

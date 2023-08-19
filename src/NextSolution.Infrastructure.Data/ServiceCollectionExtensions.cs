@@ -13,9 +13,8 @@ namespace NextSolution.Infrastructure.Data
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddRepositories(this IServiceCollection services)
+        public static IServiceCollection AddRepositories(this IServiceCollection services, IEnumerable<Assembly> assemblies)
         {
-            var assemblies = AssemblyHelper.GetAssemblies();
             var repositoryTypes = assemblies.SelectMany(_ => _.DefinedTypes).Select(_ => _.AsType())
                 .Where(type => type.IsClass && !type.IsAbstract && type.IsCompatibleWith(typeof(IRepository<>)));
 

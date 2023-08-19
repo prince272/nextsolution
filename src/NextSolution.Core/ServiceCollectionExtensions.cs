@@ -16,14 +16,11 @@ namespace NextSolution.Core
     {
         public static IServiceCollection AddApplication(this IServiceCollection services)
         {
-            var assemblies = AssemblyHelper.GetAssemblies();
-            services.AddAutoMapper(assemblies);
-            services.AddValidators(assemblies);
             services.AddScoped<AccountService>();
             return services;
         }
 
-        private static IServiceCollection AddValidators(this IServiceCollection services, IEnumerable<Assembly> assemblies)
+        public static IServiceCollection AddValidators(this IServiceCollection services, IEnumerable<Assembly> assemblies)
         {
             ValidatorOptions.Global.DefaultClassLevelCascadeMode = CascadeMode.Continue;
             ValidatorOptions.Global.DefaultRuleLevelCascadeMode = CascadeMode.Stop;
