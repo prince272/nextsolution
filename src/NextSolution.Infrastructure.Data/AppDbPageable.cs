@@ -11,9 +11,9 @@ using System.Xml.Linq;
 
 namespace NextSolution.Infrastructure.Data
 {
-    public class Pageable<T> : IPageable<T>
+    public class AppDbPageable<T> : IPageable<T>
     {
-        public Pageable(int pageNumber, int pageSize, long totalItems, IEnumerable<T> items)
+        public AppDbPageable(int pageNumber, int pageSize, long totalItems, IEnumerable<T> items)
         {
             Page = pageNumber;
             PageSize = pageSize;
@@ -32,7 +32,7 @@ namespace NextSolution.Infrastructure.Data
 
     public static class PageableExtensions
     {
-        public static Pageable<T> Paginate<T>(
+        public static AppDbPageable<T> Paginate<T>(
             this IEnumerable<T> source,
             int pageNumber,
             int pageSize)
@@ -46,10 +46,10 @@ namespace NextSolution.Infrastructure.Data
             long totalItems = source.LongCount();
             var items = source.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
 
-            return new Pageable<T>(pageNumber, pageSize, totalItems, items);
+            return new AppDbPageable<T>(pageNumber, pageSize, totalItems, items);
         }
 
-        public static async Task<Pageable<T>> PaginateAsync<T>(
+        public static async Task<AppDbPageable<T>> PaginateAsync<T>(
             this IQueryable<T> source,
             int pageNumber,
             int pageSize)
@@ -63,10 +63,10 @@ namespace NextSolution.Infrastructure.Data
             long totalItems = await source.LongCountAsync();
             var items = await source.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
 
-            return new Pageable<T>(pageNumber, pageSize, totalItems, items);
+            return new AppDbPageable<T>(pageNumber, pageSize, totalItems, items);
         }
 
-        public static Pageable<TResult> Paginate<TSource, TResult>(
+        public static AppDbPageable<TResult> Paginate<TSource, TResult>(
             this IEnumerable<TSource> source,
             int pageNumber,
             int pageSize,
@@ -81,10 +81,10 @@ namespace NextSolution.Infrastructure.Data
             long totalItems = source.LongCount();
             var items = source.Skip((pageNumber - 1) * pageSize).Take(pageSize).Select(selector).ToList();
 
-            return new Pageable<TResult>(pageNumber, pageSize, totalItems, items);
+            return new AppDbPageable<TResult>(pageNumber, pageSize, totalItems, items);
         }
 
-        public static async Task<Pageable<TResult>> PaginateAsync<TSource, TResult>(
+        public static async Task<AppDbPageable<TResult>> PaginateAsync<TSource, TResult>(
             this IQueryable<TSource> source,
             int pageNumber,
             int pageSize,
@@ -99,7 +99,7 @@ namespace NextSolution.Infrastructure.Data
             long totalItems = await source.LongCountAsync();
             var items = (await (source.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync())).Select(selector).ToList();
 
-            return new Pageable<TResult>(pageNumber, pageSize, totalItems, items);
+            return new AppDbPageable<TResult>(pageNumber, pageSize, totalItems, items);
         }
     }
 }
