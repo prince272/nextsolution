@@ -44,7 +44,7 @@ namespace NextSolution.Infrastructure.Identity
         }
 
 
-        public async Task<UserSessionInfo> GenerateAsync(User user)
+        public async Task<UserSessionInfo> GenerateAsync(User user, CancellationToken cancellationToken = default)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
 
@@ -145,7 +145,7 @@ namespace NextSolution.Infrastructure.Identity
             return string.Equals(deviceId, _userContext.DeviceId, StringComparison.Ordinal);
         }
 
-        public async Task<bool> ValidateAccessTokenAsync(string accessToken)
+        public async Task<bool> ValidateAccessTokenAsync(string accessToken, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(accessToken)) return false;
 
@@ -174,7 +174,7 @@ namespace NextSolution.Infrastructure.Identity
             }
         }
 
-        public async Task<bool> ValidateRefreshTokenAsync(string refreshToken)
+        public async Task<bool> ValidateRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(refreshToken)) return false;
 

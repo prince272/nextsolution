@@ -32,27 +32,10 @@ namespace NextSolution.Infrastructure.Data
 
     public static class PageableExtensions
     {
-        public static AppDbPageable<T> Paginate<T>(
-            this IEnumerable<T> source,
-            int pageNumber,
-            int pageSize)
-        {
-            if (pageNumber < 1)
-                throw new ArgumentException("Page number must be greater than or equal to 1.");
-
-            if (pageSize < 1)
-                throw new ArgumentException("Page size must be greater than or equal to 1.");
-
-            long totalItems = source.LongCount();
-            var items = source.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
-
-            return new AppDbPageable<T>(pageNumber, pageSize, totalItems, items);
-        }
-
         public static async Task<AppDbPageable<T>> PaginateAsync<T>(
             this IQueryable<T> source,
             int pageNumber,
-            int pageSize)
+            int pageSize, CancellationToken cancellationToken = default)
         {
             if (pageNumber < 1)
                 throw new ArgumentException("Page number must be greater than or equal to 1.");
@@ -60,46 +43,10 @@ namespace NextSolution.Infrastructure.Data
             if (pageSize < 1)
                 throw new ArgumentException("Page size must be greater than or equal to 1.");
 
-            long totalItems = await source.LongCountAsync();
-            var items = await source.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+            long totalItems = await source.LongCountAsync(cancellationToken);
+            var items = await source.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync(cancellationToken);
 
             return new AppDbPageable<T>(pageNumber, pageSize, totalItems, items);
-        }
-
-        public static AppDbPageable<TResult> Paginate<TSource, TResult>(
-            this IEnumerable<TSource> source,
-            int pageNumber,
-            int pageSize,
-            Func<TSource, TResult> selector)
-        {
-            if (pageNumber < 1)
-                throw new ArgumentException("Page number must be greater than or equal to 1.");
-
-            if (pageSize < 1)
-                throw new ArgumentException("Page size must be greater than or equal to 1.");
-
-            long totalItems = source.LongCount();
-            var items = source.Skip((pageNumber - 1) * pageSize).Take(pageSize).Select(selector).ToList();
-
-            return new AppDbPageable<TResult>(pageNumber, pageSize, totalItems, items);
-        }
-
-        public static async Task<AppDbPageable<TResult>> PaginateAsync<TSource, TResult>(
-            this IQueryable<TSource> source,
-            int pageNumber,
-            int pageSize,
-            Func<TSource, TResult> selector)
-        {
-            if (pageNumber < 1)
-                throw new ArgumentException("Page number must be greater than or equal to 1.");
-
-            if (pageSize < 1)
-                throw new ArgumentException("Page size must be greater than or equal to 1.");
-
-            long totalItems = await source.LongCountAsync();
-            var items = (await (source.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync())).Select(selector).ToList();
-
-            return new AppDbPageable<TResult>(pageNumber, pageSize, totalItems, items);
         }
     }
 }

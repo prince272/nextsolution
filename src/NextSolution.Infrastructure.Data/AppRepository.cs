@@ -19,84 +19,84 @@ namespace NextSolution.Infrastructure.Data
             _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
 
-        public virtual async Task CreateAsync(TEntity entity)
+        public virtual async Task CreateAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
             if (entity == null) throw new ArgumentNullException(nameof(entity));
 
-            await _dbContext.AddAsync(entity);
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.AddAsync(entity, cancellationToken);
+            await _dbContext.SaveChangesAsync(cancellationToken);
         }
 
-        public virtual async Task UpdateAsync(TEntity entity)
+        public virtual async Task UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
             if (entity == null) throw new ArgumentNullException(nameof(entity));
 
             _dbContext.Update(entity);
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync(cancellationToken);
         }
 
-        public virtual async Task DeleteAsync(TEntity entity)
+        public virtual async Task DeleteAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
             if (entity == null) throw new ArgumentNullException(nameof(entity));
          
             _dbContext.Remove(entity);
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync(cancellationToken);
         }
 
-        public virtual async Task<TEntity?> FindByIdAsync(long id)
+        public virtual async Task<TEntity?> FindByIdAsync(long id, CancellationToken cancellationToken = default)
         {
-            return await _dbContext.FindAsync<TEntity>(id);
+            return await _dbContext.FindAsync<TEntity>(keyValues: new object[] { id }, cancellationToken);
         }
 
         public Task<TEntity?> FindAsync(
             Expression<Func<TEntity, bool>> predicate,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
-            params Expression<Func<TEntity, object>>[]? include)
+            Expression<Func<TEntity, object>>[]? include = null, CancellationToken cancellationToken = default)
         {
-            return GetQueryable(predicate, orderBy, include, enableTracking: true, enableFilters: true).FirstOrDefaultAsync();
+            return GetQueryable(predicate, orderBy, include, enableTracking: true, enableFilters: true).FirstOrDefaultAsync(cancellationToken);
         }
 
         public Task<TResult?> FindAsync<TResult>(
             Expression<Func<TEntity, TResult>> selector,
             Expression<Func<TEntity, bool>> predicate,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
-            params Expression<Func<TEntity, object>>[]? include)
+            Expression<Func<TEntity, object>>[]? include = null, CancellationToken cancellationToken = default)
         {
-            return GetQueryable(predicate, orderBy, include, enableTracking: true, enableFilters: true).Select(selector).FirstOrDefaultAsync();
+            return GetQueryable(predicate, orderBy, include, enableTracking: true, enableFilters: true).Select(selector).FirstOrDefaultAsync(cancellationToken);
         }
 
         public async Task<IEnumerable<TEntity>> FindManyAsync(
             Expression<Func<TEntity, bool>> predicate,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
-            params Expression<Func<TEntity, object>>[]? include)
+            Expression<Func<TEntity, object>>[]? include = null, CancellationToken cancellationToken = default)
         {
-            return await GetQueryable(predicate, orderBy, include, enableTracking: true, enableFilters: true).ToArrayAsync();
+            return await GetQueryable(predicate, orderBy, include, enableTracking: true, enableFilters: true).ToArrayAsync(cancellationToken);
         }
 
         public async Task<IEnumerable<TResult>> FindManyAsync<TResult>(
             Expression<Func<TEntity, TResult>> selector,
             Expression<Func<TEntity, bool>> predicate,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
-            params Expression<Func<TEntity, object>>[]? include)
+            Expression<Func<TEntity, object>>[]? include = null, CancellationToken cancellationToken = default)
         {
-            return await GetQueryable(predicate, orderBy, include, enableTracking: true, enableFilters: true).Select(selector).ToArrayAsync();
+            return await GetQueryable(predicate, orderBy, include, enableTracking: true, enableFilters: true).Select(selector).ToArrayAsync(cancellationToken);
         }
 
         public async Task<IPageable<TEntity>> FindManyAsync(int pageNumber, int pageSize,
             Expression<Func<TEntity, bool>>? predicate = null,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
-            params Expression<Func<TEntity, object>>[]? include)
+            Expression<Func<TEntity, object>>[]? include = null, CancellationToken cancellationToken = default)
         {
-            return await GetQueryable(predicate, orderBy, include, enableTracking: false, enableFilters: true).PaginateAsync(pageNumber, pageSize);
+            return await GetQueryable(predicate, orderBy, include, enableTracking: false, enableFilters: true).PaginateAsync(pageNumber, pageSize, cancellationToken);
         }
 
         public async Task<IPageable<TResult>> FindManyAsync<TResult>(int pageNumber, int pageSize,
             Expression<Func<TEntity, TResult>> selector,
             Expression<Func<TEntity, bool>>? predicate = null,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
-            params Expression<Func<TEntity, object>>[]? include)
+            Expression<Func<TEntity, object>>[]? include = null, CancellationToken cancellationToken = default)
         {
-            return await GetQueryable(predicate, orderBy, include, enableTracking: false, enableFilters: true).Select(selector).PaginateAsync(pageNumber, pageSize);
+            return await GetQueryable(predicate, orderBy, include, enableTracking: false, enableFilters: true).Select(selector).PaginateAsync(pageNumber, pageSize, cancellationToken);
         }
 
         public IQueryable<TEntity> GetQueryable(
@@ -150,37 +150,37 @@ namespace NextSolution.Infrastructure.Data
             return current.Include(item);
         }
 
-        public Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate)
+        public Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
         {
             IQueryable<TEntity> query = _dbContext.Set<TEntity>();
 
             if (predicate != null)
                 query = query.Where(predicate);
 
-            return query.AnyAsync();
+            return query.AnyAsync(cancellationToken);
         }
 
-        public Task<bool> AnyAsync()
+        public Task<bool> AnyAsync(CancellationToken cancellationToken = default)
         {
             IQueryable<TEntity> query = _dbContext.Set<TEntity>();
-            return query.AnyAsync();
+            return query.AnyAsync(cancellationToken);
         }
 
-        public Task<long> CountAsync(Expression<Func<TEntity, bool>> predicate)
+        public Task<long> CountAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
         {
             IQueryable<TEntity> query = _dbContext.Set<TEntity>();
 
             if (predicate != null)
                 query = query.Where(predicate);
 
-            return query.LongCountAsync();
+            return query.LongCountAsync(cancellationToken);
         }
 
 
-        public Task<long> CountAsync()
+        public Task<long> CountAsync(CancellationToken cancellationToken = default)
         {
             IQueryable<TEntity> query = _dbContext.Set<TEntity>();
-            return query.LongCountAsync();
+            return query.LongCountAsync(cancellationToken);
         }
     }
 }

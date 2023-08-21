@@ -19,7 +19,7 @@ namespace NextSolution.Infrastructure.EmailSender.MailKit
             _emailOptions = emailOptions ?? throw new ArgumentNullException(nameof(emailOptions));
         }
 
-        public async Task SendAsync(EmailAccount account, EmailMessage message)
+        public async Task SendAsync(EmailAccount account, EmailMessage message, CancellationToken cancellationToken = default)
         {
             if (account == null) throw new ArgumentNullException(nameof(account));
             if (message == null) throw new ArgumentNullException(nameof(account));
@@ -48,20 +48,20 @@ namespace NextSolution.Infrastructure.EmailSender.MailKit
 
             if (_emailOptions.Value.EnableSsl)
             {
-                await client.ConnectAsync(_emailOptions.Value.Host, _emailOptions.Value.Port, SecureSocketOptions.SslOnConnect);
+                await client.ConnectAsync(_emailOptions.Value.Host, _emailOptions.Value.Port, SecureSocketOptions.SslOnConnect, cancellationToken);
             }
             else
             {
-                await client.ConnectAsync(_emailOptions.Value.Host, _emailOptions.Value.Port, SecureSocketOptions.StartTls);
+                await client.ConnectAsync(_emailOptions.Value.Host, _emailOptions.Value.Port, SecureSocketOptions.StartTls, cancellationToken);
             }
 
-            await client.AuthenticateAsync(account.Username, account.Password);
+            await client.AuthenticateAsync(account.Username, account.Password, cancellationToken);
 
-            await client.SendAsync(minme);
-            await client.DisconnectAsync(true);
+            await client.SendAsync(minme, cancellationToken);
+            await client.DisconnectAsync(true, cancellationToken);
         }
 
-        public Task SendAsync(string account, EmailMessage message)
+        public Task SendAsync(string account, EmailMessage message, CancellationToken cancellationToken = default)
         {
             if (account == null) throw new ArgumentNullException(nameof(account));
             if (message == null) throw new ArgumentNullException(nameof(message));
@@ -70,7 +70,7 @@ namespace NextSolution.Infrastructure.EmailSender.MailKit
            if (!_emailOptions.Value.Accounts.TryGetValue(account, out var accountObject))
                 throw new ArgumentException($"The specified account '{account}' was not found in the email options.", nameof(account));
 
-            return SendAsync(accountObject, message);
+            return SendAsync(accountObject, message, cancellationToken);
         }
     }
 }

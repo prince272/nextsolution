@@ -32,7 +32,7 @@ namespace NextSolution.Infrastructure.Data.Repositories
             _userSessionStore = userSessionStore ?? throw new ArgumentNullException(nameof(userSessionStore));
         }
 
-        public async Task CreateAsync(User user, string password)
+        public async Task CreateAsync(User user, string password, CancellationToken cancellationToken = default)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
             if (password == null) throw new ArgumentNullException(nameof(password));
@@ -43,7 +43,7 @@ namespace NextSolution.Infrastructure.Data.Repositories
             if (!result.Succeeded) throw new InvalidOperationException(result.Errors.GetMessage());
         }
 
-        public override async Task CreateAsync(User user)
+        public override async Task CreateAsync(User user, CancellationToken cancellationToken = default)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
 
@@ -53,7 +53,7 @@ namespace NextSolution.Infrastructure.Data.Repositories
             if (!result.Succeeded) throw new InvalidOperationException(result.Errors.GetMessage());
         }
 
-        public override async Task UpdateAsync(User user)
+        public override async Task UpdateAsync(User user, CancellationToken cancellationToken = default)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
 
@@ -63,7 +63,7 @@ namespace NextSolution.Infrastructure.Data.Repositories
             if (!result.Succeeded) throw new InvalidOperationException(result.Errors.GetMessage());
         }
 
-        public override async Task DeleteAsync(User user)
+        public override async Task DeleteAsync(User user, CancellationToken cancellationToken = default)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
 
@@ -72,22 +72,22 @@ namespace NextSolution.Infrastructure.Data.Repositories
             if (!result.Succeeded) throw new InvalidOperationException(result.Errors.GetMessage());
         }
 
-        public Task<User?> FindByEmailAsync(string email)
+        public Task<User?> FindByEmailAsync(string email, CancellationToken cancellationToken = default)
         {
             if (email == null) throw new ArgumentNullException(nameof(email));
 
             return _userManager.FindByEmailAsync(email);
         }
 
-        public Task<User?> FindByPhoneNumberAsync(string phoneNumber)
+        public Task<User?> FindByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken = default)
         {
             if (phoneNumber == null) throw new ArgumentNullException(nameof(phoneNumber));
 
             phoneNumber = NormalizePhoneNumber(phoneNumber);
-            return _userManager.Users.FirstOrDefaultAsync(_ => _.PhoneNumber == phoneNumber);
+            return _userManager.Users.FirstOrDefaultAsync(_ => _.PhoneNumber == phoneNumber, cancellationToken);
         }
 
-        public Task<bool> IsInRoleAsync(User user, string role)
+        public Task<bool> IsInRoleAsync(User user, string role, CancellationToken cancellationToken = default)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
             if (role == null) throw new ArgumentNullException(nameof(role));
@@ -95,7 +95,7 @@ namespace NextSolution.Infrastructure.Data.Repositories
             return _userManager.IsInRoleAsync(user, role);
         }
 
-        public async Task AddToRoleAsync(User user, string role)
+        public async Task AddToRoleAsync(User user, string role, CancellationToken cancellationToken = default)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
             if (role == null) throw new ArgumentNullException(nameof(role));
@@ -105,7 +105,7 @@ namespace NextSolution.Infrastructure.Data.Repositories
             if (!result.Succeeded) throw new InvalidOperationException(result.Errors.GetMessage());
         }
 
-        public async Task AddToRolesAsync(User user, IEnumerable<string> roles)
+        public async Task AddToRolesAsync(User user, IEnumerable<string> roles, CancellationToken cancellationToken = default)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
             if (roles == null) throw new ArgumentNullException(nameof(roles));
@@ -115,7 +115,7 @@ namespace NextSolution.Infrastructure.Data.Repositories
             if (!result.Succeeded) throw new InvalidOperationException(result.Errors.GetMessage());
         }
 
-        public async Task RemoveFromRoleAsync(User user, string role)
+        public async Task RemoveFromRoleAsync(User user, string role, CancellationToken cancellationToken = default)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
             if (role == null) throw new ArgumentNullException(nameof(role));
@@ -125,7 +125,7 @@ namespace NextSolution.Infrastructure.Data.Repositories
             if (!result.Succeeded) throw new InvalidOperationException(result.Errors.GetMessage());
         }
 
-        public async Task RemoveFromRolesAsync(User user, IEnumerable<string> roles)
+        public async Task RemoveFromRolesAsync(User user, IEnumerable<string> roles, CancellationToken cancellationToken = default)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
             if (roles == null) throw new ArgumentNullException(nameof(roles));
@@ -135,13 +135,13 @@ namespace NextSolution.Infrastructure.Data.Repositories
             if (!result.Succeeded) throw new InvalidOperationException(result.Errors.GetMessage());
         }
 
-        public async Task<IEnumerable<string>> GetRolesAsync(User user)
+        public async Task<IEnumerable<string>> GetRolesAsync(User user, CancellationToken cancellationToken = default)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
             return await _userManager.GetRolesAsync(user);
         }
 
-        public Task<bool> CheckPasswordAsync(User user, string password)
+        public Task<bool> CheckPasswordAsync(User user, string password, CancellationToken cancellationToken = default)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
             if (password == null) throw new ArgumentNullException(nameof(password));
@@ -149,14 +149,14 @@ namespace NextSolution.Infrastructure.Data.Repositories
             return _userManager.CheckPasswordAsync(user, password);
         }
 
-        public Task<bool> HasPasswordAsync(User user)
+        public Task<bool> HasPasswordAsync(User user, CancellationToken cancellationToken = default)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
 
             return _userManager.HasPasswordAsync(user);
         }
 
-        public async Task AddPasswordAsync(User user, string password)
+        public async Task AddPasswordAsync(User user, string password, CancellationToken cancellationToken = default)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
             if (password == null) throw new ArgumentNullException(nameof(password));
@@ -166,7 +166,7 @@ namespace NextSolution.Infrastructure.Data.Repositories
             if (!result.Succeeded) throw new InvalidOperationException(result.Errors.GetMessage());
         }
 
-        public async Task ChangePasswordAsync(User user, string currentPassword, string newPassword)
+        public async Task ChangePasswordAsync(User user, string currentPassword, string newPassword, CancellationToken cancellationToken = default)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
             if (currentPassword == null) throw new ArgumentNullException(nameof(currentPassword));
@@ -177,7 +177,7 @@ namespace NextSolution.Infrastructure.Data.Repositories
             if (!result.Succeeded) throw new InvalidOperationException(result.Errors.GetMessage());
         }
 
-        public async Task RemovePasswordAsync(User user)
+        public async Task RemovePasswordAsync(User user, CancellationToken cancellationToken = default)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
 
@@ -186,13 +186,13 @@ namespace NextSolution.Infrastructure.Data.Repositories
             if (!result.Succeeded) throw new InvalidOperationException(result.Errors.GetMessage());
         }
 
-        public Task<string> GenerateEmailTokenAsync(User user)
+        public Task<string> GenerateEmailTokenAsync(User user, CancellationToken cancellationToken = default)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
             return _userManager.GenerateChangeEmailTokenAsync(user, user.Email!);
         }
 
-        public async Task VerifyEmailAsync(User user, string token)
+        public async Task VerifyEmailAsync(User user, string token, CancellationToken cancellationToken = default)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
             if (token == null) throw new ArgumentNullException(nameof(token));
@@ -201,7 +201,7 @@ namespace NextSolution.Infrastructure.Data.Repositories
             if (!result.Succeeded) throw new InvalidOperationException(result.Errors.GetMessage());
         }
 
-        public Task<string> GenerateChangeEmailTokenAsync(User user, string newEmail)
+        public Task<string> GenerateChangeEmailTokenAsync(User user, string newEmail, CancellationToken cancellationToken = default)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
             if (newEmail == null) throw new ArgumentNullException(nameof(newEmail));
@@ -209,7 +209,7 @@ namespace NextSolution.Infrastructure.Data.Repositories
             return _userManager.GenerateChangeEmailTokenAsync(user, newEmail);
         }
 
-        public async Task ChangeEmailAsync(User user, string newEmail, string token)
+        public async Task ChangeEmailAsync(User user, string newEmail, string token, CancellationToken cancellationToken = default)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
             if (newEmail == null) throw new ArgumentNullException(nameof(newEmail));
@@ -219,13 +219,13 @@ namespace NextSolution.Infrastructure.Data.Repositories
             if (!result.Succeeded) throw new InvalidOperationException(result.Errors.GetMessage());
         }
 
-        public Task<string> GeneratePhoneNumberTokenAsync(User user)
+        public Task<string> GeneratePhoneNumberTokenAsync(User user, CancellationToken cancellationToken = default)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
             return _userManager.GenerateChangePhoneNumberTokenAsync(user, user.PhoneNumber!);
         }
 
-        public async Task VerifyPhoneNumberTokenAsync(User user, string token)
+        public async Task VerifyPhoneNumberTokenAsync(User user, string token, CancellationToken cancellationToken = default)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
             if (token == null) throw new ArgumentNullException(nameof(token));
@@ -234,13 +234,13 @@ namespace NextSolution.Infrastructure.Data.Repositories
             if (!result.Succeeded) throw new InvalidOperationException(result.Errors.GetMessage());
         }
 
-        public Task<string> GenerateChangePhoneNumberTokenAsync(User user, string newPhoneNumber)
+        public Task<string> GenerateChangePhoneNumberTokenAsync(User user, string newPhoneNumber, CancellationToken cancellationToken = default)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
             return _userManager.GenerateChangePhoneNumberTokenAsync(user, newPhoneNumber);
         }
 
-        public async Task ChangePhoneNumberAsync(User user, string newPhoneNumber, string token)
+        public async Task ChangePhoneNumberAsync(User user, string newPhoneNumber, string token, CancellationToken cancellationToken = default)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
             if (newPhoneNumber == null) throw new ArgumentNullException(nameof(newPhoneNumber));
@@ -250,75 +250,75 @@ namespace NextSolution.Infrastructure.Data.Repositories
             if (!result.Succeeded) throw new InvalidOperationException(result.Errors.GetMessage());
         }
 
-        public async Task<string> GeneratePasswordResetTokenAsync(User user)
+        public async Task<string> GeneratePasswordResetTokenAsync(User user, CancellationToken cancellationToken = default)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
             return token;
         }
 
-        public async Task ResetPasswordAsync(User user, string newPassword, string token)
+        public async Task ResetPasswordAsync(User user, string newPassword, string token, CancellationToken cancellationToken = default)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
             var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
             if (!result.Succeeded) throw new InvalidOperationException(result.Errors.GetMessage());
         }
 
-        public Task<UserSessionInfo> GenerateSessionAsync(User user)
+        public Task<UserSessionInfo> GenerateSessionAsync(User user, CancellationToken cancellationToken = default)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
             return _userSessionFactory.GenerateAsync(user);
         }
 
-        public Task AddSessionAsync(User user, UserSessionInfo session)
+        public Task AddSessionAsync(User user, UserSessionInfo session, CancellationToken cancellationToken = default)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
 
             return _userSessionStore.AddSessionAsync(user, session);
         }
 
-        public Task RemoveSessionAsync(User user, string token)
+        public Task RemoveSessionAsync(User user, string token, CancellationToken cancellationToken = default)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
 
             return _userSessionStore.RemoveSessionAsync(user, token);
         }
 
-        public Task AddLoginAsync(User user, UserLoginInfo login)
+        public Task AddLoginAsync(User user, UserLoginInfo login, CancellationToken cancellationToken = default)
         {
             return _userManager.AddLoginAsync(user, login);
         }
 
-        public Task RemoveLoginAsync(User user, string providerName, string providerKey)
+        public Task RemoveLoginAsync(User user, string providerName, string providerKey, CancellationToken cancellationToken = default)
         {
             return _userManager.RemoveLoginAsync(user, providerName, providerKey);
         }
 
 
-        public Task<User?> FindByAccessTokenAsync(string accessToken)
+        public Task<User?> FindByAccessTokenAsync(string accessToken, CancellationToken cancellationToken = default)
         {
             if (accessToken == null) throw new ArgumentNullException(nameof(accessToken));
 
-            return _userSessionStore.FindUserByAccessTokenAsync(accessToken);
+            return _userSessionStore.FindUserByAccessTokenAsync(accessToken, cancellationToken);
         }
 
-        public Task<User?> FindByRefreshTokenAsync(string refreshToken)
+        public Task<User?> FindByRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default)
         {
             if (refreshToken == null) throw new ArgumentNullException(nameof(refreshToken));
 
-            return _userSessionStore.FindUserByRefreshTokenAsync(refreshToken);
+            return _userSessionStore.FindUserByRefreshTokenAsync(refreshToken, cancellationToken);
         }
 
-        public Task<bool> ValidateAccessTokenAsync(string accessToken)
+        public Task<bool> ValidateAccessTokenAsync(string accessToken, CancellationToken cancellationToken = default)
         {
             if (accessToken == null) throw new ArgumentNullException(nameof(accessToken));
-            return _userSessionFactory.ValidateAccessTokenAsync(accessToken);
+            return _userSessionFactory.ValidateAccessTokenAsync(accessToken, cancellationToken);
         }
 
-        public Task<bool> ValidateRefreshTokenAsync(string refreshToken)
+        public Task<bool> ValidateRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default)
         {
             if (refreshToken == null) throw new ArgumentNullException(nameof(refreshToken));
-            return _userSessionFactory.ValidateRefreshTokenAsync(refreshToken);
+            return _userSessionFactory.ValidateRefreshTokenAsync(refreshToken, cancellationToken);
         }
 
         public string? GetUserName(ClaimsPrincipal principal)
@@ -333,7 +333,7 @@ namespace NextSolution.Infrastructure.Data.Repositories
             return long.TryParse(principal.FindFirst(_userManager.Options.ClaimsIdentity.UserIdClaimType) is Claim claim ? claim.Value : null, out long userId) ? userId : null;
         }
 
-        public Task<User?> GetUser(ClaimsPrincipal principal)
+        public Task<User?> GetUser(ClaimsPrincipal principal, CancellationToken cancellationToken = default)
         {
             return _userManager.GetUserAsync(principal);
         }
@@ -350,11 +350,11 @@ namespace NextSolution.Infrastructure.Data.Repositories
             return principal.FindFirst(ClaimTypes.SerialNumber) is Claim claim ? claim.Value : null;
         }
 
-        public async Task GenerateUserNameAsync(User user)
+        public async Task GenerateUserNameAsync(User user, CancellationToken cancellationToken = default)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
 
-            user.UserName = await AlgorithmHelper.GenerateSlugAsync($"{user.FirstName} {user.LastName}".ToLower(), userName => _userManager.Users.AnyAsync(_ => _.UserName == userName));
+            user.UserName = await AlgorithmHelper.GenerateSlugAsync($"{user.FirstName} {user.LastName}".ToLower(), userName => _userManager.Users.AnyAsync(_ => _.UserName == userName, cancellationToken));
         }
 
         [return: NotNullIfNotNull(nameof(phoneNumber))]

@@ -21,7 +21,7 @@ namespace NextSolution.Infrastructure.Data.Repositories
             _roleManager = roleManager ?? throw new ArgumentNullException(nameof(roleManager));
         }
 
-        public override async Task CreateAsync(Role role)
+        public override async Task CreateAsync(Role role, CancellationToken cancellationToken = default)
         {
             if (role == null) throw new ArgumentNullException(nameof(role));
 
@@ -30,7 +30,7 @@ namespace NextSolution.Infrastructure.Data.Repositories
             if (!result.Succeeded) throw new InvalidOperationException(result.Errors.GetMessage());
         }
 
-        public override async Task UpdateAsync(Role role)
+        public override async Task UpdateAsync(Role role, CancellationToken cancellationToken = default)
         {
             if (role == null) throw new ArgumentNullException(nameof(role));
 
@@ -39,7 +39,7 @@ namespace NextSolution.Infrastructure.Data.Repositories
             if (!result.Succeeded) throw new InvalidOperationException(result.Errors.GetMessage());
         }
 
-        public override async Task DeleteAsync(Role role)
+        public override async Task DeleteAsync(Role role, CancellationToken cancellationToken = default)
         {
             if (role == null) throw new ArgumentNullException(nameof(role));
 
@@ -48,7 +48,7 @@ namespace NextSolution.Infrastructure.Data.Repositories
             if (!result.Succeeded) throw new InvalidOperationException(result.Errors.GetMessage());
         }
 
-        public Task<Role?> FindByNameAsync(string name)
+        public Task<Role?> FindByNameAsync(string name, CancellationToken cancellationToken = default)
         {
             if (name == null) throw new ArgumentNullException(nameof(name));
 

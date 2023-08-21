@@ -9,7 +9,7 @@ namespace NextSolution.Infrastructure.SmsSender
 {
     public class FakeSmsSender : ISmsSender
     {
-        public Task SendAsync(string phoneNumber, string message)
+        public Task SendAsync(string phoneNumber, string message, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }

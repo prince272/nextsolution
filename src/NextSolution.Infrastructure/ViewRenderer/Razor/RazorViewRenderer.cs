@@ -34,7 +34,7 @@ namespace NextSolution.Infrastructure.ViewRenderer.Razor
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         }
 
-        public async Task<string> RenderAsync(string name, object? model)
+        public async Task<string> RenderAsync(string name, object? model, CancellationToken cancellationToken = default)
         {
             var actionContext = GetActionContext();
             var view = FindView(actionContext, name, isMainPage: true);
