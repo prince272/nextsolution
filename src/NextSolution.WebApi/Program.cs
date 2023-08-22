@@ -18,6 +18,7 @@ using NextSolution.Infrastructure.SmsSender;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.Extensions.Configuration;
 using Humanizer.Configuration;
+using NextSolution.Infrastructure.FileStorage.Local;
 
 try
 {
@@ -104,6 +105,10 @@ try
     builder.Services.AddMailKitEmailSender(builder.Configuration.GetRequiredSection("Mailing:MailKit"));
     builder.Services.AddFakeSmsSender();
     builder.Services.AddRazorViewRenderer();
+    builder.Services.AddLocalStorage(options =>
+    {
+        options.RootPath = Path.Combine(builder.Environment.ContentRootPath, "files");
+    });
 
     builder.Services.AddCors(options =>
     {
