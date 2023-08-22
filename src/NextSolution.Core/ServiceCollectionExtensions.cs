@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using NextSolution.Core.Entities;
 
 namespace NextSolution.Core
 {
@@ -17,6 +18,59 @@ namespace NextSolution.Core
         public static IServiceCollection AddApplication(this IServiceCollection services)
         {
             services.AddScoped<AccountService>();
+
+            services.Configure<MediaServiceOptions>(options =>
+            {
+                options.Documents = new[] { ".doc", ".docx", ".rtf", ".pdf" }.Select(fileExtension =>
+                {
+
+                    return new MediaTypeInfo
+                    {
+                        MediaType = MediaType.Document,
+                        FileExtension = fileExtension,
+                        FileSize = 83886080L,
+                        ContentType = MimeTypes.GetMimeType(fileExtension)
+                    };
+                }).ToArray(); // Document - 80MB
+
+                options.Images = new[] { ".jpg", ".jpeg", ".png" }.Select(fileExtension =>
+                {
+
+                    return new MediaTypeInfo
+                    {
+                        MediaType = MediaType.Image,
+                        FileExtension = fileExtension,
+                        FileSize = 5242880L,
+                        ContentType = MimeTypes.GetMimeType(fileExtension)
+                    };
+                }).ToArray(); // Image - 5MB
+
+                options.Videos = new[] { ".mp4", ".webm", ".swf", ".flv" }.Select(fileExtension =>
+                {
+
+                    return new MediaTypeInfo
+                    {
+                        MediaType = MediaType.Video,
+                        FileExtension = fileExtension,
+                        FileSize = 524288000L,
+                        ContentType = MimeTypes.GetMimeType(fileExtension)
+                    };
+                }).ToArray(); // Video - 500MB
+
+                options.Audios = new[] { ".mp3", ".ogg", ".wav" }.Select(fileExtension =>
+                {
+
+                    return new MediaTypeInfo
+                    {
+                        MediaType = MediaType.Audio,
+                        FileExtension = fileExtension,
+                        FileSize = 83886080L,
+                        ContentType = MimeTypes.GetMimeType(fileExtension)
+                    };
+                }).ToArray(); // Audio - 80MB
+            });
+
+            services.AddScoped<MediaService>();
             return services;
         }
 
