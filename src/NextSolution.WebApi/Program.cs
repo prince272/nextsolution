@@ -107,7 +107,7 @@ try
     builder.Services.AddRazorViewRenderer();
     builder.Services.AddLocalStorage(options =>
     {
-        options.RootPath = Path.Combine(builder.Environment.ContentRootPath, "files");
+        options.RootPath = Path.Combine(builder.Environment.ContentRootPath, "uploads");
     });
 
     builder.Services.AddCors(options =>
