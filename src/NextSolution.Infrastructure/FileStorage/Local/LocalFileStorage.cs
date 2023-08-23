@@ -33,21 +33,33 @@ namespace NextSolution.Infrastructure.FileStorage.Local
             if (chunk == null) throw new ArgumentNullException(nameof(chunk));
 
             var tempFilePath = GetTempFilePath(fileName);
-            using var tempFileStream = new FileStream(tempFilePath, FileMode.OpenOrCreate, FileAccess.Write);
-            tempFileStream.Seek(offset, SeekOrigin.Begin);
-            await chunk.CopyToAsync(tempFileStream);
-            var fileLength = tempFileStream.Length;
 
-            if (fileLength >= length)
+            try
             {
-                var filePath = GetFilePath(fileName);
-
-                if (File.Exists(filePath))
+                using (var tempFileStream = new FileStream(tempFilePath, FileMode.OpenOrCreate, FileAccess.Write))
                 {
-                    File.Delete(filePath);
+                    tempFileStream.Seek(offset, SeekOrigin.Begin);
+                    await chunk.CopyToAsync(tempFileStream);
                 }
 
-                File.Move(tempFilePath, filePath);
+                var fileLength = new FileInfo(tempFilePath).Length;
+
+                if (fileLength >= length)
+                {
+                    var filePath = GetFilePath(fileName);
+
+                    if (File.Exists(filePath))
+                    {
+                        File.Delete(filePath);
+                    }
+
+                    File.Move(tempFilePath, filePath);
+                }
+            }
+            finally
+            {
+                // Ensure that the stream and resources are properly disposed
+                chunk.Dispose();
             }
         }
 
