@@ -10,79 +10,100 @@ using System.Threading.Tasks;
 
 namespace NextSolution.Core.Models.Medias
 {
-    public class UploadContentForm
+    public class UploadMediaContentForm : IUploadMediaForm
     {
+        public string FileId { get; set; } = default!;
+
         public string FileName { get; set; } = default!;
 
         public long FileSize { get; set; } = default!;
+
+        public MediaType? MediaType { get; set; }
 
         public Stream Content { get; set; } = default!;
 
         public string? ContentType { get; set; }
 
-        public MediaType? MediaType { get; set; }
-
-        public class Validator : AbstractValidator<UploadContentForm>
+        public class Validator : UploadFormAbstractValidator<UploadMediaContentForm>
         {
-            public Validator(IOptions<MediaServiceOptions> mediaServiceOptions)
+            public Validator(IOptions<MediaServiceOptions> mediaServiceOptions) : base(mediaServiceOptions)
             {
-                RuleFor(_ => _.FileName)
-                    .NotEmpty()
-                    .Must(IsValidFileName).WithMessage("'{PropertyName}' contains invalid characters.")
-                    .Must((form, fileName) => mediaServiceOptions.Value.HasMediaTypeInfo(fileName, form.MediaType)).WithMessage("'{PropertyName}' is not allowed.");
-
-                RuleFor(_ => _.FileSize)
-                    .GreaterThan(0)
-                    .Must((form, fileSize) => fileSize > (mediaServiceOptions.Value.GetMediaTypeInfo(form.FileName, form.MediaType)?.FileSize ?? 0))
-                    .WithMessage((form, fileSize) => $"'{{PropertyName}}' must be less then {(mediaServiceOptions.Value.GetMediaTypeInfo(form.FileName, form.MediaType)?.FileSize ?? 0).Kilobytes().Humanize()}.");
-
-                RuleFor(_ => _.Content).NotNull();
-            }
-
-            private static bool IsValidFileName(string fileName)
-            {
-                char[] invalidChars = Path.GetInvalidFileNameChars();
-                return !fileName.Any(c => invalidChars.Contains(c));
             }
         }
     }
 
-    public class UploadChunkForm 
+    public class UploadMediaChunkForm : IUploadMediaForm
     {
+        public string FileId { get; set; } = default!;
+
         public string FileName { get; set; } = default!;
 
         public long FileSize { get; set; } = default!;
 
-        public string? ContentType { get; set; }
-
         public MediaType? MediaType { get; set; }
 
-        public Stream Chunk { get; set; } = default!;
+        public Stream Content { get; set; } = default!;
 
-        public long Offset { get; set; } 
+        public string? ContentType { get; set; }
 
-        public class Validator : AbstractValidator<UploadChunkForm>
+        public long Offset { get; set; }
+
+        public class Validator : UploadFormAbstractValidator<UploadMediaChunkForm>
         {
-            public Validator(IOptions<MediaServiceOptions> mediaServiceOptions)
+            public Validator(IOptions<MediaServiceOptions> mediaServiceOptions) : base(mediaServiceOptions)
             {
-                RuleFor(_ => _.FileName)
-                    .NotEmpty()
-                    .Must(IsValidFileName).WithMessage("'{PropertyName}' contains invalid characters.")
-                    .Must((form, fileName) => mediaServiceOptions.Value.HasMediaTypeInfo(fileName, form.MediaType)).WithMessage("'{PropertyName}' is not allowed.");
-
-                RuleFor(_ => _.FileSize)
-                    .GreaterThan(0)
-                    .Must((form, fileSize) => fileSize > (mediaServiceOptions.Value.GetMediaTypeInfo(form.FileName, form.MediaType)?.FileSize ?? 0))
-                    .WithMessage((form, fileSize) => $"'{{PropertyName}}' must be less then {(mediaServiceOptions.Value.GetMediaTypeInfo(form.FileName, form.MediaType)?.FileSize ?? 0).Kilobytes().Humanize()}.");
-
-                RuleFor(_ => _.Chunk).NotNull();
             }
+        }
+    }
 
-            private static bool IsValidFileName(string fileName)
-            {
-                char[] invalidChars = Path.GetInvalidFileNameChars();
-                return !fileName.Any(c => invalidChars.Contains(c));
-            }
+    public interface IUploadMediaForm
+    {
+        string FileId { get; set; }
+
+        string FileName { get; set; } 
+
+        long FileSize { get; set; } 
+
+        string? ContentType { get; set; }
+
+        Stream Content { get; set; }
+
+        MediaType? MediaType { get; set; }
+    }
+
+    public abstract class UploadFormAbstractValidator<TUploadMediaForm> : AbstractValidator<TUploadMediaForm>
+        where TUploadMediaForm : class, IUploadMediaForm
+    {
+        public UploadFormAbstractValidator(IOptions<MediaServiceOptions> mediaServiceOptions)
+        {
+            RuleFor(_ => _.FileName)
+                .NotEmpty()
+                .Must(IsValidFileName).WithMessage("'{PropertyName}' contains invalid characters.")
+                .Must((form, fileName) => mediaServiceOptions.Value.HasMediaTypeInfo(fileName, form.MediaType)).WithMessage("'{PropertyName}' is not allowed.");
+
+            RuleFor(_ => _.FileSize)
+                .Must((form, fileSize) =>
+                {
+                    var maxFileSize = (mediaServiceOptions.Value.GetMediaTypeInfo(form.FileName, form.MediaType)
+                   ?? mediaServiceOptions.Value.All.OrderByDescending(_ => _.FileSize).First()).FileSize;
+
+                    return fileSize <= maxFileSize;
+                })
+                .WithMessage((form, fileSize) =>
+                {
+                    var maxFileSize = (mediaServiceOptions.Value.GetMediaTypeInfo(form.FileName, form.MediaType)
+                   ?? mediaServiceOptions.Value.All.OrderByDescending(_ => _.FileSize).First()).FileSize;
+
+                    return $"'{{PropertyName}}' must be {maxFileSize.Bytes().Humanize()} or smaller.";
+                });
+
+            RuleFor(_ => _.Content).NotNull();
+        }
+
+        private static bool IsValidFileName(string fileName)
+        {
+            char[] invalidChars = Path.GetInvalidFileNameChars();
+            return !fileName.Any(c => invalidChars.Contains(c));
         }
     }
 }

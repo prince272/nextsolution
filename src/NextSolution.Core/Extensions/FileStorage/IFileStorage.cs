@@ -8,14 +8,14 @@ namespace NextSolution.Core.Extensions.FileStorage
 {
     public interface IFileStorage
     {
-        Task WriteAsync(string fileName, Stream content);
+        Task WriteAsync(string directoryName, string fileName, Stream content);
 
-        Task WriteAsync(string fileName, Stream chunk, long length, long offset);
+        Task<long> WriteAsync(string directoryName, string fileName, Stream chunk, long length, long offset);
 
-        Task<Stream?> ReadAsync(string fileName);
+        Task<Stream?> ReadAsync(string directoryName, string fileName);
 
-        Task DeleteAsync(string fileName);
+        Task DeleteAsync(string directoryName, string fileName);
 
-        Task<bool> ExistsAsync(string fileName);
+        Task<bool> ExistsAsync(string directoryName, string fileName);
     }
 }

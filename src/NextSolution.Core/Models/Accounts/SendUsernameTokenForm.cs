@@ -13,7 +13,7 @@ namespace NextSolution.Core.Models.Accounts
         public string Username { get; set; } = default!;
 
         [JsonIgnore]
-        public ContactType UsernameType => TextHelper.GetContactType(Username);
+        public ContactType UsernameType => ValidationHelper.GetContactType(Username);
 
         public class Validator : AbstractValidator<SendUsernameTokenForm>
         {

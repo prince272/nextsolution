@@ -25,6 +25,7 @@ export interface ApiConfig extends CreateAxiosDefaults {
 }
 
 export class Api {
+  public config: ApiConfig;
   private axiosInstance: AxiosInstance;
   public tokenStore: BehaviorSubject<ApiTokens | undefined | null>;
 
@@ -39,7 +40,7 @@ export class Api {
       withCredentials: true
     } as ApiConfig;
 
-    const { initialUser, ...axiosConfig } = { ...defaultConfig, ...config };
+    const { initialUser, ...axiosConfig } = config = { ...defaultConfig, ...config };
 
     this.axiosInstance = axios.create(axiosConfig);
     this.tokenStore = new BehaviorSubject<ApiTokens | undefined | null>(initialUser);
@@ -53,7 +54,7 @@ export class Api {
         const existingUser = this.tokenStore.getValue();
 
         if (existingUser) {
-          requestConfig.headers.setAuthorization(`Bearer ${existingUser.accessToken}`);
+          requestConfig.headers.setAuthorization(`${existingUser.tokenType} ${existingUser.accessToken}`);
         } else {
           delete requestConfig.headers.Authorization;
         }
@@ -124,7 +125,11 @@ export class Api {
         return Promise.reject(error);
       }
     );
+
+    this.config = config;
   }
+
+
 
   public async signUp<T extends ApiTokens, R extends AxiosResponse<T>, D extends any>(
     data: { firstName: string; lastName: string; username: string; password: string; [key: string]: any },

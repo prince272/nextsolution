@@ -131,7 +131,7 @@ namespace NextSolution.Core.Services
                 form.Principal.FindFirstValue(ClaimTypes.OtherPhone) ??
                 form.Principal.FindFirstValue(ClaimTypes.HomePhone) ?? throw new InvalidOperationException();
 
-            var usernameType = TextHelper.GetContactType(username);
+            var usernameType = ValidationHelper.GetContactType(username);
 
             var user = usernameType switch
             {

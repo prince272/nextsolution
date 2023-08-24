@@ -11,13 +11,15 @@ namespace NextSolution.Core.Entities
     {
         public long Id { get; set; }
 
+        public string FileId { get; set; } = default!;
+
         public string FileName { get; set; } = default!;
 
         public long FileSize { get; set; }
 
-        public MediaType MediaType { get; set; }
-
         public string ContentType { get; set; } = default!;
+
+        public MediaType MediaType { get; set; }
 
         public int? Width { get; set; }
 

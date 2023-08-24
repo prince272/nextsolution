@@ -135,7 +135,6 @@ const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(
 
     return (
       <Input
-        {...props}
         value={value}
         onChange={(e) => setValue(e.target.value)}
         endContent={
@@ -160,6 +159,7 @@ const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(
             />
           </>
         }
+        {...props}
         ref={ref}
       />
     );

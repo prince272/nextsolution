@@ -9,7 +9,7 @@ namespace NextSolution.Core.Utilities
 {
     public static class AlgorithmHelper
     {
-        public static string Secret => GenerateHash(new DeviceIdBuilder().AddMachineName().AddOsVersion().AddUserName()
+        public static string Secret => GenerateSHA256Hash(new DeviceIdBuilder().AddMachineName().AddOsVersion().AddUserName()
             .AddFileToken(Path.ChangeExtension(Assembly.GetEntryAssembly()!.Location, nameof(Secret).ToLower())).ToString());
 
         public static async Task<string> GenerateSlugAsync(string text, Func<string, Task<bool>> exists, string separator = "-")
@@ -74,7 +74,7 @@ namespace NextSolution.Core.Utilities
             return input;
         }
 
-        public static string GenerateHash(string input)
+        public static string GenerateSHA256Hash(string input)
         {
             using (var sha256 = SHA256.Create())
             {
@@ -88,6 +88,23 @@ namespace NextSolution.Core.Utilities
                 }
 
                 return hashBuilder.ToString();
+            }
+        }
+
+        public static string GenerateMD5Hash(string input)
+        {
+            using (MD5 md5 = MD5.Create())
+            {
+                byte[] inputBytes = Encoding.UTF8.GetBytes(input);
+                byte[] hashBytes = md5.ComputeHash(inputBytes);
+
+                var sb = new StringBuilder();
+                for (int i = 0; i < hashBytes.Length; i++)
+                {
+                    sb.Append(hashBytes[i].ToString("x2")); // Convert byte to hexadecimal
+                }
+
+                return sb.ToString();
             }
         }
 

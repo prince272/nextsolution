@@ -1,5 +1,7 @@
-﻿using Humanizer.Localisation;
+﻿using FluentValidation;
+using Humanizer.Localisation;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NextSolution.Core.Entities;
 using NextSolution.Core.Exceptions;
@@ -20,30 +22,32 @@ namespace NextSolution.Core.Services
 {
     public class MediaService
     {
+        private readonly ILogger<MediaService> _logger;
         private readonly IOptions<MediaServiceOptions> _mediaServiceOptions;
         private readonly IMediaRepository _mediaRepository;
         private readonly IFileStorage _fileStorage;
         private readonly IServiceProvider _validatorProvider;
 
-        public MediaService(IOptions<MediaServiceOptions> mediaServiceOptions, IMediaRepository mediaRepository, IFileStorage fileStorage, IServiceProvider validatorProvider)
+        public MediaService(ILogger<MediaService> logger, IOptions<MediaServiceOptions> mediaServiceOptions, IMediaRepository mediaRepository, IFileStorage fileStorage, IServiceProvider validatorProvider)
         {
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _mediaServiceOptions = mediaServiceOptions ?? throw new ArgumentNullException(nameof(mediaServiceOptions));
             _mediaRepository = mediaRepository ?? throw new ArgumentNullException(nameof(mediaRepository));
             _fileStorage = fileStorage ?? throw new ArgumentNullException(nameof(fileStorage));
             _validatorProvider = validatorProvider ?? throw new ArgumentNullException(nameof(validatorProvider));
         }
 
-        public async Task UploadAsync(UploadContentForm form)
+        public async Task UploadAsync(UploadMediaContentForm form)
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 
-            var formValidator = _validatorProvider.GetRequiredService<UploadContentForm.Validator>();
+            var formValidator = _validatorProvider.GetRequiredService<UploadMediaContentForm.Validator>();
             var formValidationResult = await formValidator.ValidateAsync(form);
 
             if (!formValidationResult.IsValid)
                 throw new BadRequestException(formValidationResult.ToDictionary());
 
-            await _fileStorage.WriteAsync(form.FileName, form.Content);
+            await _fileStorage.WriteAsync(form.FileId, form.FileName, form.Content);
 
             var media = new Media
             {
@@ -51,35 +55,57 @@ namespace NextSolution.Core.Services
                 UpdatedAt = DateTimeOffset.UtcNow,
                 MediaType = form.MediaType ?? _mediaServiceOptions.Value.GetMediaType(form.FileName),
                 ContentType = form.ContentType ?? _mediaServiceOptions.Value.GetContentType(form.FileName),
+                FileId = form.FileId,
                 FileName = form.FileName,
                 FileSize = form.FileSize
             };
             await _mediaRepository.CreateAsync(media);
         }
 
-        public async Task UploadAsync(UploadChunkForm form)
+        public async Task UploadAsync(UploadMediaChunkForm form)
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 
-            var formValidator = _validatorProvider.GetRequiredService<UploadChunkForm.Validator>();
+            var formValidator = _validatorProvider.GetRequiredService<UploadMediaChunkForm.Validator>();
             var formValidationResult = await formValidator.ValidateAsync(form);
 
             if (!formValidationResult.IsValid)
                 throw new BadRequestException(formValidationResult.ToDictionary());
 
-            await _fileStorage.WriteAsync(form.FileName, form.Chunk, form.FileSize, form.Offset);
-            if (false) return;
+            var writtenFileSize = await _fileStorage.WriteAsync(form.FileId, form.FileName, form.Content, form.FileSize, form.Offset);
 
-            var media = new Media
+            if (writtenFileSize >= form.FileSize)
             {
-                CreatedAt = DateTimeOffset.UtcNow,
-                UpdatedAt = DateTimeOffset.UtcNow,
-                MediaType = form.MediaType ?? _mediaServiceOptions.Value.GetMediaType(form.FileName),
-                ContentType = form.ContentType ?? _mediaServiceOptions.Value.GetContentType(form.FileName),
-                FileName = form.FileName,
-                FileSize = form.FileSize
-            };
-            await _mediaRepository.CreateAsync(media);
+                var media = new Media
+                {
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    UpdatedAt = DateTimeOffset.UtcNow,
+                    MediaType = form.MediaType ?? _mediaServiceOptions.Value.GetMediaType(form.FileName),
+                    ContentType = form.ContentType ?? _mediaServiceOptions.Value.GetContentType(form.FileName),
+                    FileId = form.FileId,
+                    FileName = form.FileName,
+                    FileSize = form.FileSize
+                };
+                await _mediaRepository.CreateAsync(media);
+            }
+        }
+
+        public async Task DeleteByFileIdAsync(DeleteMediaByFileIdForm form)
+        {
+            if (form == null) throw new ArgumentNullException(nameof(form));
+
+            var formValidator = _validatorProvider.GetRequiredService<DeleteMediaByFileIdForm.Validator>();
+            var formValidationResult = await formValidator.ValidateAsync(form);
+
+            if (!formValidationResult.IsValid)
+                throw new BadRequestException(formValidationResult.ToDictionary());
+
+            var media = await _mediaRepository.FindAsync(_ => _.FileId ==  form.FileId);
+            if (media == null) return;
+
+            await _mediaRepository.DeleteAsync(media);
+            _fileStorage.DeleteAsync(media.FileId, media.FileName)
+                        .Forget(error => _logger.LogWarning(error, $"Unable to delete '{media.FileName}' file."));
         }
 
         public MediaServiceOptions Options => _mediaServiceOptions.Value;

@@ -13,16 +13,16 @@ namespace NextSolution.Core.Utilities
         {
             ruleBuilder.Custom((value, context) =>
             {
-                var contactType = TextHelper.GetContactType(value);
+                var contactType = ValidationHelper.GetContactType(value);
 
                 if (contactType == ContactType.EmailAddress)
                 {
-                    if (!TextHelper.TryParseEmail(value, out var _))
+                    if (!ValidationHelper.TryParseEmail(value, out var _))
                         context.AddFailure($"'Email address' is not valid.");
                 }
                 else if (contactType == ContactType.PhoneNumber)
                 {
-                    if (!TextHelper.TryParsePhoneNumber(value, out var _))
+                    if (!ValidationHelper.TryParsePhoneNumber(value, out var _))
                         context.AddFailure($"'Phone number' is not valid.");
                 }
                 else

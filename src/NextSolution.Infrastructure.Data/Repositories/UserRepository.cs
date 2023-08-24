@@ -360,8 +360,8 @@ namespace NextSolution.Infrastructure.Data.Repositories
         [return: NotNullIfNotNull(nameof(phoneNumber))]
         private string? NormalizePhoneNumber(string? phoneNumber)
         {
-            if (TextHelper.TryParsePhoneNumber(phoneNumber, out var parsedPhoneNumber))
-                return TextHelper.FormatPhoneNumber(parsedPhoneNumber);
+            if (ValidationHelper.TryParsePhoneNumber(phoneNumber, out var parsedPhoneNumber))
+                return ValidationHelper.FormatPhoneNumber(parsedPhoneNumber);
 
             else return null;
         }

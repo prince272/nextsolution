@@ -17,8 +17,8 @@ const PasswordInput = React.forwardRef<HTMLInputElement, InputProps>((props, ref
           )}
         </button>
       }
-      {...props}
       type={isVisible ? props.type : "password"}
+      {...props}
       ref={ref}
     />
   );

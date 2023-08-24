@@ -18,3 +18,13 @@ export function mergeRefs<T = any>(refs: Array<React.MutableRefObject<T> | React
     });
   };
 }
+
+export function isAbsoluteUrl(url: string): boolean {
+  try {
+    // Try to create a URL object using the provided URL string
+    new URL(url);
+    return true; // If successful, the URL is absolute
+  } catch (error) {
+    return false; // If an error occurs, the URL is relative
+  }
+}

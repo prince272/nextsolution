@@ -39,8 +39,8 @@ namespace NextSolution.Infrastructure.Identity
             {
                 UserId = user.Id,
 
-                AccessTokenHash = AlgorithmHelper.GenerateHash(session.AccessToken),
-                RefreshTokenHash = AlgorithmHelper.GenerateHash(session.RefreshToken),
+                AccessTokenHash = AlgorithmHelper.GenerateSHA256Hash(session.AccessToken),
+                RefreshTokenHash = AlgorithmHelper.GenerateSHA256Hash(session.RefreshToken),
 
                 AccessTokenExpiresAt = session.RefreshTokenExpiresAt,
                 RefreshTokenExpiresAt = session.RefreshTokenExpiresAt
@@ -56,7 +56,7 @@ namespace NextSolution.Infrastructure.Identity
             }
             else
             {
-                var tokenHash = AlgorithmHelper.GenerateHash(token);
+                var tokenHash = AlgorithmHelper.GenerateSHA256Hash(token);
                 var current = DateTimeOffset.UtcNow;
 
                 await _dbContext.Set<UserSession>()
@@ -72,7 +72,7 @@ namespace NextSolution.Infrastructure.Identity
         {
             if (accessToken == null) throw new ArgumentNullException(nameof(accessToken));
 
-            var accessTokenHash = AlgorithmHelper.GenerateHash(accessToken);
+            var accessTokenHash = AlgorithmHelper.GenerateSHA256Hash(accessToken);
 
             var session = await _dbContext.Set<UserSession>().FirstOrDefaultAsync(_ => _.RefreshTokenHash == accessTokenHash, cancellationToken);
 
@@ -84,7 +84,7 @@ namespace NextSolution.Infrastructure.Identity
         {
             if (refreshToken == null) throw new ArgumentNullException(nameof(refreshToken));
 
-            var refreshTokenHash = AlgorithmHelper.GenerateHash(refreshToken);
+            var refreshTokenHash = AlgorithmHelper.GenerateSHA256Hash(refreshToken);
 
             var session = await _dbContext.Set<UserSession>().FirstOrDefaultAsync(_ => _.RefreshTokenHash == refreshTokenHash, cancellationToken);
 

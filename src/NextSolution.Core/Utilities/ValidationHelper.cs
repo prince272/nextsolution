@@ -5,13 +5,14 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Mail;
+using System.Security;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace NextSolution.Core.Utilities
 {
-    public static class TextHelper
+    public static class ValidationHelper
     {
         public static MailAddress ParseEmail(string value)
         {

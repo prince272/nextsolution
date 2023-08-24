@@ -28,7 +28,7 @@ namespace NextSolution.Infrastructure.Identity
                 HttpContext? context = _httpContextAccessor.HttpContext;
                 string deviceId;
 
-                if (TextHelper.TryParseUserAgent(context?.Request.Headers.UserAgent, out var userAgent))
+                if (ValidationHelper.TryParseUserAgent(context?.Request.Headers.UserAgent, out var userAgent))
                 {
                     var values = new object?[]
                     {
@@ -43,7 +43,7 @@ namespace NextSolution.Infrastructure.Identity
                 else deviceId = "Unknown";
 
 
-                deviceId = AlgorithmHelper.GenerateHash(deviceId);
+                deviceId = AlgorithmHelper.GenerateSHA256Hash(deviceId);
                 return deviceId;
             }
         }

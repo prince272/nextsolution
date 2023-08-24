@@ -31,7 +31,8 @@ namespace NextSolution.Core
                         FileSize = 83886080L,
                         ContentType = MimeTypes.GetMimeType(fileExtension)
                     };
-                }).ToArray(); // Document - 80MB
+                })
+                .ToArray(); // Document - 80MB
 
                 options.Images = new[] { ".jpg", ".jpeg", ".png" }.Select(fileExtension =>
                 {
@@ -43,7 +44,8 @@ namespace NextSolution.Core
                         FileSize = 5242880L,
                         ContentType = MimeTypes.GetMimeType(fileExtension)
                     };
-                }).ToArray(); // Image - 5MB
+                })
+                .ToArray(); // Image - 5MB
 
                 options.Videos = new[] { ".mp4", ".webm", ".swf", ".flv" }.Select(fileExtension =>
                 {
@@ -55,7 +57,8 @@ namespace NextSolution.Core
                         FileSize = 524288000L,
                         ContentType = MimeTypes.GetMimeType(fileExtension)
                     };
-                }).ToArray(); // Video - 500MB
+                })
+                .ToArray(); // Video - 500MB
 
                 options.Audios = new[] { ".mp3", ".ogg", ".wav" }.Select(fileExtension =>
                 {
@@ -67,7 +70,8 @@ namespace NextSolution.Core
                         FileSize = 83886080L,
                         ContentType = MimeTypes.GetMimeType(fileExtension)
                     };
-                }).ToArray(); // Audio - 80MB
+                })
+                .ToArray(); // Audio - 80MB
             });
 
             services.AddScoped<MediaService>();
