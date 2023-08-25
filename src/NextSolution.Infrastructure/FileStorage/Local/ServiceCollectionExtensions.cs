@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace NextSolution.Infrastructure.FileStorage.Local
 {
-    public static class LocalFileStorageExtensions
+    public static class ServiceCollectionExtensions
     {
         public static IServiceCollection AddLocalStorage(this IServiceCollection services, Action<LocalFileStorageOptions> options)
         {

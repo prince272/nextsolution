@@ -14,13 +14,13 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using NextSolution.Core.Utilities;
 using NextSolution.Infrastructure.EmailSender.MailKit;
 using NextSolution.Infrastructure.ViewRenderer.Razor;
-using NextSolution.Infrastructure.SmsSender;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.Extensions.Configuration;
 using Humanizer.Configuration;
 using NextSolution.Infrastructure.FileStorage.Local;
 using NextSolution.Infrastructure.RealTime;
 using NextSolution.Core.Extensions.RealTime;
+using NextSolution.Infrastructure.SmsSender.Fake;
 
 try
 {

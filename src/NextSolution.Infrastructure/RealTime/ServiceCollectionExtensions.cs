@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace NextSolution.Infrastructure.RealTime
 {
-    public static class OnlineClientExtensions
+    public static class ServiceCollectionExtensions
     {
         public static IServiceCollection AddOnlineClientManager(this IServiceCollection services)
         {

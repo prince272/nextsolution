@@ -17,7 +17,7 @@ using System.Reflection;
 
 namespace NextSolution.Infrastructure.ViewRenderer.Razor
 {
-    public static class RazorViewRendererExtensions
+    public static class ServiceCollectionExtensions
     {
         public static IServiceCollection AddRazorViewRenderer(this IServiceCollection services, Action<RazorViewRendererOptions> options)
         {

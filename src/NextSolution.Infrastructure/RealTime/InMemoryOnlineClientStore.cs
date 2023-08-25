@@ -12,9 +12,6 @@ namespace NextSolution.Infrastructure.RealTime
 
     public class InMemoryOnlineClientStore : IOnlineClientStore
     {
-        /// <summary>
-        /// Online clients.
-        /// </summary>
         protected ConcurrentDictionary<string, IOnlineClient> Clients { get; }
 
         public InMemoryOnlineClientStore()

@@ -7,9 +7,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NextSolution.Infrastructure.SmsSender
+namespace NextSolution.Infrastructure.SmsSender.Fake
 {
-    public static class FakeSenderExtensions
+    public static class ServiceCollectionExtensions
     {
         public static IServiceCollection AddFakeSmsSender(this IServiceCollection services)
         {

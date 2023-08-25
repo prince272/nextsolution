@@ -13,7 +13,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace NextSolution.Infrastructure.EmailSender.MailKit
 {
-    public static class MailKitEmailSenderExtensions
+    public static class ServiceCollectionExtensions
     {
         public static IServiceCollection AddMailKitEmailSender(this IServiceCollection services, Action<MailKitEmailOptions> options)
         {
