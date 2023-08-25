@@ -19,6 +19,8 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.Extensions.Configuration;
 using Humanizer.Configuration;
 using NextSolution.Infrastructure.FileStorage.Local;
+using NextSolution.Infrastructure.RealTime;
+using NextSolution.Core.Extensions.RealTime;
 
 try
 {
@@ -125,6 +127,9 @@ try
             .SetPreflightMaxAge(TimeSpan.FromMinutes(10));
         });
     });
+
+    builder.Services.AddSignalR();
+    builder.Services.AddOnlineClientManager();
 
     // Configure serialization services.
     builder.Services.ConfigureHttpJsonOptions(options =>
