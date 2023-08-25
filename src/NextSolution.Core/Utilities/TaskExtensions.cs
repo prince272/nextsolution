@@ -9,12 +9,12 @@ namespace NextSolution.Core.Utilities
     {
         // Use case: Fire and forget a task without waiting for its completion.
         // Example: SendEmailAsync().Forget(errorHandler => Console.WriteLine(errorHandler.Message));
-        public static void Forget(this Task task, Action<Exception>? errorHandler = null)
+        public static void Forget(this Task task, Action<Exception?>? errorHandler = null)
         {
             task.ContinueWith(t =>
             {
                 if (t.IsFaulted && errorHandler != null)
-                    errorHandler(t.Exception!);
+                    errorHandler(t.Exception);
             }, TaskContinuationOptions.OnlyOnFaulted);
         }
 
@@ -30,13 +30,19 @@ namespace NextSolution.Core.Utilities
                 }
                 catch
                 {
-                    if (i == maxRetries - 1)
+                    if (i < maxRetries - 1)
+                    {
+                        await Task.Delay(delay).ConfigureAwait(false);
+                    }
+                    else
+                    {
                         throw;
-                    await Task.Delay(delay).ConfigureAwait(false);
+                    }
                 }
             }
 
-            return default!; // Should not be reached
+            // This line should never be reached, so it's better to throw an exception here
+            throw new InvalidOperationException("Retry loop reached an unexpected state.");
         }
 
         // Use case: Execute a callback when a Task encounters an exception.
