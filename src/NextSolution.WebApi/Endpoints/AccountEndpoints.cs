@@ -9,6 +9,7 @@ using NextSolution.Core.Exceptions;
 using NextSolution.Core.Models.Accounts;
 using NextSolution.Core.Services;
 using NextSolution.Infrastructure.Identity;
+using System.Security.Claims;
 using System.Security.Policy;
 
 namespace NextSolution.WebApi.Endpoints
@@ -68,9 +69,21 @@ namespace NextSolution.WebApi.Endpoints
             if (signInInfo == null)
                 throw new BadRequestException($"{provider} authentication failed.");
 
+            var username =
+                (signInInfo.Principal.FindFirstValue(ClaimTypes.Email) ??
+                signInInfo.Principal.FindFirstValue(ClaimTypes.MobilePhone) ??
+                signInInfo.Principal.FindFirstValue(ClaimTypes.OtherPhone) ??
+                signInInfo.Principal.FindFirstValue(ClaimTypes.HomePhone))!;
+
+            var firstName = signInInfo.Principal.FindFirstValue(ClaimTypes.GivenName) ?? string.Empty;
+            var lastName = signInInfo.Principal.FindFirstValue(ClaimTypes.Surname) ?? string.Empty;
+
             var form = new CreateExternalSessionForm
             {
-                Principal = signInInfo.Principal,
+                Username = username,
+                FirstName = firstName,
+                LastName = lastName,
+
                 ProviderName = signInInfo.LoginProvider,
                 ProviderDisplayName = signInInfo.ProviderDisplayName,
                 ProviderKey = signInInfo.ProviderKey

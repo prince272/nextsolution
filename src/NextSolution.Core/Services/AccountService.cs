@@ -125,32 +125,37 @@ namespace NextSolution.Core.Services
             if (!formValidationResult.IsValid)
                 throw new BadRequestException(formValidationResult.ToDictionary());
 
-            var username =
-                form.Principal.FindFirstValue(ClaimTypes.Email) ??
-                form.Principal.FindFirstValue(ClaimTypes.MobilePhone) ??
-                form.Principal.FindFirstValue(ClaimTypes.OtherPhone) ??
-                form.Principal.FindFirstValue(ClaimTypes.HomePhone) ?? throw new InvalidOperationException();
-
-            var usernameType = ValidationHelper.GetContactType(username);
-
-            var user = usernameType switch
+            var user = form.UsernameType switch
             {
-                ContactType.EmailAddress => await _userRepository.FindByEmailAsync(username),
-                ContactType.PhoneNumber => await _userRepository.FindByPhoneNumberAsync(username),
+                ContactType.EmailAddress => await _userRepository.FindByEmailAsync(form.Username),
+                ContactType.PhoneNumber => await _userRepository.FindByPhoneNumberAsync(form.Username),
                 _ => null
             };
 
             if (user == null)
             {
-                user ??= new User();
-                user.FirstName = form.Principal.FindFirstValue(ClaimTypes.GivenName) ?? string.Empty;
-                user.LastName = form.Principal.FindFirstValue(ClaimTypes.Surname) ?? string.Empty;
-                user.Email = usernameType == ContactType.EmailAddress ? username : user.Email;
-                user.PhoneNumber = usernameType == ContactType.PhoneNumber ? username : user.PhoneNumber;
+                user = new User();
+                user.FirstName = form.FirstName;
+                user.LastName = form.LastName;
+                user.Email = form.UsernameType == ContactType.EmailAddress ? form.Username : user.Email;
+                user.PhoneNumber = form.UsernameType == ContactType.PhoneNumber ? form.Username : user.PhoneNumber;
                 user.Active = true;
                 user.ActiveAt = DateTimeOffset.UtcNow;
                 await _userRepository.GenerateUserNameAsync(user);
                 await _userRepository.CreateAsync(user);
+
+                foreach (var roleName in Roles.All)
+                {
+                    if (await _roleRepository.FindByNameAsync(roleName) is null)
+                        await _roleRepository.CreateAsync(new Role(roleName));
+                }
+
+                var totalUsers = await _userRepository.CountAsync();
+
+                // Assign roles to the specified user based on the total user count.
+                // If there is only one user, grant both Admin and Member roles.
+                // Otherwise, assign only the Member role.
+                await _userRepository.AddToRolesAsync(user, (totalUsers == 1) ? new[] { Roles.Admin, Roles.Member } : new[] { Roles.Member });
             }
 
             await _userRepository.RemoveLoginAsync(user, form.ProviderName, form.ProviderKey);
