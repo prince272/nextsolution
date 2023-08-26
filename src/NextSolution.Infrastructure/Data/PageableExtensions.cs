@@ -11,28 +11,9 @@ using System.Xml.Linq;
 
 namespace NextSolution.Infrastructure.Data
 {
-    public class AppDbPageable<T> : IPageable<T>
-    {
-        public AppDbPageable(int pageNumber, int pageSize, long totalItems, IEnumerable<T> items)
-        {
-            Page = pageNumber;
-            PageSize = pageSize;
-            TotalItems = totalItems;
-            Items = items;
-        }
-
-        public int Page { get; }
-        public int PageSize { get; }
-        public long TotalItems { get; }
-        public int TotalPages => (int)Math.Ceiling((double)TotalItems / PageSize);
-        public IEnumerable<T> Items { get; }
-        public bool HasNextPage => Page < TotalPages;
-        public bool HasPrevPage => Page > 1;
-    }
-
     public static class PageableExtensions
     {
-        public static async Task<AppDbPageable<T>> PaginateAsync<T>(
+        public static async Task<Pageable<T>> PaginateAsync<T>(
             this IQueryable<T> source,
             int pageNumber,
             int pageSize, CancellationToken cancellationToken = default)
@@ -46,7 +27,7 @@ namespace NextSolution.Infrastructure.Data
             long totalItems = await source.LongCountAsync(cancellationToken);
             var items = await source.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync(cancellationToken);
 
-            return new AppDbPageable<T>(pageNumber, pageSize, totalItems, items);
+            return new Pageable<T>(pageNumber, pageSize, totalItems, items);
         }
     }
 }
