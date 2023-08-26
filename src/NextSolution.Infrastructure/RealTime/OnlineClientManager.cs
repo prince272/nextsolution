@@ -27,77 +27,99 @@ namespace NextSolution.Infrastructure.RealTime
         /// <summary>
         /// Online clients Store.
         /// </summary>
-        protected IOnlineClientStore Store { get; }
+        protected readonly IOnlineClientStore Store;
+
+        protected readonly object SyncObj = new object();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OnlineClientManager"/> class.
         /// </summary>
         public OnlineClientManager(IOnlineClientStore store)
         {
-            Store = store;
+            Store = store ?? throw new ArgumentNullException(nameof(store));
         }
 
         public virtual void Add(IOnlineClient client)
         {
-            var userWasAlreadyOnline = false;
-            var userId = client.UserId;
+            if (client == null) throw new ArgumentNullException(nameof(client));
 
-            if (userId.HasValue)
+            lock (SyncObj)
             {
-                userWasAlreadyOnline = IsOnline(userId.Value);
-            }
+                var userWasAlreadyOnline = false;
+                var userId = client.UserId;
 
-            Store.Add(client);
+                if (userId.HasValue)
+                {
+                    userWasAlreadyOnline = IsOnline(userId.Value);
+                }
 
-            ClientConnected?.Invoke(this, new OnlineClientEventArgs(client));
+                Store.Add(client);
 
-            if (userId.HasValue && !userWasAlreadyOnline)
-            {
-                UserConnected?.Invoke(this, new OnlineUserEventArgs(userId.Value, client));
+                ClientConnected?.Invoke(this, new OnlineClientEventArgs(client));
+
+                if (userId.HasValue && !userWasAlreadyOnline)
+                {
+                    UserConnected?.Invoke(this, new OnlineUserEventArgs(userId.Value, client));
+                }
             }
         }
 
         public virtual bool Remove(IOnlineClient client)
         {
+            if (client == null) throw new ArgumentNullException(nameof(client));
+
             return Remove(client.ConnectionId);
         }
 
         public virtual bool Remove(string connectionId)
         {
-            var result = Store.TryRemove(connectionId, out var client);
-            if (!result)
-            {
-                return false;
-            }
+            if (connectionId == null) throw new ArgumentNullException(nameof(connectionId));
 
-            if (UserDisconnected != null)
+            lock (SyncObj)
             {
-                var userId = client.UserId;
+                var result = Store.TryRemove(connectionId, out var client);
 
-                if (userId.HasValue && !IsOnline(userId.Value))
+                if (result)
                 {
-                    UserDisconnected.Invoke(this, new OnlineUserEventArgs(userId.Value, client));
+                    if (UserDisconnected != null)
+                    {
+                        var userId = client.UserId;
+
+                        if (userId.HasValue && !IsOnline(userId.Value))
+                        {
+                            UserDisconnected.Invoke(this, new OnlineUserEventArgs(userId.Value, client));
+                        }
+                    }
+
+                    ClientDisconnected?.Invoke(this, new OnlineClientEventArgs(client));
                 }
+
+                return result;
             }
-
-            ClientDisconnected?.Invoke(this, new OnlineClientEventArgs(client));
-
-            return true;
         }
 
         public virtual IOnlineClient? GetByConnectionId(string connectionId)
         {
-            if (Store.TryGet(connectionId, out var client))
-            {
-                return client;
-            }
+            if (connectionId == null) throw new ArgumentNullException(nameof(connectionId));
 
-            return null;
+            lock (SyncObj)
+            {
+                if (Store.TryGet(connectionId, out var client))
+                {
+                    return client;
+                }
+
+                return null;
+            }
         }
 
         public virtual IReadOnlyList<IOnlineClient> GetAllClients()
         {
-            return Store.GetAll();
+            lock (SyncObj)
+            {
+                return Store.GetAll();
+            }
+
         }
 
         public virtual IReadOnlyList<IOnlineClient> GetAllByUserId(long userId)

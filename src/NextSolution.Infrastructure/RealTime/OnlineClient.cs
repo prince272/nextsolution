@@ -1,4 +1,5 @@
-﻿using NextSolution.Core.Extensions.RealTime;
+﻿using NextSolution.Core.Extensions.Identity;
+using NextSolution.Core.Extensions.RealTime;
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
@@ -18,11 +19,14 @@ namespace NextSolution.Infrastructure.RealTime
         /// <param name="ipAddress">The ip address.</param>
         /// <param name="tenantId">The tenant identifier.</param>
         /// <param name="userId">The user identifier.</param>
-        public OnlineClient(string connectionId, string ipAddress, long? userId)
+        public OnlineClient(string connectionId, string? ipAddress, string? deviceId, long? userId, string? userAgent)
         {
             ConnectionId = connectionId;
             IpAddress = ipAddress;
+            DeviceId = deviceId;
             UserId = userId;
+            UserAgent = userAgent;
+            ConnectionTime = DateTimeOffset.UtcNow;
         }
 
         /// <summary>
@@ -33,8 +37,12 @@ namespace NextSolution.Infrastructure.RealTime
         /// <summary>
         /// IP address of this client.
         /// </summary>
-        public string IpAddress { get; set; }
+        public string? IpAddress { get; set; }
 
+        /// <summary>
+        /// User Id.
+        /// </summary>
+        public string? DeviceId { get; set; }
 
         /// <summary>
         /// User Id.
@@ -42,9 +50,14 @@ namespace NextSolution.Infrastructure.RealTime
         public long? UserId { get; set; }
 
         /// <summary>
+        /// User Agent.
+        /// </summary>
+        public string? UserAgent { get; set; }
+
+        /// <summary>
         /// Connection establishment time for this client.
         /// </summary>
-        public DateTimeOffset ConnectTime { get; set; }
+        public DateTimeOffset ConnectionTime { get; set; }
 
         /// <summary>
         /// Shortcut to set/get <see cref="Properties"/>.

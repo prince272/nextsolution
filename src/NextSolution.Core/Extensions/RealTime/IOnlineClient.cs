@@ -16,7 +16,12 @@ namespace NextSolution.Core.Extensions.RealTime
         /// <summary>
         /// IP address of this client.
         /// </summary>
-        string IpAddress { get; }
+        string? IpAddress { get; }
+
+        /// <summary>
+        /// Device Id.
+        /// </summary>
+        string? DeviceId { get; }
 
         /// <summary>
         /// User Id.
@@ -24,9 +29,14 @@ namespace NextSolution.Core.Extensions.RealTime
         long? UserId { get; }
 
         /// <summary>
+        /// User Agent.
+        /// </summary>
+        string? UserAgent { get; }
+
+        /// <summary>
         /// Connection establishment time for this client.
         /// </summary>
-        DateTimeOffset ConnectTime { get; }
+        DateTimeOffset ConnectionTime { get; }
 
         /// <summary>
         /// Shortcut to set/get <see cref="Properties"/>.
