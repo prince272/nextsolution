@@ -55,7 +55,7 @@ namespace NextSolution.Infrastructure.Identity
 
             options.Secret = !string.IsNullOrEmpty(options.Secret) ? options.Secret : AlgorithmHelper.Secret;
             options.Issuer = string.Join(separator, (options.Issuer ?? string.Empty).Split(separator).Append(serverUrl).Distinct().SkipWhile(string.IsNullOrEmpty).ToArray());
-            options.Audience = string.Join(separator, (options.Issuer ?? string.Empty).Split(separator).Append(serverUrl).Distinct().SkipWhile(string.IsNullOrEmpty).ToArray());
+            options.Audience = string.Join(separator, (options.Audience ?? string.Empty).Split(separator).Append(serverUrl).Distinct().SkipWhile(string.IsNullOrEmpty).ToArray());
 
             options.AccessTokenExpiresIn = options.AccessTokenExpiresIn != TimeSpan.Zero ? options.AccessTokenExpiresIn : TimeSpan.FromDays(1);
             options.RefreshTokenExpiresIn = options.AccessTokenExpiresIn != TimeSpan.Zero ? options.AccessTokenExpiresIn : TimeSpan.FromDays(90);

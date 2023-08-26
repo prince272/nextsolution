@@ -10,8 +10,12 @@ namespace NextSolution.Core.Extensions.Identity
 {
     public interface IUserContext
     {
-        string DeviceId { get; }
+        string? DeviceId { get; }
 
-        ClaimsPrincipal? User { get; }
+        string? IpAddress { get; }
+
+        long? UserId { get; }
+
+        string? UserAgent { get; }
     }
 }

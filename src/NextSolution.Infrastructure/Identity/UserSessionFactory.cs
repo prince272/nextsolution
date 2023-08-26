@@ -78,10 +78,10 @@ namespace NextSolution.Infrastructure.Identity
                 new(JwtRegisteredClaimNames.Jti, AlgorithmHelper.GenerateStamp(), ClaimValueTypes.String, issuer),
                 new(JwtRegisteredClaimNames.Iss, issuer, ClaimValueTypes.String, issuer),
                 new(JwtRegisteredClaimNames.Iat, current.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture), ClaimValueTypes.Integer64, issuer),
-                
-                // for invalidation
-                new(ClaimTypes.System, _userContext.DeviceId, ClaimValueTypes.String, issuer),
             });
+
+            if (_userContext.DeviceId != null)
+                claims = claims.Append(new(ClaimTypes.System, _userContext.DeviceId, ClaimValueTypes.String, issuer));
 
             var expiresAt = current.Add(expiresIn);
 
@@ -97,15 +97,16 @@ namespace NextSolution.Infrastructure.Identity
             var issuer = GetIssuer();
             var audience = GetAudience();
 
-            var claims = new List<Claim>
+            var claims = new Claim[]
             {
                 new(JwtRegisteredClaimNames.Jti, AlgorithmHelper.GenerateStamp(), ClaimValueTypes.String, issuer),
                 new(JwtRegisteredClaimNames.Iss, issuer, ClaimValueTypes.String, issuer),
                 new(JwtRegisteredClaimNames.Iat, current.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture), ClaimValueTypes.Integer64, issuer),
-                
-                // for invalidation
-                new(ClaimTypes.System, _userContext.DeviceId, ClaimValueTypes.String, issuer)
             };
+
+
+            if (_userContext.DeviceId != null)
+                claims = claims.Append(new(ClaimTypes.System, _userContext.DeviceId, ClaimValueTypes.String, issuer)).ToArray();
 
             var expiresAt = current.Add(expiresIn);
 
@@ -142,7 +143,7 @@ namespace NextSolution.Infrastructure.Identity
         {
             if (deviceId == null) throw new ArgumentNullException(nameof(deviceId));
 
-            return string.Equals(deviceId, _userContext.DeviceId, StringComparison.Ordinal);
+            return string.Equals(deviceId, _userContext.DeviceId ?? "Unknown", StringComparison.Ordinal);
         }
 
         public async Task<bool> ValidateAccessTokenAsync(string accessToken, CancellationToken cancellationToken = default)
