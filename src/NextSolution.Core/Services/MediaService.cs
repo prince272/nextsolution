@@ -20,7 +20,14 @@ using System.Threading.Tasks;
 
 namespace NextSolution.Core.Services
 {
-    public class MediaService
+    public interface IMediaService
+    {
+        Task DeleteByFileIdAsync(DeleteMediaByFileIdForm form);
+        Task UploadAsync(UploadMediaChunkForm form);
+        Task UploadAsync(UploadMediaContentForm form);
+    }
+
+    public class MediaService : IMediaService
     {
         private readonly ILogger<MediaService> _logger;
         private readonly IOptions<MediaServiceOptions> _mediaServiceOptions;
@@ -100,15 +107,13 @@ namespace NextSolution.Core.Services
             if (!formValidationResult.IsValid)
                 throw new BadRequestException(formValidationResult.ToDictionary());
 
-            var media = await _mediaRepository.FindAsync(predicate: _ => _.FileId ==  form.FileId);
+            var media = await _mediaRepository.FindAsync(predicate: _ => _.FileId == form.FileId);
             if (media == null) return;
 
             await _mediaRepository.DeleteAsync(media);
             _fileStorage.DeleteAsync(media.FileId, media.FileName)
                         .Forget(error => _logger.LogWarning(error, $"Unable to delete '{media.FileName}' file."));
         }
-
-        public MediaServiceOptions Options => _mediaServiceOptions.Value;
     }
 
     public class MediaServiceOptions

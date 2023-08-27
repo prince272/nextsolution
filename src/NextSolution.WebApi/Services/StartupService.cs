@@ -55,7 +55,7 @@ namespace NextSolution.WebApi.Services
 
             try
             {
-                var clientService = services.GetRequiredService<ClientService>();
+                var clientService = services.GetRequiredService<IClientService>();
                 await clientService.DisconnectAsync();
             }
             catch (Exception ex)

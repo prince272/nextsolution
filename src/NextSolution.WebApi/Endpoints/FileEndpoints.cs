@@ -35,7 +35,7 @@ namespace NextSolution.WebApi.Endpoints
 
 
         public async Task<IResult> PrepareFileAsync(
-            [FromServices] MediaService mediaService,
+            [FromServices] IMediaService mediaService,
             [FromHeader(Name = "Upload-Name")] string fileName,
             [FromHeader(Name = "Upload-Length")] long fileSize,
             [FromHeader(Name = "Upload-Type")] string contentType,
@@ -59,7 +59,7 @@ namespace NextSolution.WebApi.Endpoints
         }
 
         public async Task<IResult> UploadFileAsync(
-            [FromServices] MediaService mediaService,
+            [FromServices] IMediaService mediaService,
             [FromRoute] string fileId,
             [FromHeader(Name = "Upload-Name")] string fileName,
             [FromHeader(Name = "Upload-Length")] long fileSize,
@@ -82,7 +82,7 @@ namespace NextSolution.WebApi.Endpoints
             return Results.Content(fileId);
         }
 
-        public async Task<IResult> DeleteFileAsync([FromServices] MediaService mediaService, [FromRoute] string fileId)
+        public async Task<IResult> DeleteFileAsync([FromServices] IMediaService mediaService, [FromRoute] string fileId)
         {
             await mediaService.DeleteByFileIdAsync(new DeleteMediaByFileIdForm { FileId = fileId });
             return Results.Ok(fileId);

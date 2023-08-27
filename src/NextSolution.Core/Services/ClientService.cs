@@ -11,7 +11,15 @@ using System.Threading.Tasks;
 
 namespace NextSolution.Core.Services
 {
-    public class ClientService
+    public interface IClientService
+    {
+        Task ConnectAsync(string connectionId, CancellationToken cancellationToken = default);
+        Task DisconnectAsync(CancellationToken cancellationToken = default);
+        Task DisconnectAsync(string connectionId, CancellationToken cancellationToken = default);
+        Task<bool> IsUserOnlineAsync(long userId, CancellationToken cancellationToken = default);
+    }
+
+    public class ClientService : IClientService
     {
         private readonly IClientRepository _clientRepository;
         private readonly IUserRepository _userRepository;

@@ -17,7 +17,9 @@ namespace NextSolution.Core
     {
         public static IServiceCollection AddApplication(this IServiceCollection services)
         {
-            services.AddScoped<AccountService>();
+            services.AddScoped<IAccountService, AccountService>();
+
+            services.AddScoped<IClientService, ClientService>();
 
             services.Configure<MediaServiceOptions>(options =>
             {
@@ -74,7 +76,7 @@ namespace NextSolution.Core
                 .ToArray(); // Audio - 80MB
             });
 
-            services.AddScoped<MediaService>();
+            services.AddScoped<IMediaService, MediaService>();
             return services;
         }
 

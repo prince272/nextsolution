@@ -23,7 +23,20 @@ using NextSolution.Core.Events.Accounts;
 
 namespace NextSolution.Core.Services
 {
-    public class AccountService
+    public interface IAccountService
+    {
+        Task<UserSessionModel> RefreshSessionAsync(RefreshSessionForm form);
+        Task ResetPasswordAsync(ResetPasswordForm form);
+        Task SendPasswordResetTokenAsync(SendPasswordResetTokenForm form);
+        Task SendUsernameTokenAsync(SendUsernameTokenForm form);
+        Task<UserSessionModel> SignInAsync(SignInForm form);
+        Task<UserSessionModel> SignInWithAsync(SignUpWithForm form);
+        Task SignOutAsync(SignOutForm form);
+        Task SignUpAsync(SignUpForm form);
+        Task VerifyUsernameAsync(VerifyUsernameForm form);
+    }
+
+    public class AccountService : IAccountService
     {
         private readonly IServiceProvider _validatorProvider;
         private readonly IMapper _mapper;

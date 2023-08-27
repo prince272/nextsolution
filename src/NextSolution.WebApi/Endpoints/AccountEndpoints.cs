@@ -41,19 +41,19 @@ namespace NextSolution.WebApi.Endpoints
             endpoints.MapGet("/protected", () => "Protected").RequireAuthorization();
         }
 
-        public async Task<IResult> SignUpAsync([FromServices] AccountService accountService, [FromBody] SignUpForm form)
+        public async Task<IResult> SignUpAsync([FromServices] IAccountService accountService, [FromBody] SignUpForm form)
         {
             await accountService.SignUpAsync(form);
             return Results.Ok();
         }
 
-        public async Task<IResult> SignInAsync([FromServices] AccountService accountService, [FromBody] SignInForm form)
+        public async Task<IResult> SignInAsync([FromServices] IAccountService accountService, [FromBody] SignInForm form)
         {
             return Results.Ok(await accountService.SignInAsync(form));
         }
 
         public async Task<IResult> SignInWithAsync(
-            [FromServices] AccountService accountService, 
+            [FromServices] IAccountService accountService, 
             [FromServices] SignInManager<User> signInManager, 
             [FromRoute] string provider)
         {
@@ -117,36 +117,36 @@ namespace NextSolution.WebApi.Endpoints
             return Results.Challenge(properties, new[] { provider });
         }
 
-        public async Task<IResult> SignOutAsync([FromServices] AccountService accountService, [FromBody] SignOutForm form)
+        public async Task<IResult> SignOutAsync([FromServices] IAccountService accountService, [FromBody] SignOutForm form)
         {
             await accountService.SignOutAsync(form);
             return Results.Ok();
         }
 
-        public async Task<IResult> RefreshSessionAsync([FromServices] AccountService accountService, [FromBody] RefreshSessionForm form)
+        public async Task<IResult> RefreshSessionAsync([FromServices] IAccountService accountService, [FromBody] RefreshSessionForm form)
         {
             return Results.Ok(await accountService.RefreshSessionAsync(form));
         }
 
-        public async Task<IResult> SendUsernameTokenAsync([FromServices] AccountService accountService, [FromBody] SendUsernameTokenForm form)
+        public async Task<IResult> SendUsernameTokenAsync([FromServices] IAccountService accountService, [FromBody] SendUsernameTokenForm form)
         {
             await accountService.SendUsernameTokenAsync(form);
             return Results.Ok();
         }
 
-        public async Task<IResult> VerifyUsernameAsync([FromServices] AccountService accountService, [FromBody] VerifyUsernameForm form)
+        public async Task<IResult> VerifyUsernameAsync([FromServices] IAccountService accountService, [FromBody] VerifyUsernameForm form)
         {
             await accountService.VerifyUsernameAsync(form);
             return Results.Ok();
         }
 
-        public async Task<IResult> SendPasswordResetTokenAsync([FromServices] AccountService accountService, [FromBody] SendPasswordResetTokenForm form)
+        public async Task<IResult> SendPasswordResetTokenAsync([FromServices] IAccountService accountService, [FromBody] SendPasswordResetTokenForm form)
         {
             await accountService.SendPasswordResetTokenAsync(form);
             return Results.Ok();
         }
 
-        public async Task<IResult> ResetPasswordAsync([FromServices] AccountService accountService, [FromBody] ResetPasswordForm form)
+        public async Task<IResult> ResetPasswordAsync([FromServices] IAccountService accountService, [FromBody] ResetPasswordForm form)
         {
             await accountService.ResetPasswordAsync(form);
             return Results.Ok();
