@@ -18,6 +18,6 @@ namespace NextSolution.Core.Entities
         {
         }
 
-        public virtual ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
+        public virtual ICollection<UserRole> Users { get; set; } = new List<UserRole>();
     }
 }
