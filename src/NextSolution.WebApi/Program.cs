@@ -34,7 +34,7 @@ try
     builder.Logging.ClearProviders();
     builder.Host.UseSerilog(Log.Logger);
 
-    var assemblies = AssemblyHelper.GetAssemblies();
+    var assemblies = AssemblyHelper.GetAssemblies().ToArray();
 
     // Add database services.
     builder.Services.AddDbContext<AppDbContext>(options =>
@@ -46,6 +46,11 @@ try
     builder.Services.AddRepositories(assemblies);
 
     builder.Services.AddValidators(assemblies);
+
+    builder.Services.AddMediatR(options =>
+    {
+        options.RegisterServicesFromAssemblies(assemblies);
+    });
 
     builder.Services.AddAutoMapper(assemblies);
 

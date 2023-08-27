@@ -18,6 +18,8 @@ using NextSolution.Core.Extensions.ViewRenderer;
 using NextSolution.Core.Extensions.EmailSender;
 using NextSolution.Core.Extensions.SmsSender;
 using System.Security.Claims;
+using MediatR;
+using NextSolution.Core.Events.Accounts;
 
 namespace NextSolution.Core.Services
 {
@@ -25,16 +27,18 @@ namespace NextSolution.Core.Services
     {
         private readonly IServiceProvider _validatorProvider;
         private readonly IMapper _mapper;
+        private readonly IMediator _mediator;
         private readonly IViewRenderer _viewRenderer;
         private readonly IEmailSender _emailSender;
         private readonly ISmsSender _smsSender;
         private readonly IUserRepository _userRepository;
         private readonly IRoleRepository _roleRepository;
 
-        public AccountService(IServiceProvider serviceProvider, IMapper mapper, IViewRenderer viewRenderer, IEmailSender emailSender, ISmsSender smsSender, IUserRepository userRepository, IRoleRepository roleRepository)
+        public AccountService(IServiceProvider serviceProvider, IMapper mapper, IMediator mediator, IViewRenderer viewRenderer, IEmailSender emailSender, ISmsSender smsSender, IUserRepository userRepository, IRoleRepository roleRepository)
         {
             _validatorProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
             _viewRenderer = viewRenderer ?? throw new ArgumentNullException(nameof(viewRenderer));
             _emailSender = emailSender ?? throw new ArgumentNullException(nameof(emailSender));
             _smsSender = smsSender ?? throw new ArgumentNullException(nameof(smsSender));
@@ -82,6 +86,8 @@ namespace NextSolution.Core.Services
             // If there is only one user, grant both Admin and Member roles.
             // Otherwise, assign only the Member role.
             await _userRepository.AddToRolesAsync(user, (totalUsers == 1) ? new[] { Roles.Admin, Roles.Member } : new[] { Roles.Member });
+
+            await _mediator.Publish(new UserSignedUp(user.Id));
         }
 
         public async Task<UserSessionModel> SignInAsync(SignInForm form)
@@ -112,6 +118,8 @@ namespace NextSolution.Core.Services
 
             var model = _mapper.Map(user, _mapper.Map<UserSessionModel>(session));
             model.Roles = (await _userRepository.GetRolesAsync(user)).Select(_ => _.Camelize()).ToArray();
+
+            await _mediator.Publish(new UserSignedIn(user.Id));
             return model;
         }
 
@@ -166,6 +174,8 @@ namespace NextSolution.Core.Services
 
             var model = _mapper.Map(user, _mapper.Map<UserSessionModel>(session));
             model.Roles = (await _userRepository.GetRolesAsync(user)).Select(_ => _.Camelize()).ToArray();
+
+            await _mediator.Publish(new UserSignedInWith(user.Id, form.ProviderName));
             return model;
         }
 
@@ -185,12 +195,7 @@ namespace NextSolution.Core.Services
 
             await _userRepository.RemoveSessionAsync(user, form.RefreshToken);
 
-            var session = await _userRepository.GenerateSessionAsync(user);
-            await _userRepository.AddSessionAsync(user, session);
-
-            var model = _mapper.Map(user, _mapper.Map<UserSessionModel>(session));
-            model.Roles = await _userRepository.GetRolesAsync(user);
-            return model;
+            await _mediator.Publish(new UserSignedOut(user.Id));
         }
 
         public async Task<UserSessionModel> RefreshSessionAsync(RefreshSessionForm form)
