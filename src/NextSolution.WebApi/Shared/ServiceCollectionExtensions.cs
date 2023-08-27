@@ -61,23 +61,5 @@ namespace NextSolution.WebApi.Shared
             });
             return services;
         }
-
-        public static async Task UseSeeding(this IApplicationBuilder app)
-        {
-            if (app == null) throw new ArgumentNullException(nameof(app));
-
-            using var scope = app.ApplicationServices.CreateScope();
-            var services = scope.ServiceProvider;
-
-            try
-            {
-                await AppDbInitializer.InitializeAsync(services);
-            }
-            catch (Exception ex)
-            {
-                var logger = services.GetRequiredService<ILogger<Program>>();
-                logger.LogError(ex, "An error occurred while seeding the database.");
-            }
-        }
     }
 }

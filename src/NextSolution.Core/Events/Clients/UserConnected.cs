@@ -6,15 +6,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NextSolution.Core.Events.Accounts
+namespace NextSolution.Core.Events.Clients
 {
-    public class UserSignedOut : INotification
+    public class UserConnected : INotification
     {
-        public UserSignedOut(User user)
+        public UserConnected(User user, Client client)
         {
             User = user;
+            Client = client;
         }
 
         public User User { get; set; }
+
+        public Client Client { get; set; }
     }
 }

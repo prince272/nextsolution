@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using NextSolution.Core.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,11 +10,11 @@ namespace NextSolution.Core.Events.Accounts
 {
     public class UserSignedUp : INotification
     {
-        public UserSignedUp(long userId)
+        public UserSignedUp(User user)
         {
-            UserId = userId;
+            User = user;
         }
 
-        public long UserId { get; set; }    
+        public User User { get; set; }    
     }
 }

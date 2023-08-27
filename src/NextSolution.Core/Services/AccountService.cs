@@ -87,7 +87,7 @@ namespace NextSolution.Core.Services
             // Otherwise, assign only the Member role.
             await _userRepository.AddToRolesAsync(user, (totalUsers == 1) ? new[] { Roles.Admin, Roles.Member } : new[] { Roles.Member });
 
-            await _mediator.Publish(new UserSignedUp(user.Id));
+            await _mediator.Publish(new UserSignedUp(user));
         }
 
         public async Task<UserSessionModel> SignInAsync(SignInForm form)
@@ -119,7 +119,7 @@ namespace NextSolution.Core.Services
             var model = _mapper.Map(user, _mapper.Map<UserSessionModel>(session));
             model.Roles = (await _userRepository.GetRolesAsync(user)).Select(_ => _.Camelize()).ToArray();
 
-            await _mediator.Publish(new UserSignedIn(user.Id));
+            await _mediator.Publish(new UserSignedIn(user));
             return model;
         }
 
@@ -175,7 +175,7 @@ namespace NextSolution.Core.Services
             var model = _mapper.Map(user, _mapper.Map<UserSessionModel>(session));
             model.Roles = (await _userRepository.GetRolesAsync(user)).Select(_ => _.Camelize()).ToArray();
 
-            await _mediator.Publish(new UserSignedInWith(user.Id, form.ProviderName));
+            await _mediator.Publish(new UserSignedInWith(user, form.ProviderName));
             return model;
         }
 
@@ -195,7 +195,7 @@ namespace NextSolution.Core.Services
 
             await _userRepository.RemoveSessionAsync(user, form.RefreshToken);
 
-            await _mediator.Publish(new UserSignedOut(user.Id));
+            await _mediator.Publish(new UserSignedOut(user));
         }
 
         public async Task<UserSessionModel> RefreshSessionAsync(RefreshSessionForm form)

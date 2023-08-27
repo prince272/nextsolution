@@ -10,11 +10,11 @@ namespace NextSolution.Core.Events.Accounts
 {
     public class UserSignedIn : INotification
     {
-        public UserSignedIn(long userId)
+        public UserSignedIn(User user)
         {
-            UserId = userId;
+            User = user;
         }
 
-        public long UserId { get; set; }
+        public User User { get; set; }
     }
 }

@@ -18,10 +18,9 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.Extensions.Configuration;
 using Humanizer.Configuration;
 using NextSolution.Infrastructure.FileStorage.Local;
-using NextSolution.Infrastructure.RealTime;
-using NextSolution.Core.Extensions.RealTime;
 using NextSolution.Infrastructure.SmsSender.Fake;
-using NextSolution.Infrastructure.RealTime.Hubs;
+using NextSolution.Infrastructure.RealTime.SignalR;
+using NextSolution.WebApi.Services;
 
 try
 {
@@ -135,7 +134,6 @@ try
     });
 
     builder.Services.AddSignalR();
-    builder.Services.AddOnlineClientManager();
 
     // Configure serialization services.
     builder.Services.ConfigureHttpJsonOptions(options =>
@@ -155,6 +153,8 @@ try
     // Add documentation services.
     builder.Services.AddDocumentations();
 
+    builder.Services.AddHostedService<StartupService>();
+
     // Build application.
     var app = builder.Build();
 
@@ -171,7 +171,6 @@ try
     {
         app.UseSwagger();
         app.UseSwaggerUI();
-        await app.UseSeeding();
     }
 
     app.UseHttpsRedirection();
