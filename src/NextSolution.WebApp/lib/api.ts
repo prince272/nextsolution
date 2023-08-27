@@ -136,7 +136,7 @@ export class Api {
     config?: AxiosRequestConfig<D>
   ): Promise<R> {
     config = {
-      url: `/accounts`,
+      url: `/accounts/register`,
       method: "POST",
       data,
       ...config
@@ -151,7 +151,7 @@ export class Api {
     config?: AxiosRequestConfig<D>
   ): Promise<R> {
     config = {
-      url: `/accounts/sessions`,
+      url: `/accounts/authenticate`,
       method: "POST",
       data,
       ...config
@@ -166,13 +166,13 @@ export class Api {
     config?: AxiosRequestConfig<D>
   ): Promise<R> {
     config = {
-      url: `/accounts/sessions/${provider}`,
+      url: `/accounts/authenticate/${provider}`,
       method: "POST",
       ...config
     } as AxiosRequestConfig<D>;
 
     try {
-      const externalUrl = new URL(`${this.axiosInstance.defaults.baseURL}/accounts/sessions/${provider}`);
+      const externalUrl = new URL(`${this.axiosInstance.defaults.baseURL}/accounts/authenticate/${provider}`);
       externalUrl.searchParams.set("returnUrl", window.location.href);
       await ExternalWindow.open(externalUrl, { center: true });
     } catch (error) {
@@ -188,7 +188,7 @@ export class Api {
     config?: AxiosRequestConfig<D>
   ): Promise<R> {
     config = {
-      url: `/accounts/sessions/refresh`,
+      url: `/accounts/authenticate/refresh`,
       method: "POST",
       data: { refreshToken },
       ...config
@@ -200,7 +200,7 @@ export class Api {
 
   public async signOut<T extends any, R extends AxiosResponse<T>, D extends any>(config?: AxiosRequestConfig<D>): Promise<R> {
     config = {
-      url: `/accounts/sessions/revoke`,
+      url: `/accounts/authenticate/revoke`,
       method: "POST",
       ...config
     } as AxiosRequestConfig<D>;

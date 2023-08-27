@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace NextSolution.Core.Models.Accounts
 {
-    public class RevokeSessionForm
+    public class SignOutForm
     {
         public string RefreshToken { get; set; } = default!;
 
-        public class Validator : AbstractValidator<RevokeSessionForm>
+        public class Validator : AbstractValidator<SignOutForm>
         {
             public Validator()
             {

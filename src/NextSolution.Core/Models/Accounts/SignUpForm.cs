@@ -8,8 +8,12 @@ using System.Threading.Tasks;
 
 namespace NextSolution.Core.Models.Accounts
 {
-    public class CreateSessionForm
+    public class SignUpForm
     {
+        public string FirstName { get; set; } = default!;
+
+        public string LastName { get; set; } = default!;
+
         public string Username { get; set; } = default!;
 
         [JsonIgnore]
@@ -17,12 +21,14 @@ namespace NextSolution.Core.Models.Accounts
 
         public string Password { get; set; } = default!;
 
-        public class Validator : AbstractValidator<CreateSessionForm>
+        public class Validator : AbstractValidator<SignUpForm>
         {
             public Validator()
             {
+                RuleFor(_ => _.FirstName).NotEmpty();
+                RuleFor(_ => _.LastName).NotEmpty();
                 RuleFor(_ => _.Username).NotEmpty().Username();
-                RuleFor(_ => _.Password).NotEmpty();
+                RuleFor(_ => _.Password).NotEmpty().Password();
             }
         }
     }

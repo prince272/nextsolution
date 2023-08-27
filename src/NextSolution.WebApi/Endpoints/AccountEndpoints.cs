@@ -25,14 +25,12 @@ namespace NextSolution.WebApi.Endpoints
         {
             var endpoints = MapGroup("/accounts");
 
-            endpoints.MapPost("/", CreateAccountAsync);
-            endpoints.MapPost("/sessions", CreateSessionAsync);
-            endpoints.MapPost("/sessions/{provider}", CreateExternalSessionAsync);
-
-            endpoints.MapGet("/sessions/{provider}", ConnectSession);
-
-            endpoints.MapPost("/sessions/refresh", RefreshSessionAsync);
-            endpoints.MapPost("/sessions/revoke", RevokeSessionAsync);
+            endpoints.MapPost("/register", SignUpAsync);
+            endpoints.MapPost("/authenticate", SignInAsync);
+            endpoints.MapPost("/authenticate/{provider}", SignInWithAsync);
+            endpoints.MapGet("/authenticate/{provider}", SignInWithRedirectAsync);
+            endpoints.MapPost("/authenticate/revoke", SignOutAsync).RequireAuthorization();
+            endpoints.MapPost("/authenticate/refresh", RefreshSessionAsync);
 
             endpoints.MapPost("/username/verify/send-code", SendUsernameTokenAsync);
             endpoints.MapPost("/username/verify", VerifyUsernameAsync);
@@ -40,21 +38,21 @@ namespace NextSolution.WebApi.Endpoints
             endpoints.MapPost("/password/reset/send-code", SendPasswordResetTokenAsync);
             endpoints.MapPost("/password/reset", ResetPasswordAsync);
 
-            endpoints.MapGet("/authorize", () => "Authorized").RequireAuthorization();
+            endpoints.MapGet("/protected", () => "Protected").RequireAuthorization();
         }
 
-        public async Task<IResult> CreateAccountAsync([FromServices] AccountService accountService, [FromBody] CreateAccountForm form)
+        public async Task<IResult> SignUpAsync([FromServices] AccountService accountService, [FromBody] SignUpForm form)
         {
-            await accountService.CreateAsync(form);
+            await accountService.SignUpAsync(form);
             return Results.Ok();
         }
 
-        public async Task<IResult> CreateSessionAsync([FromServices] AccountService accountService, [FromBody] CreateSessionForm form)
+        public async Task<IResult> SignInAsync([FromServices] AccountService accountService, [FromBody] SignInForm form)
         {
-            return Results.Ok(await accountService.CreateSessionAsync(form));
+            return Results.Ok(await accountService.SignInAsync(form));
         }
 
-        public async Task<IResult> CreateExternalSessionAsync(
+        public async Task<IResult> SignInWithAsync(
             [FromServices] AccountService accountService, 
             [FromServices] SignInManager<User> signInManager, 
             [FromRoute] string provider)
@@ -78,7 +76,7 @@ namespace NextSolution.WebApi.Endpoints
             var firstName = signInInfo.Principal.FindFirstValue(ClaimTypes.GivenName) ?? string.Empty;
             var lastName = signInInfo.Principal.FindFirstValue(ClaimTypes.Surname) ?? string.Empty;
 
-            var form = new CreateExternalSessionForm
+            var form = new SignUpWithForm
             {
                 Username = username,
                 FirstName = firstName,
@@ -89,11 +87,10 @@ namespace NextSolution.WebApi.Endpoints
                 ProviderKey = signInInfo.ProviderKey
             };
 
-            return Results.Ok(await accountService.CreateExternalSessionAsync(form));
+            return Results.Ok(await accountService.SignInWithAsync(form));
         }
 
-        public IResult ConnectSession(
-            [FromServices] AccountService accountService,
+        public IResult SignInWithRedirectAsync(
             [FromServices] SignInManager<User> signInManager,
             [FromServices] IConfiguration configuration,
             [FromRoute] string provider,
@@ -120,15 +117,15 @@ namespace NextSolution.WebApi.Endpoints
             return Results.Challenge(properties, new[] { provider });
         }
 
+        public async Task<IResult> SignOutAsync([FromServices] AccountService accountService, [FromBody] SignOutForm form)
+        {
+            await accountService.SignOutAsync(form);
+            return Results.Ok();
+        }
+
         public async Task<IResult> RefreshSessionAsync([FromServices] AccountService accountService, [FromBody] RefreshSessionForm form)
         {
             return Results.Ok(await accountService.RefreshSessionAsync(form));
-        }
-
-        public async Task<IResult> RevokeSessionAsync([FromServices] AccountService accountService, [FromBody] RevokeSessionForm form)
-        {
-            await accountService.RevokeSessionAsync(form);
-            return Results.Ok();
         }
 
         public async Task<IResult> SendUsernameTokenAsync([FromServices] AccountService accountService, [FromBody] SendUsernameTokenForm form)

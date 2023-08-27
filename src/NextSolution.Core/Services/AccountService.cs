@@ -42,11 +42,11 @@ namespace NextSolution.Core.Services
             _roleRepository = roleRepository ?? throw new ArgumentNullException(nameof(roleRepository));
         }
 
-        public async Task CreateAsync(CreateAccountForm form)
+        public async Task SignUpAsync(SignUpForm form)
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 
-            var formValidator = _validatorProvider.GetRequiredService<CreateAccountForm.Validator>();
+            var formValidator = _validatorProvider.GetRequiredService<SignUpForm.Validator>();
             var formValidationResult = await formValidator.ValidateAsync(form);
 
             if (!formValidationResult.IsValid)
@@ -84,11 +84,11 @@ namespace NextSolution.Core.Services
             await _userRepository.AddToRolesAsync(user, (totalUsers == 1) ? new[] { Roles.Admin, Roles.Member } : new[] { Roles.Member });
         }
 
-        public async Task<UserSessionModel> CreateSessionAsync(CreateSessionForm form)
+        public async Task<UserSessionModel> SignInAsync(SignInForm form)
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 
-            var formValidator = _validatorProvider.GetRequiredService<CreateSessionForm.Validator>();
+            var formValidator = _validatorProvider.GetRequiredService<SignInForm.Validator>();
             var formValidationResult = await formValidator.ValidateAsync(form);
 
             if (!formValidationResult.IsValid)
@@ -115,11 +115,11 @@ namespace NextSolution.Core.Services
             return model;
         }
 
-        public async Task<UserSessionModel> CreateExternalSessionAsync(CreateExternalSessionForm form)
+        public async Task<UserSessionModel> SignInWithAsync(SignUpWithForm form)
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 
-            var formValidator = _validatorProvider.GetRequiredService<CreateExternalSessionForm.Validator>();
+            var formValidator = _validatorProvider.GetRequiredService<SignUpWithForm.Validator>();
             var formValidationResult = await formValidator.ValidateAsync(form);
 
             if (!formValidationResult.IsValid)
@@ -169,6 +169,30 @@ namespace NextSolution.Core.Services
             return model;
         }
 
+        public async Task SignOutAsync(SignOutForm form)
+        {
+            if (form == null) throw new ArgumentNullException(nameof(form));
+
+            var formValidator = _validatorProvider.GetRequiredService<SignOutForm.Validator>();
+            var formValidationResult = await formValidator.ValidateAsync(form);
+
+            if (!formValidationResult.IsValid)
+                throw new BadRequestException(formValidationResult.ToDictionary());
+
+            var user = await _userRepository.FindByRefreshTokenAsync(form.RefreshToken);
+
+            if (user == null) throw new BadRequestException(nameof(form.RefreshToken), $"'{nameof(form.RefreshToken).Humanize(LetterCasing.Title)}' is not valid.");
+
+            await _userRepository.RemoveSessionAsync(user, form.RefreshToken);
+
+            var session = await _userRepository.GenerateSessionAsync(user);
+            await _userRepository.AddSessionAsync(user, session);
+
+            var model = _mapper.Map(user, _mapper.Map<UserSessionModel>(session));
+            model.Roles = await _userRepository.GetRolesAsync(user);
+            return model;
+        }
+
         public async Task<UserSessionModel> RefreshSessionAsync(RefreshSessionForm form)
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
@@ -191,23 +215,6 @@ namespace NextSolution.Core.Services
             var model = _mapper.Map(user, _mapper.Map<UserSessionModel>(session));
             model.Roles = await _userRepository.GetRolesAsync(user);
             return model;
-        }
-
-        public async Task RevokeSessionAsync(RevokeSessionForm form)
-        {
-            if (form == null) throw new ArgumentNullException(nameof(form));
-
-            var formValidator = _validatorProvider.GetRequiredService<RevokeSessionForm.Validator>();
-            var formValidationResult = await formValidator.ValidateAsync(form);
-
-            if (!formValidationResult.IsValid)
-                throw new BadRequestException(formValidationResult.ToDictionary());
-
-            var user = await _userRepository.FindByRefreshTokenAsync(form.RefreshToken);
-
-            if (user == null) throw new BadRequestException(nameof(form.RefreshToken), $"'{nameof(form.RefreshToken).Humanize(LetterCasing.Title)}' is not valid.");
-
-            await _userRepository.RemoveSessionAsync(user, form.RefreshToken);
         }
 
         public async Task SendUsernameTokenAsync(SendUsernameTokenForm form)

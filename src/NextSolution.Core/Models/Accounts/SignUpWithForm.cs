@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace NextSolution.Core.Models.Accounts
 {
-    public class CreateExternalSessionForm
+    public class SignUpWithForm
     {
         public string FirstName { get; set; } = default!;
 
@@ -27,7 +27,7 @@ namespace NextSolution.Core.Models.Accounts
 
         public string? ProviderDisplayName { get; set; }
 
-        public class Validator : AbstractValidator<CreateExternalSessionForm>
+        public class Validator : AbstractValidator<SignUpWithForm>
         {
             public Validator()
             {
