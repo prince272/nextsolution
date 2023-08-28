@@ -166,13 +166,13 @@ export class Api {
     config?: AxiosRequestConfig<D>
   ): Promise<R> {
     config = {
-      url: `/accounts/authenticate/${provider}`,
+      url: `/accounts/${provider}/authenticate`,
       method: "POST",
       ...config
     } as AxiosRequestConfig<D>;
 
     try {
-      const externalUrl = new URL(`${this.axiosInstance.defaults.baseURL}/accounts/authenticate/${provider}`);
+      const externalUrl = new URL(`${this.axiosInstance.defaults.baseURL}/accounts/${provider}/authenticate`);
       externalUrl.searchParams.set("returnUrl", window.location.href);
       await ExternalWindow.open(externalUrl, { center: true });
     } catch (error) {
@@ -188,7 +188,7 @@ export class Api {
     config?: AxiosRequestConfig<D>
   ): Promise<R> {
     config = {
-      url: `/accounts/authenticate/refresh`,
+      url: `/accounts/session/refresh`,
       method: "POST",
       data: { refreshToken },
       ...config
@@ -200,7 +200,7 @@ export class Api {
 
   public async signOut<T extends any, R extends AxiosResponse<T>, D extends any>(config?: AxiosRequestConfig<D>): Promise<R> {
     config = {
-      url: `/accounts/authenticate/revoke`,
+      url: `/accounts/session/revoke`,
       method: "POST",
       ...config
     } as AxiosRequestConfig<D>;

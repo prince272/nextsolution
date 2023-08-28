@@ -26,11 +26,11 @@ namespace NextSolution.WebApi.Endpoints
             var endpoints = MapGroup("/accounts");
 
             endpoints.MapPost("/register", SignUpAsync);
-            endpoints.MapPost("/authenticate", SignInAsync);
-            endpoints.MapPost("/authenticate/{provider}", SignInWithAsync);
-            endpoints.MapGet("/authenticate/{provider}", SignInWithRedirectAsync);
-            endpoints.MapPost("/authenticate/revoke", SignOutAsync).RequireAuthorization();
-            endpoints.MapPost("/authenticate/refresh", RefreshSessionAsync);
+            endpoints.MapPost("/session/authenticate", SignInAsync);
+            endpoints.MapPost("/session/{provider}/authenticate", SignInWithAsync);
+            endpoints.MapGet("/session/{provider}/authenticate", SignInWithRedirectAsync);
+            endpoints.MapPost("/session/revoke", SignOutAsync).RequireAuthorization();
+            endpoints.MapPost("/session/refresh", RefreshSessionAsync);
 
             endpoints.MapPost("/username/verify/send-code", SendUsernameTokenAsync);
             endpoints.MapPost("/username/verify", VerifyUsernameAsync);
