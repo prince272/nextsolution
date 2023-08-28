@@ -21,6 +21,7 @@ using NextSolution.Infrastructure.FileStorage.Local;
 using NextSolution.Infrastructure.SmsSender.Fake;
 using NextSolution.Infrastructure.RealTime.SignalR;
 using NextSolution.WebApi.Services;
+using NextSolution.Infrastructure.Data.Middlewares;
 
 try
 {
@@ -180,6 +181,8 @@ try
     app.UseAuthentication();
 
     app.UseAuthorization();
+
+    app.UseDbTransaction();
 
     app.MapHub<SignalRHub>("/signalr");
 
