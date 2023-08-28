@@ -20,7 +20,7 @@ using System.Threading.Tasks;
 
 namespace NextSolution.Core.Services
 {
-    public interface IMediaService
+    public interface IMediaService : IDisposable, IAsyncDisposable
     {
         Task DeleteByFileIdAsync(DeleteMediaByFileIdForm form);
         Task UploadAsync(UploadMediaChunkForm form);
@@ -113,6 +113,49 @@ namespace NextSolution.Core.Services
             await _mediaRepository.DeleteAsync(media);
             _fileStorage.DeleteAsync(media.FileId, media.FileName)
                         .Forget(error => _logger.LogWarning(error, $"Unable to delete '{media.FileName}' file."));
+        }
+
+        private readonly CancellationToken cancellationToken = default;
+        private bool disposed = false;
+
+        public void Dispose()
+        {
+            if (!disposed)
+            {
+                disposed = true;
+                Dispose(true);
+                GC.SuppressFinalize(this);
+            }
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                // myResource.Dispose();
+                cancellationToken.ThrowIfCancellationRequested();
+            }
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            if (!disposed)
+            {
+                disposed = true;
+                await DisposeAsync(true);
+                GC.SuppressFinalize(this);
+            }
+        }
+
+        protected ValueTask DisposeAsync(bool disposing)
+        {
+            if (disposing)
+            {
+                //  await myResource.DisposeAsync();
+                cancellationToken.ThrowIfCancellationRequested();
+            }
+
+            return ValueTask.CompletedTask;
         }
     }
 

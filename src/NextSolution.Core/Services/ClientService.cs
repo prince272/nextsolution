@@ -1,7 +1,12 @@
-﻿using MediatR;
+﻿using FluentValidation;
+using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using NextSolution.Core.Entities;
 using NextSolution.Core.Events.Clients;
+using NextSolution.Core.Exceptions;
 using NextSolution.Core.Extensions.Identity;
+using NextSolution.Core.Models.Accounts;
+using NextSolution.Core.Models.Clients;
 using NextSolution.Core.Repositories;
 using System;
 using System.Collections.Generic;
@@ -11,12 +16,11 @@ using System.Threading.Tasks;
 
 namespace NextSolution.Core.Services
 {
-    public interface IClientService
+    public interface IClientService : IDisposable, IAsyncDisposable
     {
-        Task ConnectAsync(string connectionId, CancellationToken cancellationToken = default);
-        Task DisconnectAsync(CancellationToken cancellationToken = default);
-        Task DisconnectAsync(string connectionId, CancellationToken cancellationToken = default);
-        Task<bool> IsUserOnlineAsync(long userId, CancellationToken cancellationToken = default);
+        Task ConnectAsync(ConnectClientForm form);
+        Task DisconnectAsync(DisconnectClientForm form);
+        Task DisconnectAsync();
     }
 
     public class ClientService : IClientService
@@ -25,48 +29,62 @@ namespace NextSolution.Core.Services
         private readonly IUserRepository _userRepository;
         private readonly IMediator _mediator;
         private readonly IUserContext _userContext;
+        private readonly IServiceProvider _validatorProvider;
 
-        public ClientService(IClientRepository clientRepository, IUserRepository userRepository, IMediator mediator, IUserContext userContext)
+        public ClientService(IClientRepository clientRepository, IUserRepository userRepository, IMediator mediator, IUserContext userContext, IServiceProvider validatorProvider)
         {
             _clientRepository = clientRepository ?? throw new ArgumentNullException(nameof(clientRepository));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
             _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext));
+            _validatorProvider = validatorProvider ?? throw new ArgumentNullException(nameof(validatorProvider));
         }
 
-        public async Task<bool> IsUserOnlineAsync(long userId, CancellationToken cancellationToken = default)
+        private async Task<bool> IsUserOnlineAsync(long userId)
         {
             return await _clientRepository.AnyAsync(_ => _.UserId == userId, cancellationToken);
         }
 
-        public async Task ConnectAsync(string connectionId, CancellationToken cancellationToken = default)
+        public async Task ConnectAsync(ConnectClientForm form)
         {
-            if (connectionId == null) throw new ArgumentNullException(nameof(connectionId));
+            if (form == null) throw new ArgumentNullException(nameof(form));
 
-            var client = GenerateClient(connectionId);
+            var formValidator = _validatorProvider.GetRequiredService<ConnectClientForm.Validator>();
+            var formValidationResult = await formValidator.ValidateAsync(form);
+
+            if (!formValidationResult.IsValid)
+                throw new BadRequestException(formValidationResult.ToDictionary());
+
+            var client = GenerateClient(form.ConnectionId);
             var userId = client.UserId;
 
             await _clientRepository.CreateAsync(client, cancellationToken);
             await _mediator.Publish(new ClientConnected(client), cancellationToken);
 
-            if (userId.HasValue && await IsUserOnlineAsync(userId.Value, cancellationToken))
+            if (userId.HasValue && await IsUserOnlineAsync(userId.Value))
             {
                 await _mediator.Publish(new UserConnected((await _userRepository.FindByIdAsync(userId.Value, cancellationToken))!, client), cancellationToken);
             }
         }
 
-        public async Task DisconnectAsync(string connectionId, CancellationToken cancellationToken = default)
+        public async Task DisconnectAsync(DisconnectClientForm form)
         {
-            if (connectionId == null) throw new ArgumentNullException(nameof(connectionId));
+            if (form == null) throw new ArgumentNullException(nameof(form));
 
-            var client = await _clientRepository.FindAsync(predicate: _ => _.ConnectionId == connectionId, cancellationToken: cancellationToken);
+            var formValidator = _validatorProvider.GetRequiredService<DisconnectClientForm.Validator>();
+            var formValidationResult = await formValidator.ValidateAsync(form);
+
+            if (!formValidationResult.IsValid)
+                throw new BadRequestException(formValidationResult.ToDictionary());
+
+            var client = await _clientRepository.FindAsync(predicate: _ => _.ConnectionId == form.ConnectionId, cancellationToken: cancellationToken);
             if (client == null) return;
 
             await _clientRepository.DeleteAsync(client, cancellationToken);
 
             var userId = client.UserId;
 
-            if (userId.HasValue && !(await IsUserOnlineAsync(userId.Value, cancellationToken)))
+            if (userId.HasValue && !(await IsUserOnlineAsync(userId.Value)))
             {
                 await _mediator.Publish(new UserDisconnected((await _userRepository.FindByIdAsync(userId.Value, cancellationToken))!, client), cancellationToken);
             }
@@ -74,11 +92,11 @@ namespace NextSolution.Core.Services
             await _mediator.Publish(new ClientDisconnected(client), cancellationToken);
         }
 
-        public async Task DisconnectAsync(CancellationToken cancellationToken = default)
+        public async Task DisconnectAsync()
         {
             var connectionIds = await _clientRepository.FindAllAsync(selector: _ => _.ConnectionId, cancellationToken: cancellationToken);
             foreach (var connectionId in connectionIds)
-                await DisconnectAsync(connectionId, cancellationToken);
+                await DisconnectAsync(new DisconnectClientForm { ConnectionId = connectionId });
         }
 
         protected Client GenerateClient(string connectionId)
@@ -91,6 +109,50 @@ namespace NextSolution.Core.Services
                 UserId = _userContext.UserId,
                 UserAgent = _userContext.UserAgent
             };
+        }
+
+
+        private readonly CancellationToken cancellationToken = default;
+        private bool disposed = false;
+
+        public void Dispose()
+        {
+            if (!disposed)
+            {
+                disposed = true;
+                Dispose(true);
+                GC.SuppressFinalize(this);
+            }
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+               // myResource.Dispose();
+               cancellationToken.ThrowIfCancellationRequested();
+            }
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            if (!disposed)
+            {
+                disposed = true;
+                await DisposeAsync(true);
+                GC.SuppressFinalize(this);
+            }
+        }
+
+        protected ValueTask DisposeAsync(bool disposing)
+        {
+            if (disposing)
+            {
+              //  await myResource.DisposeAsync();
+              cancellationToken.ThrowIfCancellationRequested();
+            }
+
+            return ValueTask.CompletedTask;
         }
     }
 }

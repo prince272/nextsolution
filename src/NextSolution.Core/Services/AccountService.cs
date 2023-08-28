@@ -23,7 +23,7 @@ using NextSolution.Core.Events.Accounts;
 
 namespace NextSolution.Core.Services
 {
-    public interface IAccountService
+    public interface IAccountService : IDisposable, IAsyncDisposable
     {
         Task<UserSessionModel> RefreshSessionAsync(RefreshSessionForm form);
         Task ResetPasswordAsync(ResetPasswordForm form);
@@ -64,7 +64,7 @@ namespace NextSolution.Core.Services
             if (form == null) throw new ArgumentNullException(nameof(form));
 
             var formValidator = _validatorProvider.GetRequiredService<SignUpForm.Validator>();
-            var formValidationResult = await formValidator.ValidateAsync(form);
+            var formValidationResult = await formValidator.ValidateAsync(form, cancellationToken);
 
             if (!formValidationResult.IsValid)
                 throw new BadRequestException(formValidationResult.ToDictionary());
@@ -72,8 +72,8 @@ namespace NextSolution.Core.Services
             // Throws an exception if the username already exists.
             if (form.UsernameType switch
             {
-                ContactType.EmailAddress => await _userRepository.FindByEmailAsync(form.Username),
-                ContactType.PhoneNumber => await _userRepository.FindByPhoneNumberAsync(form.Username),
+                ContactType.EmailAddress => await _userRepository.FindByEmailAsync(form.Username, cancellationToken),
+                ContactType.PhoneNumber => await _userRepository.FindByPhoneNumberAsync(form.Username, cancellationToken),
                 _ => null
             } != null) throw new BadRequestException(nameof(form.Username), $"'{form.UsernameType.Humanize(LetterCasing.Title)}' is already in use.");
 
@@ -84,23 +84,23 @@ namespace NextSolution.Core.Services
             user.PhoneNumber = form.UsernameType == ContactType.PhoneNumber ? form.Username : user.PhoneNumber;
             user.Active = true;
             user.ActiveAt = DateTimeOffset.UtcNow;
-            await _userRepository.GenerateUserNameAsync(user);
-            await _userRepository.CreateAsync(user, form.Password);
+            await _userRepository.GenerateUserNameAsync(user, cancellationToken);
+            await _userRepository.CreateAsync(user, form.Password, cancellationToken);
 
             foreach (var roleName in Roles.All)
             {
-                if (await _roleRepository.FindByNameAsync(roleName) is null)
-                    await _roleRepository.CreateAsync(new Role(roleName));
+                if (await _roleRepository.FindByNameAsync(roleName, cancellationToken) == null)
+                    await _roleRepository.CreateAsync(new Role(roleName), cancellationToken);
             }
 
-            var totalUsers = await _userRepository.CountAsync();
+            var totalUsers = await _userRepository.CountAsync(cancellationToken);
 
             // Assign roles to the specified user based on the total user count.
             // If there is only one user, grant both Admin and Member roles.
             // Otherwise, assign only the Member role.
-            await _userRepository.AddToRolesAsync(user, (totalUsers == 1) ? new[] { Roles.Admin, Roles.Member } : new[] { Roles.Member });
+            await _userRepository.AddToRolesAsync(user, (totalUsers == 1) ? new[] { Roles.Admin, Roles.Member } : new[] { Roles.Member }, cancellationToken);
 
-            await _mediator.Publish(new UserSignedUp(user));
+            await _mediator.Publish(new UserSignedUp(user), cancellationToken);
         }
 
         public async Task<UserSessionModel> SignInAsync(SignInForm form)
@@ -108,29 +108,29 @@ namespace NextSolution.Core.Services
             if (form == null) throw new ArgumentNullException(nameof(form));
 
             var formValidator = _validatorProvider.GetRequiredService<SignInForm.Validator>();
-            var formValidationResult = await formValidator.ValidateAsync(form);
+            var formValidationResult = await formValidator.ValidateAsync(form, cancellationToken);
 
             if (!formValidationResult.IsValid)
                 throw new BadRequestException(formValidationResult.ToDictionary());
 
             var user = form.UsernameType switch
             {
-                ContactType.EmailAddress => await _userRepository.FindByEmailAsync(form.Username),
-                ContactType.PhoneNumber => await _userRepository.FindByPhoneNumberAsync(form.Username),
+                ContactType.EmailAddress => await _userRepository.FindByEmailAsync(form.Username, cancellationToken),
+                ContactType.PhoneNumber => await _userRepository.FindByPhoneNumberAsync(form.Username, cancellationToken),
                 _ => null
             };
 
             if (user == null)
                 throw new BadRequestException(nameof(form.Username), $"'{form.UsernameType.Humanize(LetterCasing.Title)}' does not exist.");
 
-            if (!await _userRepository.CheckPasswordAsync(user, form.Password))
+            if (!await _userRepository.CheckPasswordAsync(user, form.Password, cancellationToken))
                 throw new BadRequestException(nameof(form.Password), $"'{nameof(form.Password).Humanize(LetterCasing.Title)}' is not correct.");
 
-            var session = await _userRepository.GenerateSessionAsync(user);
-            await _userRepository.AddSessionAsync(user, session);
+            var session = await _userRepository.GenerateSessionAsync(user, cancellationToken);
+            await _userRepository.AddSessionAsync(user, session, cancellationToken);
 
             var model = _mapper.Map(user, _mapper.Map<UserSessionModel>(session));
-            model.Roles = (await _userRepository.GetRolesAsync(user)).Select(_ => _.Camelize()).ToArray();
+            model.Roles = (await _userRepository.GetRolesAsync(user, cancellationToken)).Select(_ => _.Camelize()).ToArray();
 
             await _mediator.Publish(new UserSignedIn(user));
             return model;
@@ -141,15 +141,15 @@ namespace NextSolution.Core.Services
             if (form == null) throw new ArgumentNullException(nameof(form));
 
             var formValidator = _validatorProvider.GetRequiredService<SignUpWithForm.Validator>();
-            var formValidationResult = await formValidator.ValidateAsync(form);
+            var formValidationResult = await formValidator.ValidateAsync(form, cancellationToken);
 
             if (!formValidationResult.IsValid)
                 throw new BadRequestException(formValidationResult.ToDictionary());
 
             var user = form.UsernameType switch
             {
-                ContactType.EmailAddress => await _userRepository.FindByEmailAsync(form.Username),
-                ContactType.PhoneNumber => await _userRepository.FindByPhoneNumberAsync(form.Username),
+                ContactType.EmailAddress => await _userRepository.FindByEmailAsync(form.Username, cancellationToken),
+                ContactType.PhoneNumber => await _userRepository.FindByPhoneNumberAsync(form.Username, cancellationToken),
                 _ => null
             };
 
@@ -162,33 +162,33 @@ namespace NextSolution.Core.Services
                 user.PhoneNumber = form.UsernameType == ContactType.PhoneNumber ? form.Username : user.PhoneNumber;
                 user.Active = true;
                 user.ActiveAt = DateTimeOffset.UtcNow;
-                await _userRepository.GenerateUserNameAsync(user);
-                await _userRepository.CreateAsync(user);
+                await _userRepository.GenerateUserNameAsync(user, cancellationToken);
+                await _userRepository.CreateAsync(user, cancellationToken);
 
                 foreach (var roleName in Roles.All)
                 {
-                    if (await _roleRepository.FindByNameAsync(roleName) is null)
-                        await _roleRepository.CreateAsync(new Role(roleName));
+                    if (await _roleRepository.FindByNameAsync(roleName, cancellationToken) == null)
+                        await _roleRepository.CreateAsync(new Role(roleName), cancellationToken);
                 }
 
-                var totalUsers = await _userRepository.CountAsync();
+                var totalUsers = await _userRepository.CountAsync(cancellationToken);
 
                 // Assign roles to the specified user based on the total user count.
                 // If there is only one user, grant both Admin and Member roles.
                 // Otherwise, assign only the Member role.
-                await _userRepository.AddToRolesAsync(user, (totalUsers == 1) ? new[] { Roles.Admin, Roles.Member } : new[] { Roles.Member });
+                await _userRepository.AddToRolesAsync(user, (totalUsers == 1) ? new[] { Roles.Admin, Roles.Member } : new[] { Roles.Member }, cancellationToken);
             }
 
-            await _userRepository.RemoveLoginAsync(user, form.ProviderName, form.ProviderKey);
-            await _userRepository.AddLoginAsync(user, new UserLoginInfo(form.ProviderName, form.ProviderKey, form.ProviderDisplayName));
+            await _userRepository.RemoveLoginAsync(user, form.ProviderName, form.ProviderKey, cancellationToken);
+            await _userRepository.AddLoginAsync(user, new UserLoginInfo(form.ProviderName, form.ProviderKey, form.ProviderDisplayName), cancellationToken);
 
-            var session = await _userRepository.GenerateSessionAsync(user);
-            await _userRepository.AddSessionAsync(user, session);
+            var session = await _userRepository.GenerateSessionAsync(user, cancellationToken);
+            await _userRepository.AddSessionAsync(user, session, cancellationToken);
 
             var model = _mapper.Map(user, _mapper.Map<UserSessionModel>(session));
-            model.Roles = (await _userRepository.GetRolesAsync(user)).Select(_ => _.Camelize()).ToArray();
+            model.Roles = (await _userRepository.GetRolesAsync(user, cancellationToken)).Select(_ => _.Camelize()).ToArray();
 
-            await _mediator.Publish(new UserSignedInWith(user, form.ProviderName));
+            await _mediator.Publish(new UserSignedInWith(user, form.ProviderName), cancellationToken);
             return model;
         }
 
@@ -197,18 +197,18 @@ namespace NextSolution.Core.Services
             if (form == null) throw new ArgumentNullException(nameof(form));
 
             var formValidator = _validatorProvider.GetRequiredService<SignOutForm.Validator>();
-            var formValidationResult = await formValidator.ValidateAsync(form);
+            var formValidationResult = await formValidator.ValidateAsync(form, cancellationToken);
 
             if (!formValidationResult.IsValid)
                 throw new BadRequestException(formValidationResult.ToDictionary());
 
-            var user = await _userRepository.FindByRefreshTokenAsync(form.RefreshToken);
+            var user = await _userRepository.FindByRefreshTokenAsync(form.RefreshToken, cancellationToken);
 
             if (user == null) throw new BadRequestException(nameof(form.RefreshToken), $"'{nameof(form.RefreshToken).Humanize(LetterCasing.Title)}' is not valid.");
 
-            await _userRepository.RemoveSessionAsync(user, form.RefreshToken);
+            await _userRepository.RemoveSessionAsync(user, form.RefreshToken, cancellationToken);
 
-            await _mediator.Publish(new UserSignedOut(user));
+            await _mediator.Publish(new UserSignedOut(user), cancellationToken);
         }
 
         public async Task<UserSessionModel> RefreshSessionAsync(RefreshSessionForm form)
@@ -216,22 +216,22 @@ namespace NextSolution.Core.Services
             if (form == null) throw new ArgumentNullException(nameof(form));
 
             var formValidator = _validatorProvider.GetRequiredService<RefreshSessionForm.Validator>();
-            var formValidationResult = await formValidator.ValidateAsync(form);
+            var formValidationResult = await formValidator.ValidateAsync(form, cancellationToken);
 
             if (!formValidationResult.IsValid)
                 throw new BadRequestException(formValidationResult.ToDictionary());
 
-            var user = await _userRepository.FindByRefreshTokenAsync(form.RefreshToken);
+            var user = await _userRepository.FindByRefreshTokenAsync(form.RefreshToken, cancellationToken);
 
             if (user == null) throw new BadRequestException(nameof(form.RefreshToken), $"'{nameof(form.RefreshToken).Humanize(LetterCasing.Title)}' is not valid.");
 
-            await _userRepository.RemoveSessionAsync(user, form.RefreshToken);
+            await _userRepository.RemoveSessionAsync(user, form.RefreshToken, cancellationToken);
 
-            var session = await _userRepository.GenerateSessionAsync(user);
-            await _userRepository.AddSessionAsync(user, session);
+            var session = await _userRepository.GenerateSessionAsync(user, cancellationToken);
+            await _userRepository.AddSessionAsync(user, session, cancellationToken);
 
             var model = _mapper.Map(user, _mapper.Map<UserSessionModel>(session));
-            model.Roles = await _userRepository.GetRolesAsync(user);
+            model.Roles = await _userRepository.GetRolesAsync(user, cancellationToken);
             return model;
         }
 
@@ -240,15 +240,15 @@ namespace NextSolution.Core.Services
             if (form == null) throw new ArgumentNullException(nameof(form));
 
             var formValidator = _validatorProvider.GetRequiredService<SendUsernameTokenForm.Validator>();
-            var formValidationResult = await formValidator.ValidateAsync(form);
+            var formValidationResult = await formValidator.ValidateAsync(form, cancellationToken);
 
             if (!formValidationResult.IsValid)
                 throw new BadRequestException(formValidationResult.ToDictionary());
 
             var user = form.UsernameType switch
             {
-                ContactType.EmailAddress => await _userRepository.FindByEmailAsync(form.Username),
-                ContactType.PhoneNumber => await _userRepository.FindByPhoneNumberAsync(form.Username),
+                ContactType.EmailAddress => await _userRepository.FindByEmailAsync(form.Username, cancellationToken),
+                ContactType.PhoneNumber => await _userRepository.FindByPhoneNumberAsync(form.Username, cancellationToken),
                 _ => null
             };
 
@@ -257,22 +257,22 @@ namespace NextSolution.Core.Services
 
             if (form.UsernameType == ContactType.EmailAddress)
             {
-                var code = await _userRepository.GenerateEmailTokenAsync(user);
+                var code = await _userRepository.GenerateEmailTokenAsync(user, cancellationToken);
 
                 var message = new EmailMessage()
                 {
                     Recipients = new[] { form.Username },
                     Subject = $"Verify Your {form.UsernameType.Humanize(LetterCasing.Title)}",
-                    Body = await _viewRenderer.RenderAsync("/Email/VerifyUsername", (user, new VerifyUsernameForm { Username = form.Username, Code = code }))
+                    Body = await _viewRenderer.RenderAsync("/Email/VerifyUsername", (user, new VerifyUsernameForm { Username = form.Username, Code = code }), cancellationToken)
                 };
 
-                await _emailSender.SendAsync(account: "Notification", message);
+                await _emailSender.SendAsync(account: "Notification", message, cancellationToken);
             }
             else if (form.UsernameType == ContactType.PhoneNumber)
             {
-                var code = await _userRepository.GeneratePasswordResetTokenAsync(user);
-                var message = await _viewRenderer.RenderAsync("/Text/VerifyUsername", (user, new VerifyUsernameForm { Username = form.Username, Code = code }));
-                await _smsSender.SendAsync(form.Username, message);
+                var code = await _userRepository.GeneratePasswordResetTokenAsync(user, cancellationToken);
+                var message = await _viewRenderer.RenderAsync("/Text/VerifyUsername", (user, new VerifyUsernameForm { Username = form.Username, Code = code }), cancellationToken);
+                await _smsSender.SendAsync(form.Username, message, cancellationToken);
             }
             else
             {
@@ -285,15 +285,15 @@ namespace NextSolution.Core.Services
             if (form == null) throw new ArgumentNullException(nameof(form));
 
             var formValidator = _validatorProvider.GetRequiredService<VerifyUsernameForm.Validator>();
-            var formValidationResult = await formValidator.ValidateAsync(form);
+            var formValidationResult = await formValidator.ValidateAsync(form, cancellationToken);
 
             if (!formValidationResult.IsValid)
                 throw new BadRequestException(formValidationResult.ToDictionary());
 
             var user = form.UsernameType switch
             {
-                ContactType.EmailAddress => await _userRepository.FindByEmailAsync(form.Username),
-                ContactType.PhoneNumber => await _userRepository.FindByPhoneNumberAsync(form.Username),
+                ContactType.EmailAddress => await _userRepository.FindByEmailAsync(form.Username, cancellationToken),
+                ContactType.PhoneNumber => await _userRepository.FindByPhoneNumberAsync(form.Username, cancellationToken),
                 _ => null
             };
 
@@ -302,10 +302,10 @@ namespace NextSolution.Core.Services
             try
             {
                 if (form.UsernameType == ContactType.EmailAddress)
-                    await _userRepository.VerifyEmailAsync(user, form.Code);
+                    await _userRepository.VerifyEmailAsync(user, form.Code, cancellationToken);
 
                 else if (form.UsernameType == ContactType.PhoneNumber)
-                    await _userRepository.VerifyPhoneNumberTokenAsync(user, form.Code);
+                    await _userRepository.VerifyPhoneNumberTokenAsync(user, form.Code, cancellationToken);
                 else
                     throw new InvalidOperationException($"The value '{form.UsernameType}' of enum '{nameof(ContactType)}' is not supported.");
             }
@@ -320,15 +320,15 @@ namespace NextSolution.Core.Services
             if (form == null) throw new ArgumentNullException(nameof(form));
 
             var formValidator = _validatorProvider.GetRequiredService<SendPasswordResetTokenForm.Validator>();
-            var formValidationResult = await formValidator.ValidateAsync(form);
+            var formValidationResult = await formValidator.ValidateAsync(form, cancellationToken);
 
             if (!formValidationResult.IsValid)
                 throw new BadRequestException(formValidationResult.ToDictionary());
 
             var user = form.UsernameType switch
             {
-                ContactType.EmailAddress => await _userRepository.FindByEmailAsync(form.Username),
-                ContactType.PhoneNumber => await _userRepository.FindByPhoneNumberAsync(form.Username),
+                ContactType.EmailAddress => await _userRepository.FindByEmailAsync(form.Username, cancellationToken),
+                ContactType.PhoneNumber => await _userRepository.FindByPhoneNumberAsync(form.Username, cancellationToken),
                 _ => null
             };
 
@@ -336,22 +336,22 @@ namespace NextSolution.Core.Services
 
             if (form.UsernameType == ContactType.EmailAddress)
             {
-                var code = await _userRepository.GeneratePasswordResetTokenAsync(user);
+                var code = await _userRepository.GeneratePasswordResetTokenAsync(user, cancellationToken);
 
                 var message = new EmailMessage()
                 {
                     Recipients = new[] { form.Username },
                     Subject = $"Reset Your Password",
-                    Body = await _viewRenderer.RenderAsync("/Email/ResetPassword", (user, new ResetPasswordForm { Username = form.Username, Code = code }))
+                    Body = await _viewRenderer.RenderAsync("/Email/ResetPassword", (user, new ResetPasswordForm { Username = form.Username, Code = code }), cancellationToken)
                 };
 
-                await _emailSender.SendAsync(account: "Notification", message);
+                await _emailSender.SendAsync(account: "Notification", message, cancellationToken);
             }
             else if (form.UsernameType == ContactType.PhoneNumber)
             {
-                var code = await _userRepository.GeneratePasswordResetTokenAsync(user);
-                var message = await _viewRenderer.RenderAsync("/Text/ResetPassword", (user, new ResetPasswordForm { Username = form.Username, Code = code }));
-                await _smsSender.SendAsync(form.Username, message);
+                var code = await _userRepository.GeneratePasswordResetTokenAsync(user, cancellationToken);
+                var message = await _viewRenderer.RenderAsync("/Text/ResetPassword", (user, new ResetPasswordForm { Username = form.Username, Code = code }), cancellationToken);
+                await _smsSender.SendAsync(form.Username, message, cancellationToken);
             }
             else
             {
@@ -364,15 +364,15 @@ namespace NextSolution.Core.Services
             if (form == null) throw new ArgumentNullException(nameof(form));
 
             var formValidator = _validatorProvider.GetRequiredService<ResetPasswordForm.Validator>();
-            var formValidationResult = await formValidator.ValidateAsync(form);
+            var formValidationResult = await formValidator.ValidateAsync(form, cancellationToken);
 
             if (!formValidationResult.IsValid)
                 throw new BadRequestException(formValidationResult.ToDictionary());
 
             var user = form.UsernameType switch
             {
-                ContactType.EmailAddress => await _userRepository.FindByEmailAsync(form.Username),
-                ContactType.PhoneNumber => await _userRepository.FindByPhoneNumberAsync(form.Username),
+                ContactType.EmailAddress => await _userRepository.FindByEmailAsync(form.Username, cancellationToken),
+                ContactType.PhoneNumber => await _userRepository.FindByPhoneNumberAsync(form.Username, cancellationToken),
                 _ => null
             };
 
@@ -380,12 +380,55 @@ namespace NextSolution.Core.Services
 
             try
             {
-                await _userRepository.ResetPasswordAsync(user, form.Password, form.Code);
+                await _userRepository.ResetPasswordAsync(user, form.Password, form.Code, cancellationToken);
             }
             catch (InvalidOperationException ex)
             {
                 throw new BadRequestException(nameof(form.Code), $"'{nameof(form.Code).Humanize(LetterCasing.Title)}' is not valid.", innerException: ex);
             }
+        }
+
+        private readonly CancellationToken cancellationToken = default;
+        private bool disposed = false;
+
+        public void Dispose()
+        {
+            if (!disposed)
+            {
+                disposed = true;
+                Dispose(true);
+                GC.SuppressFinalize(this);
+            }
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                // myResource.Dispose();
+                cancellationToken.ThrowIfCancellationRequested();
+            }
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            if (!disposed)
+            {
+                disposed = true;
+                await DisposeAsync(true);
+                GC.SuppressFinalize(this);
+            }
+        }
+
+        protected ValueTask DisposeAsync(bool disposing)
+        {
+            if (disposing)
+            {
+                //  await myResource.DisposeAsync();
+                cancellationToken.ThrowIfCancellationRequested();
+            }
+
+            return ValueTask.CompletedTask;
         }
     }
 }
