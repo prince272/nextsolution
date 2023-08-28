@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace NextSolution.Core.Models.Medias
 {
-    public class UploadMediaByFileContentForm : IUploadMediaForm
+    public class UploadMediaByFileContentForm 
     {
         public string FileId { get; set; } = default!;
 
@@ -23,34 +23,18 @@ namespace NextSolution.Core.Models.Medias
         public Stream Content { get; set; } = default!;
 
         public string? ContentType { get; set; }
+    }
 
-        public class Validator : UploadFormAbstractValidator<UploadMediaByFileContentForm>
+    public class UploadMediaByFileContentFormValidator : UploadMediaByFileContentFormValidator<UploadMediaByFileContentForm>
+    {
+        public UploadMediaByFileContentFormValidator(IOptions<MediaServiceOptions> mediaServiceOptions) : base(mediaServiceOptions)
         {
-            public Validator(IOptions<MediaServiceOptions> mediaServiceOptions) : base(mediaServiceOptions)
-            {
-            }
         }
     }
 
-    public interface IUploadMediaForm
+    public abstract class UploadMediaByFileContentFormValidator<TUploadMediaForm> : AbstractValidator<TUploadMediaForm> where TUploadMediaForm : UploadMediaByFileContentForm
     {
-        string FileId { get; set; }
-
-        string FileName { get; set; } 
-
-        long FileSize { get; set; } 
-
-        string? ContentType { get; set; }
-
-        Stream Content { get; set; }
-
-        MediaType? MediaType { get; set; }
-    }
-
-    public abstract class UploadFormAbstractValidator<TUploadMediaForm> : AbstractValidator<TUploadMediaForm>
-        where TUploadMediaForm : class, IUploadMediaForm
-    {
-        public UploadFormAbstractValidator(IOptions<MediaServiceOptions> mediaServiceOptions)
+        public UploadMediaByFileContentFormValidator(IOptions<MediaServiceOptions> mediaServiceOptions)
         {
             RuleFor(_ => _.FileName)
                 .NotEmpty()

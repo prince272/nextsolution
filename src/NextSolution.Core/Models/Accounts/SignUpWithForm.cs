@@ -26,17 +26,17 @@ namespace NextSolution.Core.Models.Accounts
         public string ProviderKey { get; set; } = default!;
 
         public string? ProviderDisplayName { get; set; }
+    }
 
-        public class Validator : AbstractValidator<SignUpWithForm>
+    public class SignUpWithFormValidator : AbstractValidator<SignUpWithForm>
+    {
+        public SignUpWithFormValidator()
         {
-            public Validator()
-            {
-                RuleFor(_ => _.FirstName);
-                RuleFor(_ => _.LastName);
-                RuleFor(_ => _.Username).NotEmpty().Username();
-                RuleFor(_ => _.ProviderName).NotEmpty();
-                RuleFor(_ => _.ProviderKey).NotEmpty();
-            }
+            RuleFor(_ => _.FirstName);
+            RuleFor(_ => _.LastName);
+            RuleFor(_ => _.Username).NotEmpty().Username();
+            RuleFor(_ => _.ProviderName).NotEmpty();
+            RuleFor(_ => _.ProviderKey).NotEmpty();
         }
     }
 }

@@ -48,7 +48,7 @@ namespace NextSolution.Core.Services
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 
-            var formValidator = _validatorProvider.GetRequiredService<UploadMediaByFileContentForm.Validator>();
+            var formValidator = _validatorProvider.GetRequiredService<UploadMediaByFileContentFormValidator>();
             var formValidationResult = await formValidator.ValidateAsync(form);
 
             if (!formValidationResult.IsValid)
@@ -73,7 +73,7 @@ namespace NextSolution.Core.Services
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 
-            var formValidator = _validatorProvider.GetRequiredService<UploadMediaByFileChunkForm.Validator>();
+            var formValidator = _validatorProvider.GetRequiredService<UploadMediaByFileChunkFormValidator>();
             var formValidationResult = await formValidator.ValidateAsync(form);
 
             if (!formValidationResult.IsValid)
@@ -101,7 +101,7 @@ namespace NextSolution.Core.Services
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 
-            var formValidator = _validatorProvider.GetRequiredService<DeleteMediaByFileIdForm.Validator>();
+            var formValidator = _validatorProvider.GetRequiredService<DeleteMediaByFileIdFormValidator>();
             var formValidationResult = await formValidator.ValidateAsync(form);
 
             if (!formValidationResult.IsValid)

@@ -16,13 +16,13 @@ namespace NextSolution.Core.Models.Accounts
         public ContactType UsernameType => ValidationHelper.GetContactType(Username);
 
         public string Code { get; set; } = default!;
+    }
 
-        public class Validator : AbstractValidator<VerifyUsernameForm>
+    public class VerifyUsernameFormValidator : AbstractValidator<VerifyUsernameForm>
+    {
+        public VerifyUsernameFormValidator()
         {
-            public Validator()
-            {
-                RuleFor(_ => _.Username).NotEmpty().Username();
-            }
+            RuleFor(_ => _.Username).NotEmpty().Username();
         }
     }
 }

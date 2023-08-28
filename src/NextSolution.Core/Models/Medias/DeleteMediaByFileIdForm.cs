@@ -9,12 +9,12 @@ namespace NextSolution.Core.Models.Medias
     public class DeleteMediaByFileIdForm
     {
         public string FileId { get; set; } = default!;
+    }
 
-        public class Validator : AbstractValidator<DeleteMediaByFileIdForm>
+    public class DeleteMediaByFileIdFormValidator : AbstractValidator<DeleteMediaByFileIdForm>
+    {
+        public DeleteMediaByFileIdFormValidator()
         {
-            public Validator()
-            {
-            }
         }
     }
 }

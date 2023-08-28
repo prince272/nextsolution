@@ -18,15 +18,15 @@ namespace NextSolution.Core.Models.Accounts
         public string Password { get; set; } = default!;
 
         public string Code { get; set; } = default!;
+    }
 
-        public class Validator : AbstractValidator<ResetPasswordForm>
+    public class ResetPasswordFormValidator : AbstractValidator<ResetPasswordForm>
+    {
+        public ResetPasswordFormValidator()
         {
-            public Validator()
-            {
-                RuleFor(_ => _.Username).NotEmpty().Username();
-                RuleFor(_ => _.Password).NotEmpty().Password();
-                RuleFor(_ => _.Code).NotEmpty();
-            }
+            RuleFor(_ => _.Username).NotEmpty().Username();
+            RuleFor(_ => _.Password).NotEmpty().Password();
+            RuleFor(_ => _.Code).NotEmpty();
         }
     }
 }

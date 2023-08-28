@@ -49,7 +49,7 @@ namespace NextSolution.Core.Services
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 
-            var formValidator = _validatorProvider.GetRequiredService<ConnectClientForm.Validator>();
+            var formValidator = _validatorProvider.GetRequiredService<ConnectClientFormValidator>();
             var formValidationResult = await formValidator.ValidateAsync(form);
 
             if (!formValidationResult.IsValid)
@@ -71,7 +71,7 @@ namespace NextSolution.Core.Services
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 
-            var formValidator = _validatorProvider.GetRequiredService<DisconnectClientForm.Validator>();
+            var formValidator = _validatorProvider.GetRequiredService<DisconnectClientFormValidator>();
             var formValidationResult = await formValidator.ValidateAsync(form);
 
             if (!formValidationResult.IsValid)

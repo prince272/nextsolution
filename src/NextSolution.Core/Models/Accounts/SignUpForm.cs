@@ -20,16 +20,16 @@ namespace NextSolution.Core.Models.Accounts
         public ContactType UsernameType => ValidationHelper.GetContactType(Username);
 
         public string Password { get; set; } = default!;
+    }
 
-        public class Validator : AbstractValidator<SignUpForm>
+    public class SignUpFormValidator : AbstractValidator<SignUpForm>
+    {
+        public SignUpFormValidator()
         {
-            public Validator()
-            {
-                RuleFor(_ => _.FirstName).NotEmpty();
-                RuleFor(_ => _.LastName).NotEmpty();
-                RuleFor(_ => _.Username).NotEmpty().Username();
-                RuleFor(_ => _.Password).NotEmpty().Password();
-            }
+            RuleFor(_ => _.FirstName).NotEmpty();
+            RuleFor(_ => _.LastName).NotEmpty();
+            RuleFor(_ => _.Username).NotEmpty().Username();
+            RuleFor(_ => _.Password).NotEmpty().Password();
         }
     }
 }

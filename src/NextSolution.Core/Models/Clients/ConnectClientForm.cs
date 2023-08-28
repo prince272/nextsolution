@@ -9,13 +9,13 @@ namespace NextSolution.Core.Models.Clients
     public class ConnectClientForm
     {
         public string ConnectionId { get; set; } = default!;
+    }
 
-        public class Validator : AbstractValidator<ConnectClientForm>
+    public class ConnectClientFormValidator : AbstractValidator<ConnectClientForm>
+    {
+        public ConnectClientFormValidator()
         {
-            public Validator()
-            {
-                RuleFor(_ => _.ConnectionId).NotEmpty();
-            }
+            RuleFor(_ => _.ConnectionId).NotEmpty();
         }
     }
 }

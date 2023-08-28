@@ -64,7 +64,7 @@ namespace NextSolution.Core.Services
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 
-            var formValidator = _validatorProvider.GetRequiredService<SignUpForm.Validator>();
+            var formValidator = _validatorProvider.GetRequiredService<SignUpFormValidator>();
             var formValidationResult = await formValidator.ValidateAsync(form, cancellationToken);
 
             if (!formValidationResult.IsValid)
@@ -108,7 +108,7 @@ namespace NextSolution.Core.Services
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 
-            var formValidator = _validatorProvider.GetRequiredService<SignInForm.Validator>();
+            var formValidator = _validatorProvider.GetRequiredService<SignInFormValidator>();
             var formValidationResult = await formValidator.ValidateAsync(form, cancellationToken);
 
             if (!formValidationResult.IsValid)
@@ -141,7 +141,7 @@ namespace NextSolution.Core.Services
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 
-            var formValidator = _validatorProvider.GetRequiredService<SignUpWithForm.Validator>();
+            var formValidator = _validatorProvider.GetRequiredService<SignUpWithFormValidator>();
             var formValidationResult = await formValidator.ValidateAsync(form, cancellationToken);
 
             if (!formValidationResult.IsValid)
@@ -197,7 +197,7 @@ namespace NextSolution.Core.Services
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 
-            var formValidator = _validatorProvider.GetRequiredService<SignOutForm.Validator>();
+            var formValidator = _validatorProvider.GetRequiredService<SignOutFormValidator>();
             var formValidationResult = await formValidator.ValidateAsync(form, cancellationToken);
 
             if (!formValidationResult.IsValid)
@@ -216,7 +216,7 @@ namespace NextSolution.Core.Services
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 
-            var formValidator = _validatorProvider.GetRequiredService<RefreshSessionForm.Validator>();
+            var formValidator = _validatorProvider.GetRequiredService<RefreshSessionFormValidator>();
             var formValidationResult = await formValidator.ValidateAsync(form, cancellationToken);
 
             if (!formValidationResult.IsValid)
@@ -240,7 +240,7 @@ namespace NextSolution.Core.Services
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 
-            var formValidator = _validatorProvider.GetRequiredService<SendUsernameTokenForm.Validator>();
+            var formValidator = _validatorProvider.GetRequiredService<SendUsernameTokenFormValidator>();
             var formValidationResult = await formValidator.ValidateAsync(form, cancellationToken);
 
             if (!formValidationResult.IsValid)
@@ -285,7 +285,7 @@ namespace NextSolution.Core.Services
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 
-            var formValidator = _validatorProvider.GetRequiredService<VerifyUsernameForm.Validator>();
+            var formValidator = _validatorProvider.GetRequiredService<VerifyUsernameFormValidator>();
             var formValidationResult = await formValidator.ValidateAsync(form, cancellationToken);
 
             if (!formValidationResult.IsValid)
@@ -320,7 +320,7 @@ namespace NextSolution.Core.Services
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 
-            var formValidator = _validatorProvider.GetRequiredService<SendPasswordResetTokenForm.Validator>();
+            var formValidator = _validatorProvider.GetRequiredService<SendPasswordResetTokenFormValidator>();
             var formValidationResult = await formValidator.ValidateAsync(form, cancellationToken);
 
             if (!formValidationResult.IsValid)
@@ -364,7 +364,7 @@ namespace NextSolution.Core.Services
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 
-            var formValidator = _validatorProvider.GetRequiredService<ResetPasswordForm.Validator>();
+            var formValidator = _validatorProvider.GetRequiredService<ResetPasswordFormValidator>();
             var formValidationResult = await formValidator.ValidateAsync(form, cancellationToken);
 
             if (!formValidationResult.IsValid)

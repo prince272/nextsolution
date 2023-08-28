@@ -9,27 +9,15 @@ using System.Threading.Tasks;
 
 namespace NextSolution.Core.Models.Medias
 {
-    public class UploadMediaByFileChunkForm : IUploadMediaForm
+    public class UploadMediaByFileChunkForm : UploadMediaByFileContentForm
     {
-        public string FileId { get; set; } = default!;
-
-        public string FileName { get; set; } = default!;
-
-        public long FileSize { get; set; } = default!;
-
-        public MediaType? MediaType { get; set; }
-
-        public Stream Content { get; set; } = default!;
-
-        public string? ContentType { get; set; }
-
         public long Offset { get; set; }
+    }
 
-        public class Validator : UploadFormAbstractValidator<UploadMediaByFileChunkForm>
+    public class UploadMediaByFileChunkFormValidator : UploadMediaByFileContentFormValidator<UploadMediaByFileChunkForm>
+    {
+        public UploadMediaByFileChunkFormValidator(IOptions<MediaServiceOptions> mediaServiceOptions) : base(mediaServiceOptions)
         {
-            public Validator(IOptions<MediaServiceOptions> mediaServiceOptions) : base(mediaServiceOptions)
-            {
-            }
         }
     }
 }

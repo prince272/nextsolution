@@ -14,13 +14,13 @@ namespace NextSolution.Core.Models.Accounts
 
         [JsonIgnore]
         public ContactType UsernameType => ValidationHelper.GetContactType(Username);
+    }
 
-        public class Validator : AbstractValidator<SendPasswordResetTokenForm>
+    public class SendPasswordResetTokenFormValidator : AbstractValidator<SendPasswordResetTokenForm>
+    {
+        public SendPasswordResetTokenFormValidator()
         {
-            public Validator()
-            {
-                RuleFor(_ => _.Username).NotEmpty().Username();
-            }
+            RuleFor(_ => _.Username).NotEmpty().Username();
         }
     }
 }

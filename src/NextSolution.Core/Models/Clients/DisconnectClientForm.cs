@@ -9,13 +9,13 @@ namespace NextSolution.Core.Models.Clients
     public class DisconnectClientForm
     {
         public string ConnectionId { get; set; } = default!;
+    }
 
-        public class Validator : AbstractValidator<DisconnectClientForm>
+    public class DisconnectClientFormValidator : AbstractValidator<DisconnectClientForm>
+    {
+        public DisconnectClientFormValidator()
         {
-            public Validator()
-            {
-                RuleFor(_ => _.ConnectionId).NotEmpty();
-            }
+            RuleFor(_ => _.ConnectionId).NotEmpty();
         }
     }
 }

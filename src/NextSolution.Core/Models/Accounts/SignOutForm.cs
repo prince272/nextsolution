@@ -10,13 +10,13 @@ namespace NextSolution.Core.Models.Accounts
     public class SignOutForm
     {
         public string RefreshToken { get; set; } = default!;
+    }
 
-        public class Validator : AbstractValidator<SignOutForm>
+    public class SignOutFormValidator : AbstractValidator<SignOutForm>
+    {
+        public SignOutFormValidator()
         {
-            public Validator()
-            {
-                RuleFor(_ => _.RefreshToken).NotEmpty();
-            }
+            RuleFor(_ => _.RefreshToken).NotEmpty();
         }
     }
 }
