@@ -1,4 +1,4 @@
-﻿using AbstractMapper = AutoMapper.Profile;
+﻿using AbstractProfile = AutoMapper.Profile;
 using NextSolution.Core.Entities;
 using System;
 using System.Collections.Generic;
@@ -22,14 +22,14 @@ namespace NextSolution.Core.Models.Users
         public string? RefreshToken { get; set; }
 
         public string? TokenType { get; set; }
+    }
 
-        public class UserSessionMapper : AbstractMapper
+    public class UserSessionProfile : AbstractProfile
+    {
+        public UserSessionProfile()
         {
-            public UserSessionMapper()
-            {
-                CreateMap<User, UserSessionModel>();
-                CreateMap<UserSessionInfo, UserSessionModel>();
-            }
+            CreateMap<User, UserSessionModel>();
+            CreateMap<UserSessionInfo, UserSessionModel>();
         }
     }
 }

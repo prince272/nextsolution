@@ -1,4 +1,4 @@
-﻿using AbstractMapper = AutoMapper.Profile;
+﻿using AbstractProfile = AutoMapper.Profile;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,13 +22,13 @@ namespace NextSolution.Core.Models.Users
         public string? Email { get; set; }
 
         public string? PhoneNumber { get; set; }
+    }
 
-        public class UserProfileMapper : AbstractMapper
+    public class UserProfileProfile : AbstractProfile
+    {
+        public UserProfileProfile()
         {
-            public UserProfileMapper()
-            {
-                CreateMap<User, UserProfileModel>();
-            }
+            CreateMap<User, UserProfileModel>();
         }
     }
 }
