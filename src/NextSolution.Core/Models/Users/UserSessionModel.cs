@@ -1,4 +1,4 @@
-﻿using AbstractProfile = AutoMapper.Profile;
+﻿using AbstractMapper = AutoMapper.Profile;
 using NextSolution.Core.Entities;
 using System;
 using System.Collections.Generic;
@@ -7,25 +7,15 @@ using System.Text;
 using System.Threading.Tasks;
 using NextSolution.Core.Extensions.Identity;
 
-namespace NextSolution.Core.Models.Accounts
+namespace NextSolution.Core.Models.Users
 {
-    public class UserSessionModel
+    public class UserSessionModel : UserProfileModel
     {
-        public long Id { get; set; }
-
-        public string? UserName { get; set; }
-
-        public string? FirstName { get; set; }
-
-        public string? LastName { get; set; }
-
-        public string? Email { get; set; }
-
         public bool EmailConfirmed { get; set; }
 
-        public string? PhoneNumber { get; set; }
-
         public bool PhoneNumberConfirmed { get; set; }
+
+        public IEnumerable<string> Roles { get; set; } = Array.Empty<string>();
 
         public string? AccessToken { get; set; }
 
@@ -33,11 +23,9 @@ namespace NextSolution.Core.Models.Accounts
 
         public string? TokenType { get; set; }
 
-        public IEnumerable<string> Roles { get; set; } = Array.Empty<string>(); 
-
-        public class Profile : AbstractProfile
+        public class UserSessionMapper : AbstractMapper
         {
-            public Profile()
+            public UserSessionMapper()
             {
                 CreateMap<User, UserSessionModel>();
                 CreateMap<UserSessionInfo, UserSessionModel>();

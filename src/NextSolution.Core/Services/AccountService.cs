@@ -20,6 +20,7 @@ using NextSolution.Core.Extensions.SmsSender;
 using System.Security.Claims;
 using MediatR;
 using NextSolution.Core.Events.Accounts;
+using NextSolution.Core.Models.Users;
 
 namespace NextSolution.Core.Services
 {
