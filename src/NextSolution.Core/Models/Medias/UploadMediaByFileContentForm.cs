@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace NextSolution.Core.Models.Medias
 {
-    public class UploadMediaContentForm : IUploadMediaForm
+    public class UploadMediaByFileContentForm : IUploadMediaForm
     {
         public string FileId { get; set; } = default!;
 
@@ -24,31 +24,7 @@ namespace NextSolution.Core.Models.Medias
 
         public string? ContentType { get; set; }
 
-        public class Validator : UploadFormAbstractValidator<UploadMediaContentForm>
-        {
-            public Validator(IOptions<MediaServiceOptions> mediaServiceOptions) : base(mediaServiceOptions)
-            {
-            }
-        }
-    }
-
-    public class UploadMediaChunkForm : IUploadMediaForm
-    {
-        public string FileId { get; set; } = default!;
-
-        public string FileName { get; set; } = default!;
-
-        public long FileSize { get; set; } = default!;
-
-        public MediaType? MediaType { get; set; }
-
-        public Stream Content { get; set; } = default!;
-
-        public string? ContentType { get; set; }
-
-        public long Offset { get; set; }
-
-        public class Validator : UploadFormAbstractValidator<UploadMediaChunkForm>
+        public class Validator : UploadFormAbstractValidator<UploadMediaByFileContentForm>
         {
             public Validator(IOptions<MediaServiceOptions> mediaServiceOptions) : base(mediaServiceOptions)
             {

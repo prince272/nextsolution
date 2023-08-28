@@ -22,9 +22,9 @@ namespace NextSolution.Core.Services
 {
     public interface IMediaService : IDisposable, IAsyncDisposable
     {
-        Task DeleteByFileIdAsync(DeleteMediaByFileIdForm form);
-        Task UploadAsync(UploadMediaChunkForm form);
-        Task UploadAsync(UploadMediaContentForm form);
+        Task DeleteAsync(DeleteMediaByFileIdForm form);
+        Task UploadAsync(UploadMediaByFileChunkForm form);
+        Task UploadAsync(UploadMediaByFileContentForm form);
     }
 
     public class MediaService : IMediaService
@@ -44,11 +44,11 @@ namespace NextSolution.Core.Services
             _validatorProvider = validatorProvider ?? throw new ArgumentNullException(nameof(validatorProvider));
         }
 
-        public async Task UploadAsync(UploadMediaContentForm form)
+        public async Task UploadAsync(UploadMediaByFileContentForm form)
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 
-            var formValidator = _validatorProvider.GetRequiredService<UploadMediaContentForm.Validator>();
+            var formValidator = _validatorProvider.GetRequiredService<UploadMediaByFileContentForm.Validator>();
             var formValidationResult = await formValidator.ValidateAsync(form);
 
             if (!formValidationResult.IsValid)
@@ -69,11 +69,11 @@ namespace NextSolution.Core.Services
             await _mediaRepository.CreateAsync(media);
         }
 
-        public async Task UploadAsync(UploadMediaChunkForm form)
+        public async Task UploadAsync(UploadMediaByFileChunkForm form)
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 
-            var formValidator = _validatorProvider.GetRequiredService<UploadMediaChunkForm.Validator>();
+            var formValidator = _validatorProvider.GetRequiredService<UploadMediaByFileChunkForm.Validator>();
             var formValidationResult = await formValidator.ValidateAsync(form);
 
             if (!formValidationResult.IsValid)
@@ -97,7 +97,7 @@ namespace NextSolution.Core.Services
             }
         }
 
-        public async Task DeleteByFileIdAsync(DeleteMediaByFileIdForm form)
+        public async Task DeleteAsync(DeleteMediaByFileIdForm form)
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 

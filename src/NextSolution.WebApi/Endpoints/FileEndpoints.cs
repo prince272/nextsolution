@@ -45,7 +45,7 @@ namespace NextSolution.WebApi.Endpoints
             var fileId = AlgorithmHelper.GenerateStamp();
             var fileIdHash = AlgorithmHelper.GenerateMD5Hash(httpContext.Request.Path.Add($"/{fileId}"));
 
-            await mediaService.UploadAsync(new UploadMediaChunkForm
+            await mediaService.UploadAsync(new UploadMediaByFileChunkForm
             {
                 FileId = fileIdHash,
                 FileName = fileName,
@@ -69,7 +69,7 @@ namespace NextSolution.WebApi.Endpoints
         {
             var fileIdHash = AlgorithmHelper.GenerateMD5Hash(httpContext.Request.Path);
 
-            await mediaService.UploadAsync(new UploadMediaChunkForm
+            await mediaService.UploadAsync(new UploadMediaByFileChunkForm
             {
                 FileId = fileIdHash,
                 FileName = fileName,
@@ -84,7 +84,7 @@ namespace NextSolution.WebApi.Endpoints
 
         public async Task<IResult> DeleteFileAsync([FromServices] IMediaService mediaService, [FromRoute] string fileId)
         {
-            await mediaService.DeleteByFileIdAsync(new DeleteMediaByFileIdForm { FileId = fileId });
+            await mediaService.DeleteAsync(new DeleteMediaByFileIdForm { FileId = fileId });
             return Results.Ok(fileId);
         }
     }
