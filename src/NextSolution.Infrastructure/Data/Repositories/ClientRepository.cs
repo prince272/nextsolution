@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NextSolution.Infrastructure.Data.Repositories
@@ -16,6 +17,11 @@ namespace NextSolution.Infrastructure.Data.Repositories
     {
         public ClientRepository(AppDbContext dbContext) : base(dbContext)
         {
+        }
+
+        public Task<bool> IsUserOnlineAsync(long userId, CancellationToken cancellationToken = default)
+        {
+            return AnyAsync(_ => _.UserId == userId, cancellationToken);
         }
     }
 }

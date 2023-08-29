@@ -40,11 +40,6 @@ namespace NextSolution.Core.Services
             _validatorProvider = validatorProvider ?? throw new ArgumentNullException(nameof(validatorProvider));
         }
 
-        private async Task<bool> IsUserOnlineAsync(long userId)
-        {
-            return await _clientRepository.AnyAsync(_ => _.UserId == userId, cancellationToken);
-        }
-
         public async Task ConnectAsync(ConnectClientForm form)
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
@@ -61,9 +56,11 @@ namespace NextSolution.Core.Services
             await _clientRepository.CreateAsync(client, cancellationToken);
             await _mediator.Publish(new ClientConnected(client), cancellationToken);
 
-            if (userId.HasValue && await IsUserOnlineAsync(userId.Value))
+            if (userId.HasValue && await _clientRepository.IsUserOnlineAsync(userId.Value))
             {
-                await _mediator.Publish(new UserConnected((await _userRepository.FindByIdAsync(userId.Value, cancellationToken))!, client), cancellationToken);
+                var user = (await _userRepository.FindByIdAsync(userId.Value, cancellationToken))!;
+                await _userRepository.UpdateLastActiveAsync(user, cancellationToken);
+                await _mediator.Publish(new UserConnected(user, client), cancellationToken);
             }
         }
 
@@ -84,9 +81,11 @@ namespace NextSolution.Core.Services
 
             var userId = client.UserId;
 
-            if (userId.HasValue && !(await IsUserOnlineAsync(userId.Value)))
+            if (userId.HasValue && !(await _clientRepository.IsUserOnlineAsync(userId.Value)))
             {
-                await _mediator.Publish(new UserDisconnected((await _userRepository.FindByIdAsync(userId.Value, cancellationToken))!, client), cancellationToken);
+                var user = (await _userRepository.FindByIdAsync(userId.Value, cancellationToken))!;
+                await _userRepository.UpdateLastActiveAsync(user, cancellationToken);
+                await _mediator.Publish(new UserDisconnected(user!, client), cancellationToken);
             }
 
             await _mediator.Publish(new ClientDisconnected(client), cancellationToken);

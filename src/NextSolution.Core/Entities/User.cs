@@ -24,7 +24,7 @@ namespace NextSolution.Core.Entities
 
         public bool Active { get; set; }
 
-        public DateTimeOffset ActiveAt { get; set; }
+        public DateTimeOffset LastActiveAt { get; set; }
 
         public virtual ICollection<UserRole> Roles { get; set; } = new List<UserRole>();
     }

@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using NextSolution.Core.Entities;
 using NextSolution.Core.Extensions.Identity;
+using NextSolution.Core.Models.Clients;
 using NextSolution.Core.Repositories;
 using NextSolution.Core.Services;
 using NextSolution.Infrastructure.Data.Repositories;
@@ -28,7 +29,7 @@ namespace NextSolution.Infrastructure.RealTime.SignalR
         {
             try
             {
-                await _clientService.ConnectAsync(Context.ConnectionId);
+                await _clientService.ConnectAsync(new ConnectClientForm { ConnectionId = Context.ConnectionId });
             }
             catch (Exception ex)
             {
@@ -44,7 +45,7 @@ namespace NextSolution.Infrastructure.RealTime.SignalR
         {
             try
             {
-                await _clientService.DisconnectAsync(Context.ConnectionId);
+                await _clientService.DisconnectAsync(new DisconnectClientForm { ConnectionId = Context.ConnectionId });
             }
             catch (Exception ex)
             {

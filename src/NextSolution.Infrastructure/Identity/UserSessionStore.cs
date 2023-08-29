@@ -57,7 +57,7 @@ namespace NextSolution.Infrastructure.Identity
             else
             {
                 var tokenHash = AlgorithmHelper.GenerateSHA256Hash(token);
-                var current = DateTimeOffset.UtcNow;
+                var currentTime = DateTimeOffset.UtcNow;
 
                 await _dbContext.Set<UserSession>()
                     .Where(_ => _.UserId == user.Id)

@@ -48,10 +48,10 @@ namespace NextSolution.Infrastructure.Identity
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
 
-            var current = DateTimeOffset.UtcNow;
+            var currentTime = DateTimeOffset.UtcNow;
             var claims = ((ClaimsIdentity)(await _userClaimsPrincipalFactory.CreateAsync(user)).Identity!).Claims;
-            var (accessToken, accessTokenExpiresAt) = GenerateAccessToken(current, _userSessionOptions.Value.AccessTokenExpiresIn, ref claims);
-            var (refreshToken, refreshTokenExpiresAt) = GenerateRefreshToken(current, _userSessionOptions.Value.RefreshTokenExpiresIn);
+            var (accessToken, accessTokenExpiresAt) = GenerateAccessToken(currentTime, _userSessionOptions.Value.AccessTokenExpiresIn, ref claims);
+            var (refreshToken, refreshTokenExpiresAt) = GenerateRefreshToken(currentTime, _userSessionOptions.Value.RefreshTokenExpiresIn);
 
             return new UserSessionInfo
             {
@@ -67,7 +67,7 @@ namespace NextSolution.Infrastructure.Identity
             };
         }
 
-        private (string AccessToken, DateTimeOffset AccessTokenExpiresAt) GenerateAccessToken(DateTimeOffset current, TimeSpan expiresIn, ref IEnumerable<Claim> claims)
+        private (string AccessToken, DateTimeOffset AccessTokenExpiresAt) GenerateAccessToken(DateTimeOffset currentTime, TimeSpan expiresIn, ref IEnumerable<Claim> claims)
         {
             if (claims == null) throw new ArgumentNullException(nameof(claims));
 
@@ -77,22 +77,22 @@ namespace NextSolution.Infrastructure.Identity
             claims = claims.Concat(new Claim[] {
                 new(JwtRegisteredClaimNames.Jti, AlgorithmHelper.GenerateStamp(), ClaimValueTypes.String, issuer),
                 new(JwtRegisteredClaimNames.Iss, issuer, ClaimValueTypes.String, issuer),
-                new(JwtRegisteredClaimNames.Iat, current.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture), ClaimValueTypes.Integer64, issuer),
+                new(JwtRegisteredClaimNames.Iat, currentTime.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture), ClaimValueTypes.Integer64, issuer),
             });
 
             if (_userContext.DeviceId != null)
                 claims = claims.Append(new(ClaimTypes.System, _userContext.DeviceId, ClaimValueTypes.String, issuer));
 
-            var expiresAt = current.Add(expiresIn);
+            var expiresAt = currentTime.Add(expiresIn);
 
             var key = _jwtBearerOptions.TokenValidationParameters.IssuerSigningKey;
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            var token = new JwtSecurityToken(issuer, audience, claims, current.DateTime, expiresAt.DateTime, creds);
+            var token = new JwtSecurityToken(issuer, audience, claims, currentTime.DateTime, expiresAt.DateTime, creds);
             var tokenValue = new JwtSecurityTokenHandler().WriteToken(token);
             return (tokenValue, expiresAt);
         }
 
-        private (string RefreshToken, DateTimeOffset RefreshTokenExpiresAt) GenerateRefreshToken(DateTimeOffset current, TimeSpan expiresIn)
+        private (string RefreshToken, DateTimeOffset RefreshTokenExpiresAt) GenerateRefreshToken(DateTimeOffset currentTime, TimeSpan expiresIn)
         {
             var issuer = GetIssuer();
             var audience = GetAudience();
@@ -101,18 +101,18 @@ namespace NextSolution.Infrastructure.Identity
             {
                 new(JwtRegisteredClaimNames.Jti, AlgorithmHelper.GenerateStamp(), ClaimValueTypes.String, issuer),
                 new(JwtRegisteredClaimNames.Iss, issuer, ClaimValueTypes.String, issuer),
-                new(JwtRegisteredClaimNames.Iat, current.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture), ClaimValueTypes.Integer64, issuer),
+                new(JwtRegisteredClaimNames.Iat, currentTime.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture), ClaimValueTypes.Integer64, issuer),
             };
 
 
             if (_userContext.DeviceId != null)
                 claims = claims.Append(new(ClaimTypes.System, _userContext.DeviceId, ClaimValueTypes.String, issuer)).ToArray();
 
-            var expiresAt = current.Add(expiresIn);
+            var expiresAt = currentTime.Add(expiresIn);
 
             var key = _jwtBearerOptions.TokenValidationParameters.IssuerSigningKey;
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            var token = new JwtSecurityToken(issuer, audience, claims, current.DateTime, expiresAt.DateTime, creds);
+            var token = new JwtSecurityToken(issuer, audience, claims, currentTime.DateTime, expiresAt.DateTime, creds);
             var tokenValue = new JwtSecurityTokenHandler().WriteToken(token);
             return (tokenValue, expiresAt);
         }

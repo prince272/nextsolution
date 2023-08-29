@@ -84,7 +84,7 @@ namespace NextSolution.Core.Services
             user.Email = form.UsernameType == ContactType.EmailAddress ? form.Username : user.Email;
             user.PhoneNumber = form.UsernameType == ContactType.PhoneNumber ? form.Username : user.PhoneNumber;
             user.Active = true;
-            user.ActiveAt = DateTimeOffset.UtcNow;
+            user.LastActiveAt = DateTimeOffset.UtcNow;
             await _userRepository.GenerateUserNameAsync(user, cancellationToken);
             await _userRepository.CreateAsync(user, form.Password, cancellationToken);
 
@@ -162,7 +162,7 @@ namespace NextSolution.Core.Services
                 user.Email = form.UsernameType == ContactType.EmailAddress ? form.Username : user.Email;
                 user.PhoneNumber = form.UsernameType == ContactType.PhoneNumber ? form.Username : user.PhoneNumber;
                 user.Active = true;
-                user.ActiveAt = DateTimeOffset.UtcNow;
+                user.LastActiveAt = DateTimeOffset.UtcNow;
                 await _userRepository.GenerateUserNameAsync(user, cancellationToken);
                 await _userRepository.CreateAsync(user, cancellationToken);
 

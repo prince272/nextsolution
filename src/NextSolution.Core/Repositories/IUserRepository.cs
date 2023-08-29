@@ -15,6 +15,8 @@ namespace NextSolution.Core.Repositories
     {
         Task CreateAsync(User user, string password, CancellationToken cancellationToken = default);
 
+        Task UpdateLastActiveAsync(User user, CancellationToken cancellationToken = default);
+
         Task<User?> FindByEmailAsync(string email, CancellationToken cancellationToken = default);
 
         Task<User?> FindByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken = default);

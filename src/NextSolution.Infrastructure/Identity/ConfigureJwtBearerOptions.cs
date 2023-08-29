@@ -89,13 +89,7 @@ namespace NextSolution.Infrastructure.Identity
                         return;
                     }
 
-                    // Updates the ActiveAt of a user only if more than 2 minutes have passed since the last update.
-                    var current = DateTimeOffset.UtcNow;
-                    if (current - user.ActiveAt >= TimeSpan.FromMinutes(2))
-                    {
-                        user.ActiveAt = current;
-                        await userRepository.UpdateAsync(user);
-                    }
+                    await userRepository.UpdateLastActiveAsync(user);
                 },
                 OnMessageReceived = context => Task.CompletedTask,
                 OnChallenge = context =>

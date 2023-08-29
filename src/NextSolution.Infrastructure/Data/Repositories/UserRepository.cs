@@ -72,6 +72,19 @@ namespace NextSolution.Infrastructure.Data.Repositories
             if (!result.Succeeded) throw new InvalidOperationException(result.Errors.GetMessage());
         }
 
+        public async Task UpdateLastActiveAsync(User user, CancellationToken cancellationToken = default)
+        {
+            var currentTime = DateTimeOffset.UtcNow;
+
+            // Update the LastActive of a user only if at least 1 minute has elapsed since the last update.
+            var threshold = TimeSpan.FromMinutes(1);
+            if (user.Active && currentTime - user.LastActiveAt >= threshold)
+            {
+                user.LastActiveAt = currentTime;
+                await UpdateAsync(user, cancellationToken);
+            }
+        }
+
         public Task<User?> FindByEmailAsync(string email, CancellationToken cancellationToken = default)
         {
             if (email == null) throw new ArgumentNullException(nameof(email));

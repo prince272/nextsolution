@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 
 namespace NextSolution.Core.Models.Users
 {
-    public class UserSessionFilter
+    public class ProfileListModel
     {
+        public IEnumerable<ProfileModel> Items { get; set; } = new List<ProfileModel>();
     }
+
 }

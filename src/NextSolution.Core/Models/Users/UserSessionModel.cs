@@ -9,7 +9,7 @@ using NextSolution.Core.Extensions.Identity;
 
 namespace NextSolution.Core.Models.Users
 {
-    public class UserSessionModel : UserProfileModel
+    public class UserSessionModel : ProfileModel
     {
         public bool EmailConfirmed { get; set; }
 
