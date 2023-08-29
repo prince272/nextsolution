@@ -20,7 +20,7 @@ namespace NextSolution.Core
         {
             services.AddScoped<IAccountService, AccountService>();
 
-            services.AddScoped<IClientService, ClientService>();
+            services.AddScoped<IUserService, UserService>();
 
             services.Configure<MediaServiceOptions>(options =>
             {

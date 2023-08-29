@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace NextSolution.Core.Models.Users
 {
-    public class ProfilePageModel : ProfileListModel
+    public class UserPageModel : UserListModel
     {
         public int PageNumber { get; set; }
 

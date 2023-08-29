@@ -43,6 +43,18 @@ namespace NextSolution.Infrastructure.Data
             await _dbContext.SaveChangesAsync(cancellationToken);
         }
 
+        public virtual async Task DeleteManyAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+        {
+            if (predicate == null) throw new ArgumentNullException(nameof(predicate));
+
+            await _dbContext.Set<TEntity>().Where(predicate).ExecuteDeleteAsync(cancellationToken);
+        }
+
+        public virtual async Task DeleteAllAsync(CancellationToken cancellationToken = default)
+        {
+            await _dbContext.Set<TEntity>().ExecuteDeleteAsync(cancellationToken);
+        }
+
         public virtual async Task<TEntity?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
         {
             return await _dbContext.FindAsync<TEntity>(keyValues: new object[] { id }, cancellationToken);

@@ -154,6 +154,8 @@ namespace NextSolution.Core.Services
                 _ => null
             };
 
+            var isNewUser = user == null;
+
             if (user == null)
             {
                 user = new User();
@@ -189,7 +191,7 @@ namespace NextSolution.Core.Services
             var model = _mapper.Map(user, _mapper.Map<UserSessionModel>(session));
             model.Roles = (await _userRepository.GetRolesAsync(user, cancellationToken)).Select(_ => _.Camelize()).ToArray();
 
-            await _mediator.Publish(new UserSignedInWith(user, form.ProviderName), cancellationToken);
+            await _mediator.Publish(isNewUser ? new UserSignedUp(user) : new UserSignedIn(user), cancellationToken);
             return model;
         }
 

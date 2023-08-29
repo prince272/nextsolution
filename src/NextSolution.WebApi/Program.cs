@@ -19,9 +19,9 @@ using Microsoft.Extensions.Configuration;
 using Humanizer.Configuration;
 using NextSolution.Infrastructure.FileStorage.Local;
 using NextSolution.Infrastructure.SmsSender.Fake;
-using NextSolution.Infrastructure.RealTime.SignalR;
 using NextSolution.WebApi.Services;
 using NextSolution.Infrastructure.Data.Middlewares;
+using NextSolution.Infrastructure.RealTime;
 
 try
 {
@@ -184,7 +184,7 @@ try
 
     app.UseDbTransaction();
 
-    app.MapHub<SignalRHub>("/signalr");
+    app.MapHub<ChatHub>(ChatHub.Pattern);
 
     app.MapEndpoints();
 
