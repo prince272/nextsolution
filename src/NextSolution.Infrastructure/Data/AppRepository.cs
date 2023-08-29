@@ -43,12 +43,12 @@ namespace NextSolution.Infrastructure.Data
             await _dbContext.SaveChangesAsync(cancellationToken);
         }
 
-        public virtual async Task<TEntity?> FindByIdAsync(long id, CancellationToken cancellationToken = default)
+        public virtual async Task<TEntity?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
         {
             return await _dbContext.FindAsync<TEntity>(keyValues: new object[] { id }, cancellationToken);
         }
 
-        public virtual Task<TEntity?> FindAsync(
+        public virtual Task<TEntity?> GetAsync(
             Expression<Func<TEntity, bool>> predicate,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
             Expression<Func<TEntity, object>>[]? include = null,
@@ -58,7 +58,7 @@ namespace NextSolution.Infrastructure.Data
             return GetQueryable(predicate, orderBy, include, enableTracking: true, enableFilters: true).FirstOrDefaultAsync(cancellationToken);
         }
 
-        public virtual Task<TResult?> FindAsync<TResult>(
+        public virtual Task<TResult?> GetAsync<TResult>(
             Expression<Func<TEntity, TResult>> selector,
             Expression<Func<TEntity, bool>> predicate,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
@@ -70,7 +70,7 @@ namespace NextSolution.Infrastructure.Data
             return GetQueryable(predicate, orderBy, include, enableTracking: true, enableFilters: true).Select(selector).FirstOrDefaultAsync(cancellationToken);
         }
 
-        public virtual async Task<IEnumerable<TEntity>> FindManyAsync(
+        public virtual async Task<IEnumerable<TEntity>> GetManyAsync(
             Expression<Func<TEntity, bool>> predicate,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
             Expression<Func<TEntity, object>>[]? include = null,
@@ -80,7 +80,7 @@ namespace NextSolution.Infrastructure.Data
             return await GetQueryable(predicate, orderBy, include, enableTracking: true, enableFilters: true).ToArrayAsync(cancellationToken);
         }
 
-        public virtual async Task<IEnumerable<TResult>> FindManyAsync<TResult>(
+        public virtual async Task<IEnumerable<TResult>> GetManyAsync<TResult>(
             Expression<Func<TEntity, TResult>> selector,
             Expression<Func<TEntity, bool>> predicate,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
@@ -92,7 +92,7 @@ namespace NextSolution.Infrastructure.Data
             return await GetQueryable(predicate, orderBy, include, enableTracking: true, enableFilters: true).Select(selector).ToArrayAsync(cancellationToken);
         }
 
-        public virtual async Task<IEnumerable<TEntity>> FindAllAsync(
+        public virtual async Task<IEnumerable<TEntity>> GetAllAsync(
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
             Expression<Func<TEntity, object>>[]? include = null,
             CancellationToken cancellationToken = default)
@@ -100,7 +100,7 @@ namespace NextSolution.Infrastructure.Data
             return await GetQueryable(null, orderBy, include, enableTracking: true, enableFilters: true).ToArrayAsync(cancellationToken);
         }
 
-        public virtual async Task<IEnumerable<TResult>> FindAllAsync<TResult>(
+        public virtual async Task<IEnumerable<TResult>> GetAllAsync<TResult>(
             Expression<Func<TEntity, TResult>> selector,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
             Expression<Func<TEntity, object>>[]? include = null,
@@ -110,7 +110,7 @@ namespace NextSolution.Infrastructure.Data
             return await GetQueryable(null, orderBy, include, enableTracking: true, enableFilters: true).Select(selector).ToArrayAsync(cancellationToken);
         }
 
-        public virtual async Task<IPageable<TEntity>> FindManyAsync(int pageNumber, int pageSize,
+        public virtual async Task<IPageable<TEntity>> GetManyAsync(int pageNumber, int pageSize,
             Expression<Func<TEntity, bool>>? predicate = null,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
             Expression<Func<TEntity, object>>[]? include = null,
@@ -119,7 +119,7 @@ namespace NextSolution.Infrastructure.Data
             return await GetQueryable(predicate, orderBy, include, enableTracking: false, enableFilters: true).PaginateAsync(pageNumber, pageSize, cancellationToken);
         }
 
-        public virtual async Task<IPageable<TResult>> FindManyAsync<TResult>(int pageNumber, int pageSize,
+        public virtual async Task<IPageable<TResult>> GetManyAsync<TResult>(int pageNumber, int pageSize,
             Expression<Func<TEntity, TResult>> selector,
             Expression<Func<TEntity, bool>>? predicate = null,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,

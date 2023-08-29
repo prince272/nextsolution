@@ -58,7 +58,7 @@ namespace NextSolution.Core.Services
 
             if (userId.HasValue && await _clientRepository.IsUserOnlineAsync(userId.Value))
             {
-                var user = (await _userRepository.FindByIdAsync(userId.Value, cancellationToken))!;
+                var user = (await _userRepository.GetByIdAsync(userId.Value, cancellationToken))!;
                 await _userRepository.UpdateLastActiveAsync(user, cancellationToken);
                 await _mediator.Publish(new UserConnected(user, client), cancellationToken);
             }
@@ -74,7 +74,7 @@ namespace NextSolution.Core.Services
             if (!formValidationResult.IsValid)
                 throw new BadRequestException(formValidationResult.ToDictionary());
 
-            var client = await _clientRepository.FindAsync(predicate: _ => _.ConnectionId == form.ConnectionId, cancellationToken: cancellationToken);
+            var client = await _clientRepository.GetAsync(predicate: _ => _.ConnectionId == form.ConnectionId, cancellationToken: cancellationToken);
             if (client == null) return;
 
             await _clientRepository.DeleteAsync(client, cancellationToken);
@@ -83,7 +83,7 @@ namespace NextSolution.Core.Services
 
             if (userId.HasValue && !(await _clientRepository.IsUserOnlineAsync(userId.Value)))
             {
-                var user = (await _userRepository.FindByIdAsync(userId.Value, cancellationToken))!;
+                var user = (await _userRepository.GetByIdAsync(userId.Value, cancellationToken))!;
                 await _userRepository.UpdateLastActiveAsync(user, cancellationToken);
                 await _mediator.Publish(new UserDisconnected(user!, client), cancellationToken);
             }
@@ -93,7 +93,7 @@ namespace NextSolution.Core.Services
 
         public async Task DisconnectAsync()
         {
-            var connectionIds = await _clientRepository.FindAllAsync(selector: _ => _.ConnectionId, cancellationToken: cancellationToken);
+            var connectionIds = await _clientRepository.GetAllAsync(selector: _ => _.ConnectionId, cancellationToken: cancellationToken);
             foreach (var connectionId in connectionIds)
                 await DisconnectAsync(new DisconnectClientForm { ConnectionId = connectionId });
         }

@@ -73,8 +73,8 @@ namespace NextSolution.Core.Services
             // Throws an exception if the username already exists.
             if (form.UsernameType switch
             {
-                ContactType.EmailAddress => await _userRepository.FindByEmailAsync(form.Username, cancellationToken),
-                ContactType.PhoneNumber => await _userRepository.FindByPhoneNumberAsync(form.Username, cancellationToken),
+                ContactType.EmailAddress => await _userRepository.GetByEmailAsync(form.Username, cancellationToken),
+                ContactType.PhoneNumber => await _userRepository.GetByPhoneNumberAsync(form.Username, cancellationToken),
                 _ => null
             } != null) throw new BadRequestException(nameof(form.Username), $"'{form.UsernameType.Humanize(LetterCasing.Title)}' is already in use.");
 
@@ -90,7 +90,7 @@ namespace NextSolution.Core.Services
 
             foreach (var roleName in Roles.All)
             {
-                if (await _roleRepository.FindByNameAsync(roleName, cancellationToken) == null)
+                if (await _roleRepository.GetByNameAsync(roleName, cancellationToken) == null)
                     await _roleRepository.CreateAsync(new Role(roleName), cancellationToken);
             }
 
@@ -116,8 +116,8 @@ namespace NextSolution.Core.Services
 
             var user = form.UsernameType switch
             {
-                ContactType.EmailAddress => await _userRepository.FindByEmailAsync(form.Username, cancellationToken),
-                ContactType.PhoneNumber => await _userRepository.FindByPhoneNumberAsync(form.Username, cancellationToken),
+                ContactType.EmailAddress => await _userRepository.GetByEmailAsync(form.Username, cancellationToken),
+                ContactType.PhoneNumber => await _userRepository.GetByPhoneNumberAsync(form.Username, cancellationToken),
                 _ => null
             };
 
@@ -149,8 +149,8 @@ namespace NextSolution.Core.Services
 
             var user = form.UsernameType switch
             {
-                ContactType.EmailAddress => await _userRepository.FindByEmailAsync(form.Username, cancellationToken),
-                ContactType.PhoneNumber => await _userRepository.FindByPhoneNumberAsync(form.Username, cancellationToken),
+                ContactType.EmailAddress => await _userRepository.GetByEmailAsync(form.Username, cancellationToken),
+                ContactType.PhoneNumber => await _userRepository.GetByPhoneNumberAsync(form.Username, cancellationToken),
                 _ => null
             };
 
@@ -168,7 +168,7 @@ namespace NextSolution.Core.Services
 
                 foreach (var roleName in Roles.All)
                 {
-                    if (await _roleRepository.FindByNameAsync(roleName, cancellationToken) == null)
+                    if (await _roleRepository.GetByNameAsync(roleName, cancellationToken) == null)
                         await _roleRepository.CreateAsync(new Role(roleName), cancellationToken);
                 }
 
@@ -203,7 +203,7 @@ namespace NextSolution.Core.Services
             if (!formValidationResult.IsValid)
                 throw new BadRequestException(formValidationResult.ToDictionary());
 
-            var user = await _userRepository.FindByRefreshTokenAsync(form.RefreshToken, cancellationToken);
+            var user = await _userRepository.GetByRefreshTokenAsync(form.RefreshToken, cancellationToken);
 
             if (user == null) throw new BadRequestException(nameof(form.RefreshToken), $"'{nameof(form.RefreshToken).Humanize(LetterCasing.Title)}' is not valid.");
 
@@ -222,7 +222,7 @@ namespace NextSolution.Core.Services
             if (!formValidationResult.IsValid)
                 throw new BadRequestException(formValidationResult.ToDictionary());
 
-            var user = await _userRepository.FindByRefreshTokenAsync(form.RefreshToken, cancellationToken);
+            var user = await _userRepository.GetByRefreshTokenAsync(form.RefreshToken, cancellationToken);
 
             if (user == null) throw new BadRequestException(nameof(form.RefreshToken), $"'{nameof(form.RefreshToken).Humanize(LetterCasing.Title)}' is not valid.");
 
@@ -248,8 +248,8 @@ namespace NextSolution.Core.Services
 
             var user = form.UsernameType switch
             {
-                ContactType.EmailAddress => await _userRepository.FindByEmailAsync(form.Username, cancellationToken),
-                ContactType.PhoneNumber => await _userRepository.FindByPhoneNumberAsync(form.Username, cancellationToken),
+                ContactType.EmailAddress => await _userRepository.GetByEmailAsync(form.Username, cancellationToken),
+                ContactType.PhoneNumber => await _userRepository.GetByPhoneNumberAsync(form.Username, cancellationToken),
                 _ => null
             };
 
@@ -293,8 +293,8 @@ namespace NextSolution.Core.Services
 
             var user = form.UsernameType switch
             {
-                ContactType.EmailAddress => await _userRepository.FindByEmailAsync(form.Username, cancellationToken),
-                ContactType.PhoneNumber => await _userRepository.FindByPhoneNumberAsync(form.Username, cancellationToken),
+                ContactType.EmailAddress => await _userRepository.GetByEmailAsync(form.Username, cancellationToken),
+                ContactType.PhoneNumber => await _userRepository.GetByPhoneNumberAsync(form.Username, cancellationToken),
                 _ => null
             };
 
@@ -328,8 +328,8 @@ namespace NextSolution.Core.Services
 
             var user = form.UsernameType switch
             {
-                ContactType.EmailAddress => await _userRepository.FindByEmailAsync(form.Username, cancellationToken),
-                ContactType.PhoneNumber => await _userRepository.FindByPhoneNumberAsync(form.Username, cancellationToken),
+                ContactType.EmailAddress => await _userRepository.GetByEmailAsync(form.Username, cancellationToken),
+                ContactType.PhoneNumber => await _userRepository.GetByPhoneNumberAsync(form.Username, cancellationToken),
                 _ => null
             };
 
@@ -372,8 +372,8 @@ namespace NextSolution.Core.Services
 
             var user = form.UsernameType switch
             {
-                ContactType.EmailAddress => await _userRepository.FindByEmailAsync(form.Username, cancellationToken),
-                ContactType.PhoneNumber => await _userRepository.FindByPhoneNumberAsync(form.Username, cancellationToken),
+                ContactType.EmailAddress => await _userRepository.GetByEmailAsync(form.Username, cancellationToken),
+                ContactType.PhoneNumber => await _userRepository.GetByPhoneNumberAsync(form.Username, cancellationToken),
                 _ => null
             };
 

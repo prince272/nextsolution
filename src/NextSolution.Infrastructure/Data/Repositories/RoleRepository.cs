@@ -48,7 +48,7 @@ namespace NextSolution.Infrastructure.Data.Repositories
             if (!result.Succeeded) throw new InvalidOperationException(result.Errors.GetMessage());
         }
 
-        public Task<Role?> FindByNameAsync(string name, CancellationToken cancellationToken = default)
+        public Task<Role?> GetByNameAsync(string name, CancellationToken cancellationToken = default)
         {
             if (name == null) throw new ArgumentNullException(nameof(name));
 

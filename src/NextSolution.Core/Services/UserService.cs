@@ -56,7 +56,7 @@ namespace NextSolution.Core.Services
             if (filter == null) throw new ArgumentNullException(nameof(filter));
             var predicate = BuildProfilePredicate(filter);
 
-            var page = (await _userRepository.FindManyAsync(pageNumber, pageSize, predicate: predicate));
+            var page = (await _userRepository.GetManyAsync(pageNumber, pageSize, predicate: predicate));
             var pageModel = await GetProfilePageModelAsync(page);
             return pageModel;
 

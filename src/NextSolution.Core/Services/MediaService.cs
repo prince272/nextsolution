@@ -107,7 +107,7 @@ namespace NextSolution.Core.Services
             if (!formValidationResult.IsValid)
                 throw new BadRequestException(formValidationResult.ToDictionary());
 
-            var media = await _mediaRepository.FindAsync(predicate: _ => _.FileId == form.FileId);
+            var media = await _mediaRepository.GetAsync(predicate: _ => _.FileId == form.FileId);
             if (media == null) return;
 
             await _mediaRepository.DeleteAsync(media);

@@ -70,7 +70,7 @@ namespace NextSolution.Infrastructure.Identity
                     }
 
                     var userId = userRepository.GetUserId(claimsPrincipal);
-                    var user = await userRepository.FindByIdAsync(userId ?? -1);
+                    var user = await userRepository.GetByIdAsync(userId ?? -1);
 
                     var securityStamp = userRepository.GetSecurityStamp(claimsPrincipal);
 

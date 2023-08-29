@@ -15,52 +15,52 @@ namespace NextSolution.Core.Shared
 
         Task DeleteAsync(TEntity entity, CancellationToken cancellationToken = default);
 
-        Task<TEntity?> FindByIdAsync(long id, CancellationToken cancellationToken = default);
+        Task<TEntity?> GetByIdAsync(long id, CancellationToken cancellationToken = default);
 
-        Task<TEntity?> FindAsync(
+        Task<TEntity?> GetAsync(
             Expression<Func<TEntity, bool>> predicate,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
             Expression<Func<TEntity, object>>[]? include = null,
             CancellationToken cancellationToken = default);
 
-        Task<TResult?> FindAsync<TResult>(
+        Task<TResult?> GetAsync<TResult>(
             Expression<Func<TEntity, TResult>> selector,
             Expression<Func<TEntity, bool>> predicate,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
             Expression<Func<TEntity, object>>[]? include = null,
             CancellationToken cancellationToken = default);
 
-        Task<IEnumerable<TEntity>> FindManyAsync(
+        Task<IEnumerable<TEntity>> GetManyAsync(
             Expression<Func<TEntity, bool>> predicate,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
             Expression<Func<TEntity, object>>[]? include = null,
             CancellationToken cancellationToken = default);
 
-        Task<IEnumerable<TResult>> FindManyAsync<TResult>(
+        Task<IEnumerable<TResult>> GetManyAsync<TResult>(
             Expression<Func<TEntity, TResult>> selector,
             Expression<Func<TEntity, bool>> predicate,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
             Expression<Func<TEntity, object>>[]? include = null,
             CancellationToken cancellationToken = default);
 
-        Task<IEnumerable<TEntity>> FindAllAsync(
+        Task<IEnumerable<TEntity>> GetAllAsync(
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
             Expression<Func<TEntity, object>>[]? include = null,
             CancellationToken cancellationToken = default);
 
-        Task<IEnumerable<TResult>> FindAllAsync<TResult>(
+        Task<IEnumerable<TResult>> GetAllAsync<TResult>(
             Expression<Func<TEntity, TResult>> selector,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
             Expression<Func<TEntity, object>>[]? include = null,
             CancellationToken cancellationToken = default);
 
-        Task<IPageable<TEntity>> FindManyAsync(int pageNumber, int pageSize,
+        Task<IPageable<TEntity>> GetManyAsync(int pageNumber, int pageSize,
             Expression<Func<TEntity, bool>>? predicate = null,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
             Expression<Func<TEntity, object>>[]? include = null,
             CancellationToken cancellationToken = default);
 
-        Task<IPageable<TResult>> FindManyAsync<TResult>(int pageNumber, int pageSize,
+        Task<IPageable<TResult>> GetManyAsync<TResult>(int pageNumber, int pageSize,
             Expression<Func<TEntity, TResult>> selector,
             Expression<Func<TEntity, bool>>? predicate = null,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,

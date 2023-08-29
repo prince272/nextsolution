@@ -85,14 +85,14 @@ namespace NextSolution.Infrastructure.Data.Repositories
             }
         }
 
-        public Task<User?> FindByEmailAsync(string email, CancellationToken cancellationToken = default)
+        public Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
         {
             if (email == null) throw new ArgumentNullException(nameof(email));
 
             return _userManager.FindByEmailAsync(email);
         }
 
-        public Task<User?> FindByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken = default)
+        public Task<User?> GetByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken = default)
         {
             if (phoneNumber == null) throw new ArgumentNullException(nameof(phoneNumber));
 
@@ -308,18 +308,18 @@ namespace NextSolution.Infrastructure.Data.Repositories
         }
 
 
-        public Task<User?> FindByAccessTokenAsync(string accessToken, CancellationToken cancellationToken = default)
+        public Task<User?> GetByAccessTokenAsync(string accessToken, CancellationToken cancellationToken = default)
         {
             if (accessToken == null) throw new ArgumentNullException(nameof(accessToken));
 
-            return _userSessionStore.FindUserByAccessTokenAsync(accessToken, cancellationToken);
+            return _userSessionStore.GetUserByAccessTokenAsync(accessToken, cancellationToken);
         }
 
-        public Task<User?> FindByRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default)
+        public Task<User?> GetByRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default)
         {
             if (refreshToken == null) throw new ArgumentNullException(nameof(refreshToken));
 
-            return _userSessionStore.FindUserByRefreshTokenAsync(refreshToken, cancellationToken);
+            return _userSessionStore.GetUserByRefreshTokenAsync(refreshToken, cancellationToken);
         }
 
         public Task<bool> ValidateAccessTokenAsync(string accessToken, CancellationToken cancellationToken = default)
