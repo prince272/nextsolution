@@ -6,6 +6,7 @@ using NextSolution.Core.Entities;
 using NextSolution.Core.Exceptions;
 using NextSolution.Core.Extensions.FileStorage;
 using NextSolution.Core.Extensions.Identity;
+using NextSolution.Core.Models;
 using NextSolution.Core.Models.Accounts;
 using NextSolution.Core.Models.Conversations;
 using NextSolution.Core.Models.Users;
@@ -23,13 +24,13 @@ namespace NextSolution.Core.Services
 {
     public interface IUserService : IDisposable, IAsyncDisposable
     {
-        Task<ProfilePageModel> GetProfilesAsync(int pageNumber, int pageSize, ProfileFilter filter);
+        Task<UserPageModel> GetUsersAsync(UserSearch search, int pageNumber, int pageSize);
     }
 
     public class UserService : IUserService
     {
         private readonly ILogger<UserService> _logger;
-        private readonly IMapper _mapper;
+        private readonly IModelMapper _modelMapper;
         private readonly IUserContext _userContext;
         private readonly IUserRepository _userRepository;
         private readonly IClientRepository _clientRepository;
@@ -37,43 +38,43 @@ namespace NextSolution.Core.Services
 
         public UserService(
             ILogger<UserService> logger,
-            IMapper mapper,
+            IModelMapper modelMapper,
             IUserContext userContext,
             IUserRepository userRepository,
             IClientRepository clientRepository,
             IServiceProvider validatorProvider)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _modelMapper = modelMapper ?? throw new ArgumentNullException(nameof(modelMapper));
             _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _clientRepository = clientRepository ?? throw new ArgumentNullException(nameof(clientRepository));
             _validatorProvider = validatorProvider ?? throw new ArgumentNullException(nameof(validatorProvider));
         }
 
-        public async Task<ProfilePageModel> GetProfilesAsync(int pageNumber, int pageSize, ProfileFilter filter)
+        public async Task<UserPageModel> GetUsersAsync(UserSearch search, int pageNumber, int pageSize)
         {
-            if (filter == null) throw new ArgumentNullException(nameof(filter));
-            var predicate = BuildProfilePredicate(filter);
+            if (search == null) throw new ArgumentNullException(nameof(search));
+            var predicate = BuildUserPredicate(search);
 
             var page = (await _userRepository.GetManyAsync(pageNumber, pageSize, predicate: predicate));
-            var pageModel = await GetProfilePageModelAsync(page);
+            var pageModel = await GetUserPageModelAsync(page);
             return pageModel;
 
         }
 
-        private Expression<Func<User, bool>> BuildProfilePredicate(ProfileFilter filter)
+        private Expression<Func<User, bool>> BuildUserPredicate(UserSearch search)
         {
-            if (filter == null) throw new ArgumentNullException(nameof(filter));
+            if (search == null) throw new ArgumentNullException(nameof(search));
             var predicate = PredicateBuilder.True<User>();
             return predicate;
         }
 
-        private async Task<ProfilePageModel> GetProfilePageModelAsync(IPageable<User> users)
+        private async Task<UserPageModel> GetUserPageModelAsync(IPageable<User> users)
         {
             if (users == null) throw new ArgumentNullException(nameof(users));
 
-            var pageModel = await GetProfileListModelAsync<ProfilePageModel>(users);
+            var pageModel = await GetUserListModelAsync<UserPageModel>(users);
             pageModel.PageNumber = users.PageNumber;
             pageModel.PageSize = users.PageSize;
             pageModel.TotalPages = users.TotalPages;
@@ -81,23 +82,22 @@ namespace NextSolution.Core.Services
             return pageModel;
         }
 
-        private Task<ProfileListModel> GetProfileListModelAsync(IEnumerable<User> users)
+        private Task<UserListModel> GetUserListModelAsync(IEnumerable<User> users)
         {
-            return GetProfileListModelAsync<ProfileListModel>(users);
+            return GetUserListModelAsync<UserListModel>(users);
         }
 
-        private async Task<TListModel> GetProfileListModelAsync<TListModel>(IEnumerable<User> users)
-            where TListModel : ProfileListModel
+        private async Task<TListModel> GetUserListModelAsync<TListModel>(IEnumerable<User> users)
+            where TListModel : UserListModel
         {
             if (users == null) throw new ArgumentNullException(nameof(users));
 
-            var items = new List<ProfileModel>();
+            var items = new List<UserModel>();
 
             foreach (var user in users)
             {
-                var profileModel = _mapper.Map<ProfileModel>(user);
-                profileModel.Online = await _clientRepository.IsUserOnlineAsync(user.Id);
-                items.Add(profileModel);
+                var userModel = await _modelMapper.MapAsync(user);
+                items.Add(userModel);
             }
 
             var profileListModel = Activator.CreateInstance<TListModel>();

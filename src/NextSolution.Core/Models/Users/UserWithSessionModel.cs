@@ -9,7 +9,7 @@ using NextSolution.Core.Extensions.Identity;
 
 namespace NextSolution.Core.Models.Users
 {
-    public class UserSessionModel : ProfileModel
+    public class UserWithSessionModel : UserModel
     {
         public bool EmailConfirmed { get; set; }
 
@@ -28,8 +28,8 @@ namespace NextSolution.Core.Models.Users
     {
         public UserSessionProfile()
         {
-            CreateMap<User, UserSessionModel>();
-            CreateMap<UserSessionInfo, UserSessionModel>();
+            CreateMap<User, UserWithSessionModel>();
+            CreateMap<UserSessionInfo, UserWithSessionModel>();
         }
     }
 }

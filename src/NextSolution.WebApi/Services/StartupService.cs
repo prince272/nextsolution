@@ -55,8 +55,8 @@ namespace NextSolution.WebApi.Services
 
             try
             {
-                var clientService = services.GetRequiredService<IClientService>();
-                await clientService.DisconnectAsync();
+                var clientRepository = services.GetRequiredService<IClientRepository>();
+                await clientRepository.DeleteAllAsync();
             }
             catch (Exception ex)
             {

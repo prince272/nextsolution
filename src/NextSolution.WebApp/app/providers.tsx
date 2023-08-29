@@ -1,6 +1,6 @@
 "use client";
 
-import React, { PropsWithChildren, useContext, useEffect, useRef, useState } from "react";
+import React, { PropsWithChildren, useContext, useEffect, useRef, useState, useCallback } from "react";
 import { NextUIProvider, Spinner } from "@nextui-org/react";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { Toaster } from "react-hot-toast";
@@ -35,8 +35,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       automaticReconnect={true}
       connectEnabled={true}
       accessTokenFactory={() => user?.accessToken!}
-      dependencies={[user?.accessToken]} // remove previous connection and create a new connection if changed
-      url={new URL("/signalr", api.config.baseURL).toString()}
+      dependencies={[user]} // remove previous connection and create a new connection if changed
+      url={new URL("/chat", api.config.baseURL).toString()}
     >
       <NextUIProvider>
         <NextThemesProvider attribute="class" defaultTheme="dark">
@@ -113,7 +113,7 @@ export const ApiProvider: React.FC<PropsWithChildren<{ config: ApiConfig }>> = (
   useEffect(() => {
     const subscription = apiRef.current.tokenStore.pipe(rx.skip(1)).subscribe((value) => setUser(value as User));
     return () => subscription.unsubscribe();
-  }, [apiRef]);
+  }, []);
 
   return <ApiContext.Provider value={{ api: apiRef.current, user }}>{children}</ApiContext.Provider>;
 };

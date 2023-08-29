@@ -15,6 +15,10 @@ namespace NextSolution.Core.Shared
 
         Task DeleteAsync(TEntity entity, CancellationToken cancellationToken = default);
 
+        Task DeleteManyAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
+
+        Task DeleteAllAsync(CancellationToken cancellationToken = default);
+
         Task<TEntity?> GetByIdAsync(long id, CancellationToken cancellationToken = default);
 
         Task<TEntity?> GetAsync(

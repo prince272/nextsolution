@@ -21,17 +21,18 @@ using System.Security.Claims;
 using MediatR;
 using NextSolution.Core.Events.Accounts;
 using NextSolution.Core.Models.Users;
+using NextSolution.Core.Models;
 
 namespace NextSolution.Core.Services
 {
     public interface IAccountService : IDisposable, IAsyncDisposable
     {
-        Task<UserSessionModel> RefreshSessionAsync(RefreshSessionForm form);
+        Task<UserWithSessionModel> RefreshSessionAsync(RefreshSessionForm form);
         Task ResetPasswordAsync(ResetPasswordForm form);
         Task SendPasswordResetTokenAsync(SendPasswordResetTokenForm form);
         Task SendUsernameTokenAsync(SendUsernameTokenForm form);
-        Task<UserSessionModel> SignInAsync(SignInForm form);
-        Task<UserSessionModel> SignInWithAsync(SignUpWithForm form);
+        Task<UserWithSessionModel> SignInAsync(SignInForm form);
+        Task<UserWithSessionModel> SignInWithAsync(SignUpWithForm form);
         Task SignOutAsync(SignOutForm form);
         Task SignUpAsync(SignUpForm form);
         Task VerifyUsernameAsync(VerifyUsernameForm form);
@@ -40,7 +41,7 @@ namespace NextSolution.Core.Services
     public class AccountService : IAccountService
     {
         private readonly IServiceProvider _validatorProvider;
-        private readonly IMapper _mapper;
+        private readonly IModelMapper _modelMapper;
         private readonly IMediator _mediator;
         private readonly IViewRenderer _viewRenderer;
         private readonly IEmailSender _emailSender;
@@ -48,10 +49,10 @@ namespace NextSolution.Core.Services
         private readonly IUserRepository _userRepository;
         private readonly IRoleRepository _roleRepository;
 
-        public AccountService(IServiceProvider serviceProvider, IMapper mapper, IMediator mediator, IViewRenderer viewRenderer, IEmailSender emailSender, ISmsSender smsSender, IUserRepository userRepository, IRoleRepository roleRepository)
+        public AccountService(IServiceProvider validatorProvider, IModelMapper modelMapper, IMediator mediator, IViewRenderer viewRenderer, IEmailSender emailSender, ISmsSender smsSender, IUserRepository userRepository, IRoleRepository roleRepository)
         {
-            _validatorProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _validatorProvider = validatorProvider ?? throw new ArgumentNullException(nameof(validatorProvider));
+            _modelMapper = modelMapper ?? throw new ArgumentNullException(nameof(modelMapper));
             _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
             _viewRenderer = viewRenderer ?? throw new ArgumentNullException(nameof(viewRenderer));
             _emailSender = emailSender ?? throw new ArgumentNullException(nameof(emailSender));
@@ -104,7 +105,7 @@ namespace NextSolution.Core.Services
             await _mediator.Publish(new UserSignedUp(user), cancellationToken);
         }
 
-        public async Task<UserSessionModel> SignInAsync(SignInForm form)
+        public async Task<UserWithSessionModel> SignInAsync(SignInForm form)
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 
@@ -130,14 +131,12 @@ namespace NextSolution.Core.Services
             var session = await _userRepository.GenerateSessionAsync(user, cancellationToken);
             await _userRepository.AddSessionAsync(user, session, cancellationToken);
 
-            var model = _mapper.Map(user, _mapper.Map<UserSessionModel>(session));
-            model.Roles = (await _userRepository.GetRolesAsync(user, cancellationToken)).Select(_ => _.Camelize()).ToArray();
-
+            var model = await _modelMapper.MapAsync(user, session);
             await _mediator.Publish(new UserSignedIn(user));
             return model;
         }
 
-        public async Task<UserSessionModel> SignInWithAsync(SignUpWithForm form)
+        public async Task<UserWithSessionModel> SignInWithAsync(SignUpWithForm form)
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 
@@ -153,6 +152,8 @@ namespace NextSolution.Core.Services
                 ContactType.PhoneNumber => await _userRepository.GetByPhoneNumberAsync(form.Username, cancellationToken),
                 _ => null
             };
+
+            var isNewUser = user == null;
 
             if (user == null)
             {
@@ -186,10 +187,9 @@ namespace NextSolution.Core.Services
             var session = await _userRepository.GenerateSessionAsync(user, cancellationToken);
             await _userRepository.AddSessionAsync(user, session, cancellationToken);
 
-            var model = _mapper.Map(user, _mapper.Map<UserSessionModel>(session));
-            model.Roles = (await _userRepository.GetRolesAsync(user, cancellationToken)).Select(_ => _.Camelize()).ToArray();
+            var model = await _modelMapper.MapAsync(user, session);
 
-            await _mediator.Publish(new UserSignedInWith(user, form.ProviderName), cancellationToken);
+            await _mediator.Publish(isNewUser ? new UserSignedUp(user) : new UserSignedIn(user), cancellationToken);
             return model;
         }
 
@@ -212,7 +212,7 @@ namespace NextSolution.Core.Services
             await _mediator.Publish(new UserSignedOut(user), cancellationToken);
         }
 
-        public async Task<UserSessionModel> RefreshSessionAsync(RefreshSessionForm form)
+        public async Task<UserWithSessionModel> RefreshSessionAsync(RefreshSessionForm form)
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 
@@ -231,8 +231,7 @@ namespace NextSolution.Core.Services
             var session = await _userRepository.GenerateSessionAsync(user, cancellationToken);
             await _userRepository.AddSessionAsync(user, session, cancellationToken);
 
-            var model = _mapper.Map(user, _mapper.Map<UserSessionModel>(session));
-            model.Roles = await _userRepository.GetRolesAsync(user, cancellationToken);
+            var model = await _modelMapper.MapAsync(user, session);
             return model;
         }
 

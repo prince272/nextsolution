@@ -26,9 +26,9 @@ namespace NextSolution.WebApi.Endpoints
             var endpoints = MapGroup("/accounts");
 
             endpoints.MapPost("/register", SignUpAsync);
-            endpoints.MapPost("/session/authenticate", SignInAsync);
-            endpoints.MapPost("/session/{provider}/authenticate", SignInWithAsync);
-            endpoints.MapGet("/session/{provider}/authenticate", SignInWithRedirectAsync);
+            endpoints.MapPost("/authenticate", SignInAsync);
+            endpoints.MapPost("/{provider}/authenticate", SignInWithAsync);
+            endpoints.MapGet("/{provider}/authenticate", SignInWithRedirectAsync);
             endpoints.MapPost("/session/revoke", SignOutAsync).RequireAuthorization();
             endpoints.MapPost("/session/refresh", RefreshSessionAsync);
 

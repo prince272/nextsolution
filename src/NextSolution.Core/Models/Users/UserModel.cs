@@ -9,7 +9,7 @@ using NextSolution.Core.Extensions.Identity;
 
 namespace NextSolution.Core.Models.Users
 {
-    public class ProfileModel
+    public class UserModel
     {
         public long Id { get; set; }
 
@@ -27,14 +27,14 @@ namespace NextSolution.Core.Models.Users
 
         public bool Online { get; set; }
 
-        public DateTimeOffset ActiveAt { get; set; }
+        public DateTimeOffset LastActiveAt { get; set; }
     }
 
-    public class ProfileProfile : AbstractProfile
+    public class UserProfile : AbstractProfile
     {
-        public ProfileProfile()
+        public UserProfile()
         {
-            CreateMap<User, ProfileModel>();
+            CreateMap<User, UserModel>();
         }
     }
 }

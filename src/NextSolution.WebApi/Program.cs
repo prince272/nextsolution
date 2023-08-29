@@ -19,9 +19,9 @@ using Microsoft.Extensions.Configuration;
 using Humanizer.Configuration;
 using NextSolution.Infrastructure.FileStorage.Local;
 using NextSolution.Infrastructure.SmsSender.Fake;
-using NextSolution.Infrastructure.RealTime.SignalR;
 using NextSolution.WebApi.Services;
 using NextSolution.Infrastructure.Data.Middlewares;
+using NextSolution.Infrastructure.RealTime;
 
 try
 {
@@ -47,12 +47,12 @@ try
 
     builder.Services.AddValidators(assemblies);
 
+    builder.Services.AddMapper(assemblies);
+
     builder.Services.AddMediatR(options =>
     {
         options.RegisterServicesFromAssemblies(assemblies);
     });
-
-    builder.Services.AddAutoMapper(assemblies);
 
     // Add identity services.
     builder.Services.AddIdentity<User, Role>(options =>
@@ -149,7 +149,7 @@ try
 });
 
     // Add application services.
-    builder.Services.AddApplication();
+    builder.Services.AddApplication(assemblies);
 
     // Add documentation services.
     builder.Services.AddDocumentations();
@@ -184,7 +184,7 @@ try
 
     app.UseDbTransaction();
 
-    app.MapHub<SignalRHub>("/signalr");
+    app.MapHub<ChatHub>(ChatHub.Pattern);
 
     app.MapEndpoints();
 
