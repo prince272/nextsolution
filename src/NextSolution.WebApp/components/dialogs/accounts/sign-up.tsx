@@ -14,7 +14,7 @@ import { getApiErrorMessage, isApiError } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { PasswordInput } from "@/components/ui";
-import { useApi } from "@/app/providers";
+import { useApi } from "@/components/providers";
 
 export type SignUpMethods = "credentials" | "google";
 

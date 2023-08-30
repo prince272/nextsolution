@@ -1,16 +1,23 @@
 "use client";
 
-import React, { PropsWithChildren, useContext, useEffect, useRef, useState, useCallback } from "react";
+import React, { PropsWithChildren, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { NextUIProvider, Spinner } from "@nextui-org/react";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { Toaster } from "react-hot-toast";
+import {
+  createSignalRContext // SignalR
+} from "react-signalr";
 import * as rx from "rxjs";
 
 import { Api, ApiConfig, ApiTokens } from "@/lib/api";
 import { ExternalWindow } from "@/lib/external-window";
 import { DialogProvider, DialogRouter } from "@/components/ui/dialogs";
 import * as dialogComponents from "@/components/dialogs";
-import { SignalRProvider } from "@/components/signalr";
+
+const { useSignalREffect, Provider: SignalRProvider, ...signalR } = createSignalRContext();
+
+const useSignalR = () => signalR;
+export { useSignalR, useSignalREffect };
 
 const dialogs = Object.entries(dialogComponents).map(([id, Component]) => {
   id = id.replace(/Modal$/, "").replace(/[A-Z]/g, (char, index) => (index !== 0 ? "-" : "") + char.toLowerCase());

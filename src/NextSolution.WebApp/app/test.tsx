@@ -6,10 +6,9 @@ import { usePathname, useRouter } from "next/navigation";
 import { Button, Input, Modal, ModalBody, ModalContent, ModalHeader, ModalProps } from "@nextui-org/react";
 import queryString from "query-string";
 
-import { useSignalR, useSignalREffect } from "@/components/signalr";
 import { FileInput } from "@/components/ui";
 
-import { useApi, useUser } from "./providers";
+import { useApi, useSignalR, useSignalREffect, useUser } from "../components/providers";
 
 export default function Test() {
   const router = useRouter();
@@ -22,10 +21,10 @@ export default function Test() {
   const [messages, setMessage] = useState<any[]>([]);
 
   useSignalREffect(
-    "GetUsers",
-    (message) => {
-      setMessage(message);
-      console.log(message);
+    "UserConnected",
+    (user) => {
+      setMessage(user);
+      console.log(user);
     },
     [messages]
   );
