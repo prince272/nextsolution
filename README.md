@@ -7,7 +7,8 @@ Welcome to NextSolution, a starter template that combines an ASP.NET API backend
 - [Introduction](#introduction)
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
+- [Backend Installation](#backend-installation)
+- [Frontend Installation](#frontend-installation)
 - [Backend Setup](#backend-setup)
   - [Configuration](#configuration)
   - [Authentication](#authentication)
@@ -36,19 +37,22 @@ NextSolution is a template that brings together an ASP.NET API backend and a Nex
 - [Node.js](https://nodejs.org/)
 - [npm](https://www.npmjs.com/get-npm)
 
-### Installation ⚙️
+## Backend Installation ⚙️
 
 1. Clone this repository: `git clone https://github.com/prince272/nextsolution.git`
-2. Navigate to the template directory: `cd nextsolution`
+2. Navigate to the backend directory: `cd NextSolution.WebApi`
 3. Install backend dependencies: `dotnet restore`
-4. Navigate to the frontend directory: `cd client-app`
-5. Install frontend dependencies: `npm install`
-6. Return to the main directory: `cd ..`
-7. Build and run the application: `dotnet run`
+4. Build and run the backend application: `dotnet run`
+
+## Frontend Installation ⚙️
+
+1. Return to the main directory: `cd nextsolution`
+2. Navigate to the frontend directory: `cd NextSolution.WebApp`
+3. Install frontend dependencies: `npm install`
 
 ## Backend Setup 🔧
 
-The backend is built with ASP.NET and provides powerful features for creating APIs.
+The backend is organized into different projects for core functionality and infrastructure.
 
 ### Configuration ⚙️
 
@@ -72,7 +76,7 @@ The frontend is built with Next.js, providing a fast and dynamic user experience
 
 ### Scripts 📜
 
-In the `client-app` directory, you can use the following npm scripts:
+In the `NextSolution.WebApp` directory, you can use the following npm scripts:
 
 - `dev`: Start the development server
 - `dev:ssl`: Start the development server with SSL (useful for testing)
