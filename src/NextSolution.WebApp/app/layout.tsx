@@ -5,7 +5,7 @@ import fonts from "@/assets/fonts";
 
 import { cn } from "@/lib/utils";
 
-import { ApiProvider, AppProvider } from "./providers";
+import { ApiProvider, AppProvider } from "../components/providers";
 
 export const metadata: Metadata = {
   title: "Create Next App",

@@ -15,9 +15,11 @@ namespace NextSolution.Core.Repositories
     {
         Task CreateAsync(User user, string password, CancellationToken cancellationToken = default);
 
-        Task<User?> FindByEmailAsync(string email, CancellationToken cancellationToken = default);
+        Task UpdateLastActiveAsync(User user, CancellationToken cancellationToken = default);
 
-        Task<User?> FindByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken = default);
+        Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default);
+
+        Task<User?> GetByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken = default);
 
         Task<bool> IsInRoleAsync(User user, string role, CancellationToken cancellationToken = default);
 
@@ -72,9 +74,9 @@ namespace NextSolution.Core.Repositories
 
         Task RemoveLoginAsync(User user, string providerName, string providerKey, CancellationToken cancellationToken = default);
 
-        Task<User?> FindByAccessTokenAsync(string accessToken, CancellationToken cancellationToken = default);
+        Task<User?> GetByAccessTokenAsync(string accessToken, CancellationToken cancellationToken = default);
 
-        Task<User?> FindByRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default);
+        Task<User?> GetByRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default);
 
         Task<bool> ValidateAccessTokenAsync(string accessToken, CancellationToken cancellationToken = default);
 

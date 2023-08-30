@@ -1,4 +1,5 @@
-﻿using NextSolution.Core.Utilities;
+﻿using FluentValidation;
+using NextSolution.Core.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,13 +15,13 @@ namespace NextSolution.Core.Models.Accounts
 
         [JsonIgnore]
         public ContactType UsernameType => ValidationHelper.GetContactType(Username);
+    }
 
-        public class Validator : AbstractValidator<SendUsernameTokenForm>
+    public class SendUsernameTokenFormValidator : AbstractValidator<SendUsernameTokenForm>
+    {
+        public SendUsernameTokenFormValidator()
         {
-            public Validator()
-            {
-                RuleFor(_ => _.Username).NotEmpty().Username();
-            }
+            RuleFor(_ => _.Username).NotEmpty().Username();
         }
     }
 }

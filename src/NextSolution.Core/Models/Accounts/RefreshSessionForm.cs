@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FluentValidation;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,13 +10,13 @@ namespace NextSolution.Core.Models.Accounts
     public class RefreshSessionForm
     {
         public string RefreshToken { get; set; } = default!;
+    }
 
-        public class Validator : AbstractValidator<RefreshSessionForm>
+    public class RefreshSessionFormValidator : AbstractValidator<RefreshSessionForm>
+    {
+        public RefreshSessionFormValidator()
         {
-            public Validator()
-            {
-                RuleFor(_ => _.RefreshToken).NotEmpty();
-            }
+            RuleFor(_ => _.RefreshToken).NotEmpty();
         }
     }
 }

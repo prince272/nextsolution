@@ -10,14 +10,18 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using NextSolution.Core.Entities;
+using FluentValidation;
+using NextSolution.Core.Models;
 
 namespace NextSolution.Core
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddApplication(this IServiceCollection services)
+        public static IServiceCollection AddApplication(this IServiceCollection services, IEnumerable<Assembly> assemblies)
         {
-            services.AddScoped<AccountService>();
+            services.AddScoped<IAccountService, AccountService>();
+
+            services.AddScoped<IUserService, UserService>();
 
             services.Configure<MediaServiceOptions>(options =>
             {
@@ -74,7 +78,7 @@ namespace NextSolution.Core
                 .ToArray(); // Audio - 80MB
             });
 
-            services.AddScoped<MediaService>();
+            services.AddScoped<IMediaService, MediaService>();
             return services;
         }
 
@@ -115,6 +119,13 @@ namespace NextSolution.Core
                 }
             }
 
+            return services;
+        }
+
+        public static IServiceCollection AddMapper(this IServiceCollection services, IEnumerable<Assembly> assemblies)
+        {
+            services.AddAutoMapper(assemblies);
+            services.AddTransient<IModelMapper, ModelMapper>();
             return services;
         }
     }

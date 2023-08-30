@@ -17,7 +17,7 @@ namespace NextSolution.Infrastructure.Data.Configurations
             builder.ToTable("User");
 
             // Each User can have many entries in the UserRole join table
-            builder.HasMany(u => u.UserRoles)
+            builder.HasMany(u => u.Roles)
                 .WithOne(u => u.User)
                 .HasForeignKey(ur => ur.UserId)
                 .IsRequired();

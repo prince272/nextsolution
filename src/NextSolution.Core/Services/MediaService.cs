@@ -20,7 +20,14 @@ using System.Threading.Tasks;
 
 namespace NextSolution.Core.Services
 {
-    public class MediaService
+    public interface IMediaService : IDisposable, IAsyncDisposable
+    {
+        Task DeleteAsync(DeleteMediaByFileIdForm form);
+        Task UploadAsync(UploadMediaByFileChunkForm form);
+        Task UploadAsync(UploadMediaByFileContentForm form);
+    }
+
+    public class MediaService : IMediaService
     {
         private readonly ILogger<MediaService> _logger;
         private readonly IOptions<MediaServiceOptions> _mediaServiceOptions;
@@ -37,11 +44,11 @@ namespace NextSolution.Core.Services
             _validatorProvider = validatorProvider ?? throw new ArgumentNullException(nameof(validatorProvider));
         }
 
-        public async Task UploadAsync(UploadMediaContentForm form)
+        public async Task UploadAsync(UploadMediaByFileContentForm form)
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 
-            var formValidator = _validatorProvider.GetRequiredService<UploadMediaContentForm.Validator>();
+            var formValidator = _validatorProvider.GetRequiredService<UploadMediaByFileContentFormValidator>();
             var formValidationResult = await formValidator.ValidateAsync(form);
 
             if (!formValidationResult.IsValid)
@@ -62,11 +69,11 @@ namespace NextSolution.Core.Services
             await _mediaRepository.CreateAsync(media);
         }
 
-        public async Task UploadAsync(UploadMediaChunkForm form)
+        public async Task UploadAsync(UploadMediaByFileChunkForm form)
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 
-            var formValidator = _validatorProvider.GetRequiredService<UploadMediaChunkForm.Validator>();
+            var formValidator = _validatorProvider.GetRequiredService<UploadMediaByFileChunkFormValidator>();
             var formValidationResult = await formValidator.ValidateAsync(form);
 
             if (!formValidationResult.IsValid)
@@ -90,17 +97,17 @@ namespace NextSolution.Core.Services
             }
         }
 
-        public async Task DeleteByFileIdAsync(DeleteMediaByFileIdForm form)
+        public async Task DeleteAsync(DeleteMediaByFileIdForm form)
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 
-            var formValidator = _validatorProvider.GetRequiredService<DeleteMediaByFileIdForm.Validator>();
+            var formValidator = _validatorProvider.GetRequiredService<DeleteMediaByFileIdFormValidator>();
             var formValidationResult = await formValidator.ValidateAsync(form);
 
             if (!formValidationResult.IsValid)
                 throw new BadRequestException(formValidationResult.ToDictionary());
 
-            var media = await _mediaRepository.FindAsync(_ => _.FileId ==  form.FileId);
+            var media = await _mediaRepository.GetAsync(predicate: _ => _.FileId == form.FileId);
             if (media == null) return;
 
             await _mediaRepository.DeleteAsync(media);
@@ -108,7 +115,48 @@ namespace NextSolution.Core.Services
                         .Forget(error => _logger.LogWarning(error, $"Unable to delete '{media.FileName}' file."));
         }
 
-        public MediaServiceOptions Options => _mediaServiceOptions.Value;
+        private readonly CancellationToken cancellationToken = default;
+        private bool disposed = false;
+
+        public void Dispose()
+        {
+            if (!disposed)
+            {
+                disposed = true;
+                Dispose(true);
+                GC.SuppressFinalize(this);
+            }
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                // myResource.Dispose();
+                cancellationToken.ThrowIfCancellationRequested();
+            }
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            if (!disposed)
+            {
+                disposed = true;
+                await DisposeAsync(true);
+                GC.SuppressFinalize(this);
+            }
+        }
+
+        protected ValueTask DisposeAsync(bool disposing)
+        {
+            if (disposing)
+            {
+                //  await myResource.DisposeAsync();
+                cancellationToken.ThrowIfCancellationRequested();
+            }
+
+            return ValueTask.CompletedTask;
+        }
     }
 
     public class MediaServiceOptions

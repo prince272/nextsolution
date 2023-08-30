@@ -8,7 +8,7 @@ import queryString from "query-string";
 
 import { FileInput } from "@/components/ui";
 
-import { useApi, useUser } from "./providers";
+import { useApi, useSignalR, useSignalREffect, useUser } from "../components/providers";
 
 export default function Test() {
   const router = useRouter();
@@ -16,6 +16,18 @@ export default function Test() {
   const api = useApi();
   const user = useUser();
   const [value, setValue] = useState<string | string[]>("test.txt");
+
+  const signalR = useSignalR();
+  const [messages, setMessage] = useState<any[]>([]);
+
+  useSignalREffect(
+    "UserConnected",
+    (user) => {
+      setMessage(user);
+      console.log(user);
+    },
+    [messages]
+  );
 
   return (
     <div className="mt-7 w-[500px]">
@@ -26,6 +38,7 @@ export default function Test() {
         href={queryString.stringifyUrl({ url: pathname, query: { dialogId: "sign-in" } })}
       >
         {!user ? "Sign In" : `You're currently signed in to ${user.firstName} ${user.lastName}`}
+        {messages.length}
       </Button>
       <FileInput value={value} onChange={setValue} server="/files" />
     </div>

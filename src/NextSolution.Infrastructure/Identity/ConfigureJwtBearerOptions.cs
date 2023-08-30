@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using NextSolution.Core.Extensions.Identity;
 using NextSolution.Core.Repositories;
 using NextSolution.Core.Utilities;
+using NextSolution.Infrastructure.RealTime;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -70,7 +71,7 @@ namespace NextSolution.Infrastructure.Identity
                     }
 
                     var userId = userRepository.GetUserId(claimsPrincipal);
-                    var user = await userRepository.FindByIdAsync(userId ?? -1);
+                    var user = userId.HasValue ? await userRepository.GetByIdAsync(userId.Value) : null;
 
                     var securityStamp = userRepository.GetSecurityStamp(claimsPrincipal);
 
@@ -89,15 +90,20 @@ namespace NextSolution.Infrastructure.Identity
                         return;
                     }
 
-                    // Updates the ActiveAt of a user only if more than 2 minutes have passed since the last update.
-                    var current = DateTimeOffset.UtcNow;
-                    if (current - user.ActiveAt >= TimeSpan.FromMinutes(2))
-                    {
-                        user.ActiveAt = current;
-                        await userRepository.UpdateAsync(user);
-                    }
+                    await userRepository.UpdateLastActiveAsync(user);
                 },
-                OnMessageReceived = context => Task.CompletedTask,
+                OnMessageReceived = context =>
+                {
+                    var accessToken = context.Request.Query["access_token"];
+                    var path = context.HttpContext.Request.Path;
+
+                    if (!string.IsNullOrEmpty(accessToken) && (path.StartsWithSegments(ChatHub.Pattern)))
+                    {
+                        context.Token = accessToken;
+                    }
+
+                    return Task.CompletedTask;
+                },
                 OnChallenge = context =>
                 {
                     var logger = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>().CreateLogger(nameof(JwtBearerEvents));

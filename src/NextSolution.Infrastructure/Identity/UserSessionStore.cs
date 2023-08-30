@@ -57,7 +57,7 @@ namespace NextSolution.Infrastructure.Identity
             else
             {
                 var tokenHash = AlgorithmHelper.GenerateSHA256Hash(token);
-                var current = DateTimeOffset.UtcNow;
+                var currentTime = DateTimeOffset.UtcNow;
 
                 await _dbContext.Set<UserSession>()
                     .Where(_ => _.UserId == user.Id)
@@ -68,7 +68,7 @@ namespace NextSolution.Infrastructure.Identity
             await _dbContext.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task<User?> FindUserByAccessTokenAsync(string accessToken, CancellationToken cancellationToken = default)
+        public async Task<User?> GetUserByAccessTokenAsync(string accessToken, CancellationToken cancellationToken = default)
         {
             if (accessToken == null) throw new ArgumentNullException(nameof(accessToken));
 
@@ -80,7 +80,7 @@ namespace NextSolution.Infrastructure.Identity
             return await _dbContext.FindAsync<User>(keyValues: new object[] { session.UserId }, cancellationToken);
         }
 
-        public async Task<User?> FindUserByRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default)
+        public async Task<User?> GetUserByRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default)
         {
             if (refreshToken == null) throw new ArgumentNullException(nameof(refreshToken));
 

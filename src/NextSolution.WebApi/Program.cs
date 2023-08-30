@@ -18,9 +18,10 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.Extensions.Configuration;
 using Humanizer.Configuration;
 using NextSolution.Infrastructure.FileStorage.Local;
-using NextSolution.Infrastructure.RealTime;
-using NextSolution.Core.Extensions.RealTime;
 using NextSolution.Infrastructure.SmsSender.Fake;
+using NextSolution.WebApi.Services;
+using NextSolution.Infrastructure.Data.Middlewares;
+using NextSolution.Infrastructure.RealTime;
 
 try
 {
@@ -33,7 +34,7 @@ try
     builder.Logging.ClearProviders();
     builder.Host.UseSerilog(Log.Logger);
 
-    var assemblies = AssemblyHelper.GetAssemblies();
+    var assemblies = AssemblyHelper.GetAssemblies().ToArray();
 
     // Add database services.
     builder.Services.AddDbContext<AppDbContext>(options =>
@@ -46,7 +47,12 @@ try
 
     builder.Services.AddValidators(assemblies);
 
-    builder.Services.AddAutoMapper(assemblies);
+    builder.Services.AddMapper(assemblies);
+
+    builder.Services.AddMediatR(options =>
+    {
+        options.RegisterServicesFromAssemblies(assemblies);
+    });
 
     // Add identity services.
     builder.Services.AddIdentity<User, Role>(options =>
@@ -129,7 +135,6 @@ try
     });
 
     builder.Services.AddSignalR();
-    builder.Services.AddOnlineClientManager();
 
     // Configure serialization services.
     builder.Services.ConfigureHttpJsonOptions(options =>
@@ -144,10 +149,12 @@ try
 });
 
     // Add application services.
-    builder.Services.AddApplication();
+    builder.Services.AddApplication(assemblies);
 
     // Add documentation services.
     builder.Services.AddDocumentations();
+
+    builder.Services.AddHostedService<StartupService>();
 
     // Build application.
     var app = builder.Build();
@@ -165,7 +172,6 @@ try
     {
         app.UseSwagger();
         app.UseSwaggerUI();
-        await app.UseSeeding();
     }
 
     app.UseHttpsRedirection();
@@ -175,6 +181,10 @@ try
     app.UseAuthentication();
 
     app.UseAuthorization();
+
+    app.UseDbTransaction();
+
+    app.MapHub<ChatHub>(ChatHub.Pattern);
 
     app.MapEndpoints();
 

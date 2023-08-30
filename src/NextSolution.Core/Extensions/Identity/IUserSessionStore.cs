@@ -13,8 +13,8 @@ namespace NextSolution.Core.Extensions.Identity
 
         Task RemoveSessionAsync(User user, string token, CancellationToken cancellationToken = default);
 
-        Task<User?> FindUserByAccessTokenAsync(string accessToken, CancellationToken cancellationToken = default);
+        Task<User?> GetUserByAccessTokenAsync(string accessToken, CancellationToken cancellationToken = default);
 
-        Task<User?> FindUserByRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default);
+        Task<User?> GetUserByRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default);
     }
 }
