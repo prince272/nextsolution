@@ -144,26 +144,6 @@ namespace NextSolution.Infrastructure.Data.Migrations
                     b.ToTable("Client", (string)null);
                 });
 
-            modelBuilder.Entity("NextSolution.Core.Entities.Conversation", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Conversation");
-                });
-
             modelBuilder.Entity("NextSolution.Core.Entities.Media", b =>
                 {
                     b.Property<long>("Id")
@@ -208,50 +188,6 @@ namespace NextSolution.Infrastructure.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("Media", (string)null);
-                });
-
-            modelBuilder.Entity("NextSolution.Core.Entities.Message", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<long>("ConversationId")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTimeOffset>("DeliveredAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<long?>("MediaId")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTimeOffset>("ReadAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<long>("SenderId")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTimeOffset>("SentAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ConversationId");
-
-                    b.HasIndex("MediaId");
-
-                    b.HasIndex("SenderId");
-
-                    b.ToTable("Message");
                 });
 
             modelBuilder.Entity("NextSolution.Core.Entities.Role", b =>
@@ -366,29 +302,6 @@ namespace NextSolution.Infrastructure.Data.Migrations
                     b.ToTable("User", (string)null);
                 });
 
-            modelBuilder.Entity("NextSolution.Core.Entities.UserConversation", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<long>("ConversationId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ConversationId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserConversation");
-                });
-
             modelBuilder.Entity("NextSolution.Core.Entities.UserRole", b =>
                 {
                     b.Property<long>("UserId")
@@ -481,50 +394,6 @@ namespace NextSolution.Infrastructure.Data.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("NextSolution.Core.Entities.Message", b =>
-                {
-                    b.HasOne("NextSolution.Core.Entities.Conversation", "Conversation")
-                        .WithMany("Messages")
-                        .HasForeignKey("ConversationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("NextSolution.Core.Entities.Media", "Media")
-                        .WithMany()
-                        .HasForeignKey("MediaId");
-
-                    b.HasOne("NextSolution.Core.Entities.User", "Sender")
-                        .WithMany()
-                        .HasForeignKey("SenderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Conversation");
-
-                    b.Navigation("Media");
-
-                    b.Navigation("Sender");
-                });
-
-            modelBuilder.Entity("NextSolution.Core.Entities.UserConversation", b =>
-                {
-                    b.HasOne("NextSolution.Core.Entities.Conversation", "Conversation")
-                        .WithMany("Users")
-                        .HasForeignKey("ConversationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("NextSolution.Core.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Conversation");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("NextSolution.Core.Entities.UserRole", b =>
                 {
                     b.HasOne("NextSolution.Core.Entities.Role", "Role")
@@ -553,13 +422,6 @@ namespace NextSolution.Infrastructure.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("NextSolution.Core.Entities.Conversation", b =>
-                {
-                    b.Navigation("Messages");
-
-                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("NextSolution.Core.Entities.Role", b =>
