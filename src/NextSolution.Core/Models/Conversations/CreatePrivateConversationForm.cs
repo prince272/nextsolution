@@ -1,4 +1,5 @@
-﻿using NextSolution.Core.Entities;
+﻿using FluentValidation;
+using NextSolution.Core.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
