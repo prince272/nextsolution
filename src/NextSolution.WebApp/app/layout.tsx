@@ -3,9 +3,8 @@ import "@/styles/globals.css";
 import type { Metadata } from "next";
 import fonts from "@/assets/fonts";
 
-import { cn } from "@/lib/utils";
-
 import { ApiProvider, AppProvider } from "../components/providers";
+import { cn } from "@nextui-org/react";
 
 export const metadata: Metadata = {
   title: "Create Next App",
