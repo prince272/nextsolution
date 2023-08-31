@@ -27,10 +27,16 @@ namespace NextSolution.Infrastructure.RealTime.Handlers
 
         public async Task Handle(UserConnected notification, CancellationToken cancellationToken)
         {
-            var activeUserIds = (await _clientRepository.GetManyAsync(predicate: _ => _.UserId != null, selector: _ => _.UserId)).Select(_ => _.ToString()!).ToArray();
+            var otherUserIds = (await _clientRepository.GetManyAsync(predicate: _ => _.UserId != null, selector: _ => _.UserId, cancellationToken: cancellationToken)).Select(_ => _!.Value).ToArray();
 
-            var userModel = await _modelMapper.MapAsync(notification.User);
-            await _hubContext.Clients.Users(activeUserIds).SendAsync(nameof(UserConnected), userModel, cancellationToken);
+            var message = new
+            {
+                UserId = notification.User.Id,
+                Connections = notification.Connections,
+                ClientId = notification.Client.Id,
+            };
+
+            await _hubContext.Clients.Users(otherUserIds.Select(_ => _.ToString())).SendAsync(nameof(UserDisconnected), message, cancellationToken);
         }
     }
 }

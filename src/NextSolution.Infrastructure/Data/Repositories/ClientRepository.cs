@@ -19,7 +19,7 @@ namespace NextSolution.Infrastructure.Data.Repositories
         {
         }
 
-        public Task<bool> IsUserOnlineAsync(long userId, CancellationToken cancellationToken = default)
+        public Task<bool> IsUserExistsAsync(long userId, CancellationToken cancellationToken = default)
         {
             return AnyAsync(_ => _.UserId == userId, cancellationToken);
         }

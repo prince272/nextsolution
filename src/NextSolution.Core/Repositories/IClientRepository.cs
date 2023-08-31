@@ -10,6 +10,6 @@ namespace NextSolution.Core.Repositories
 {
     public interface IClientRepository : IRepository<Client>
     {
-        Task<bool> IsUserOnlineAsync(long userId, CancellationToken cancellationToken = default);
+        Task<bool> IsUserExistsAsync(long userId, CancellationToken cancellationToken = default);
     }
 }

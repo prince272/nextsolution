@@ -28,6 +28,8 @@ namespace NextSolution.Core.Models.Users
         public bool Online { get; set; }
 
         public DateTimeOffset LastActiveAt { get; set; }
+
+        public IEnumerable<string> Roles { get; set; } = Array.Empty<string>();
     }
 
     public class UserProfile : AbstractProfile
