@@ -116,19 +116,6 @@ Contributions to this template are welcome. If you encounter issues or have sugg
 
 If you find this template helpful, consider supporting the project by contributing, giving it a star ⭐️ on GitHub, or sharing it with others who might benefit from it.
 
-### Sponsorship 💖
-
-If you're interested in sponsoring this project, please reach out to us via email or other communication channels. Your sponsorship helps ensure the continued development and maintenance of this template.
-
-## Contact 📞
-
-Feel free to reach out to me:
-
-- ☎️ Mobile: +233 (55) 036 2337
-- ✉️ Email: princeowusu.272@gmail.com
-- 🌐 GitHub: [prince272](https://github.com/prince272)
-- 💼 LinkedIn: [Prince Owusu](https://www.linkedin.com/in/prince-owusu-799438108)
-
 ## License 📄
 
 This template is licensed under the [MIT License](https://github.com/prince272/nextsolution/blob/master/LICENSE.txt).
