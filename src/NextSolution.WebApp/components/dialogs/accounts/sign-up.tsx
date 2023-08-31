@@ -13,7 +13,7 @@ import toast from "react-hot-toast";
 import { getApiErrorMessage, isApiError } from "@/lib/api";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { PasswordInput } from "@/components/ui";
-import { useApi } from "@/components/providers";
+import { useApi } from "@/components/app";
 
 export type SignUpMethods = "credentials" | "google";
 
