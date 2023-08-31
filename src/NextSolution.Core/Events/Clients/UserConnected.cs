@@ -10,13 +10,16 @@ namespace NextSolution.Core.Events.Clients
 {
     public class UserConnected : INotification
     {
-        public UserConnected(User user, Client client)
+        public UserConnected(User user, long connections, Client client)
         {
             User = user;
+            Connections = connections;
             Client = client;
         }
 
         public User User { get; set; }
+
+        public long Connections { get; set; }
 
         public Client Client { get; set; }
     }

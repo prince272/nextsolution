@@ -15,8 +15,6 @@ namespace NextSolution.Core.Models.Users
 
         public bool PhoneNumberConfirmed { get; set; }
 
-        public IEnumerable<string> Roles { get; set; } = Array.Empty<string>();
-
         public string? AccessToken { get; set; }
 
         public string? RefreshToken { get; set; }
