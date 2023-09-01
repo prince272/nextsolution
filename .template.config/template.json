@@ -5,7 +5,7 @@
   "identity": "NextSolution.Template",
   "name": "Next Solution (ASP.NET API & Next.js)",
   "description": "A starter solution template for creating a modern codebase for your upcoming application.",
-  "shortName": "next-soln",
+  "shortName": "nextsoln",
   "sourceName": "NextSolution",
   "preferNameDirectory": true,
   "tags": {
