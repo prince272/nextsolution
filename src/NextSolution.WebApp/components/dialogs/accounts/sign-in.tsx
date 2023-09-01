@@ -12,8 +12,8 @@ import toast from "react-hot-toast";
 
 import { getApiErrorMessage, isApiError } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { useApi } from "@/components/app";
 import { PasswordInput, PhoneInput } from "@/components/ui";
-import { useApi } from "@/components/providers";
 
 export type SignInMethods = "credentials" | "google";
 

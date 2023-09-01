@@ -5,7 +5,7 @@ import fonts from "@/assets/fonts";
 
 import { cn } from "@/lib/utils";
 
-import { ApiProvider, AppProvider } from "../components/providers";
+import { App } from "../components/app";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -16,13 +16,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={cn(fonts.sansFont.variable)} suppressHydrationWarning>
       <body className="bg-background text-foreground">
-        <ApiProvider
-          config={{
-            baseURL: process.env.SERVER_URL
-          }}
-        >
-          <AppProvider>{children}</AppProvider>
-        </ApiProvider>
+        <App>{children}</App>
       </body>
     </html>
   );

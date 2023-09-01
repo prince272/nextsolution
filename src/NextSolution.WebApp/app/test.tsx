@@ -8,7 +8,7 @@ import queryString from "query-string";
 
 import { FileInput } from "@/components/ui";
 
-import { useApi, useSignalR, useSignalREffect, useUser } from "../components/providers";
+import { useApi, useSignalR, useSignalREffect, useUser } from "../components/app";
 
 export default function Test() {
   const router = useRouter();

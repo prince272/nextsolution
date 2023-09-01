@@ -14,8 +14,8 @@ import { useTimer } from "react-timer-hook";
 import { getApiErrorMessage, isApiError } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { PhoneInput } from "@/components/ui/phone-input";
+import { useApi } from "@/components/app";
 import { PasswordInput } from "@/components/ui";
-import { useApi } from "@/components/providers";
 
 export type ResetPasswordMethods = "credentials" | "google";
 
