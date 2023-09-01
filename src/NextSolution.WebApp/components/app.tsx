@@ -1,3 +1,5 @@
+"use client";
+
 import React, { PropsWithChildren, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { NextUIProvider, Spinner } from "@nextui-org/react";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
@@ -67,8 +69,6 @@ export const ApiConsumer = ApiContext.Consumer;
 
 export function App({ children }: { children: React.ReactNode }) {
   const [loaded, setLoaded] = useState(false);
-  const api = useApi();
-  const user = useUser();
 
   useEffect(() => {
     setTimeout(() => {

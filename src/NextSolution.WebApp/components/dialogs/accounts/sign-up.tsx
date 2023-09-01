@@ -4,16 +4,17 @@ import React, { useCallback, useEffect, useId, useRef, useState } from "react";
 import NextLink from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { ChevronLeftIcon, ChevronRightIcon, GoogleIcon, PersonIcon } from "@/assets/icons";
-import { Button, Input, Link, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Spinner, cn } from "@nextui-org/react";
+import { Button, Input, Link, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Spinner } from "@nextui-org/react";
 import { clone } from "lodash";
 import queryString from "query-string";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 
 import { getApiErrorMessage, isApiError } from "@/lib/api";
+import { cn } from "@/lib/utils";
 import { PhoneInput } from "@/components/ui/phone-input";
-import { PasswordInput } from "@/components/ui";
 import { useApi } from "@/components/app";
+import { PasswordInput } from "@/components/ui";
 
 export type SignUpMethods = "credentials" | "google";
 

@@ -2,7 +2,8 @@ import "@/styles/globals.css";
 
 import type { Metadata } from "next";
 import fonts from "@/assets/fonts";
-import { cn } from "@nextui-org/react";
+
+import { cn } from "@/lib/utils";
 
 import { App } from "../components/app";
 
