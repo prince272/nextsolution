@@ -10,9 +10,8 @@ import queryString from "query-string";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 
-import { getApiErrorMessage, isApiError } from "@/lib/api";
+import { getApi, getApiErrorMessage, isApiError } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { useApi } from "@/components/app";
 import { PasswordInput, PhoneInput } from "@/components/ui";
 
 export type SignInMethods = "credentials" | "google";
@@ -31,7 +30,7 @@ export const SignInModal: React.FC<SignInProps> = ({ opened, onClose, ...props }
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [method, setMethod] = useState<SignInMethods | null>(searchParams.get("method") as any);
-  const api = useApi();
+  const api = getApi();
   const form = useForm<SignInInputs>({
     defaultValues: {
       username: "",

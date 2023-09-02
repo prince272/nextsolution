@@ -8,13 +8,14 @@ import queryString from "query-string";
 
 import { FileInput } from "@/components/ui";
 
-import { useApi, useSignalR, useSignalREffect, useUser } from "../components/app";
+import { useSignalR, useSignalREffect } from "../components/app";
+import { getApi } from "@/lib/api";
 
 export default function Test() {
   const router = useRouter();
   const pathname = usePathname();
-  const api = useApi();
-  const user = useUser();
+    const api = getApi();
+    const [{ user }] = api.store.useState();
   const [value, setValue] = useState<string | string[]>("test.txt");
 
   const signalR = useSignalR();

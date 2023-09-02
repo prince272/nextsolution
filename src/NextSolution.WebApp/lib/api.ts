@@ -9,25 +9,42 @@ import axios, {
 } from "axios";
 import { isIdempotentRequestError, isNetworkError } from "axios-retry";
 import QueryString from "query-string";
-import { BehaviorSubject } from "rxjs";
+import { createState, State } from "state-pool";
 
 import { ExternalWindow } from "./external-window";
+import { apiConfig } from "@/config/api";
 
-export type ApiTokens = {
+export type ApiUser = {
+  id: string;
+  userName: string;
+  firstName: string;
+  lastName: string;
+  email?: string;
+  emailConfirmed: boolean;
+  phoneNumber?: string;
+  phoneNumberConfirmed: boolean;
+  active: boolean;
+  activeAt: Date;
+
+  
   tokenType: string;
   accessToken: string;
   refreshToken: string;
   [key: string]: any;
 };
 
+export interface ApiState {
+  user?: ApiUser | null | undefined;
+}
+
 export interface ApiConfig extends CreateAxiosDefaults {
-  initialUser?: ApiTokens;
+  initialState?: ApiState;
 }
 
 export class Api {
   public config: ApiConfig;
   private axiosInstance: AxiosInstance;
-  public tokenStore: BehaviorSubject<ApiTokens | undefined | null>;
+  public store: State<ApiState>;
 
   private refreshing: boolean;
   private retryRequests: Array<() => void>;
@@ -40,10 +57,10 @@ export class Api {
       withCredentials: true
     } as ApiConfig;
 
-    const { initialUser, ...axiosConfig } = config = { ...defaultConfig, ...config };
+    const { initialState, ...axiosConfig } = (config = { ...defaultConfig, ...config });
 
     this.axiosInstance = axios.create(axiosConfig);
-    this.tokenStore = new BehaviorSubject<ApiTokens | undefined | null>(initialUser);
+    this.store = createState<ApiState>({ ...initialState } as ApiState);
 
     this.refreshing = false;
     this.retryRequests = [];
@@ -51,10 +68,10 @@ export class Api {
     // Add request interceptor
     this.axiosInstance.interceptors.request.use(
       (requestConfig) => {
-        const existingUser = this.tokenStore.getValue();
+        const apiState = this.store.getValue<ApiState>();
 
-        if (existingUser) {
-          requestConfig.headers.setAuthorization(`${existingUser.tokenType} ${existingUser.accessToken}`);
+        if (apiState.user) {
+          requestConfig.headers.setAuthorization(`${apiState.user.tokenType} ${apiState.user.accessToken}`);
         } else {
           delete requestConfig.headers.Authorization;
         }
@@ -91,8 +108,8 @@ export class Api {
             return Promise.reject(error);
           }
 
-          const existingUser = this.tokenStore.getValue();
-          if (!existingUser) {
+          const apiState = this.store.getValue<ApiState>();
+          if (!apiState.user) {
             return Promise.reject(error);
           }
 
@@ -105,16 +122,16 @@ export class Api {
           }
 
           this.refreshing = true;
-          return this.refresh(existingUser.refreshToken)
+          return this.refresh(apiState.user.refreshToken)
             .then(({ data: user }) => {
-              this.tokenStore.next(user);
+              this.store.updateValue((apiState) => (apiState.user = user));
               this.refreshing = false;
               this.retryRequests.forEach((prom) => prom());
               this.retryRequests = [];
               return this.axiosInstance.request(originalRequest);
             })
             .catch(() => {
-              this.tokenStore.next(null);
+              this.store.updateValue((apiState) => (apiState.user = null));
               this.refreshing = false;
               this.retryRequests.forEach((prom) => prom());
               this.retryRequests = [];
@@ -129,9 +146,7 @@ export class Api {
     this.config = config;
   }
 
-
-
-  public async signUp<T extends ApiTokens, R extends AxiosResponse<T>, D extends any>(
+  public async signUp<T extends ApiUser, R extends AxiosResponse<T>, D extends any>(
     data: { firstName: string; lastName: string; username: string; password: string; [key: string]: any },
     config?: AxiosRequestConfig<D>
   ): Promise<R> {
@@ -142,11 +157,11 @@ export class Api {
       ...config
     } as AxiosRequestConfig<D>;
     const response = await this.axiosInstance.request<T, R, D>(config);
-    this.tokenStore.next(response.data);
+    this.store.updateValue((apiState) => (apiState.user = response.data));
     return response;
   }
 
-  public async signIn<T extends ApiTokens, R extends AxiosResponse<T>, D extends any>(
+  public async signIn<T extends ApiUser, R extends AxiosResponse<T>, D extends any>(
     data: { username: string; password: string; [key: string]: any },
     config?: AxiosRequestConfig<D>
   ): Promise<R> {
@@ -157,11 +172,11 @@ export class Api {
       ...config
     } as AxiosRequestConfig<D>;
     const response = await this.axiosInstance.request<T, R, D>(config);
-    this.tokenStore.next(response.data);
+    this.store.updateValue((apiState) => (apiState.user = response.data));
     return response;
   }
 
-  public async signInWith<T extends ApiTokens, R extends AxiosResponse<T>, D extends any>(
+  public async signInWith<T extends ApiUser, R extends AxiosResponse<T>, D extends any>(
     provider: string,
     config?: AxiosRequestConfig<D>
   ): Promise<R> {
@@ -179,11 +194,11 @@ export class Api {
       console.warn(error);
     }
     const response = await this.axiosInstance.request<T, R, D>(config);
-    this.tokenStore.next(response.data);
+    this.store.updateValue((apiState) => (apiState.user = response.data));
     return response;
   }
 
-  public async refresh<T extends ApiTokens, R extends AxiosResponse<T>, D extends any>(
+  public async refresh<T extends ApiUser, R extends AxiosResponse<T>, D extends any>(
     refreshToken: string,
     config?: AxiosRequestConfig<D>
   ): Promise<R> {
@@ -194,7 +209,7 @@ export class Api {
       ...config
     } as AxiosRequestConfig<D>;
     const response = await this.axiosInstance.request<T, R, D>(config);
-    this.tokenStore.next(response.data);
+    this.store.updateValue((apiState) => (apiState.user = response.data));
     return response;
   }
 
@@ -205,11 +220,11 @@ export class Api {
       ...config
     } as AxiosRequestConfig<D>;
     const response = await this.axiosInstance.request<T, R, D>(config);
-    this.tokenStore.next(null);
+    this.store.updateValue((apiState) => (apiState.user = null));
     return response;
   }
 
-  public async resetPasswordCode<T extends ApiTokens, R extends AxiosResponse<T>, D extends any>(
+  public async resetPasswordCode<T extends ApiUser, R extends AxiosResponse<T>, D extends any>(
     data: { username: string; [key: string]: any },
     config?: AxiosRequestConfig<D>
   ): Promise<R> {
@@ -220,11 +235,10 @@ export class Api {
       ...config
     } as AxiosRequestConfig<D>;
     const response = await this.axiosInstance.request<T, R, D>(config);
-    this.tokenStore.next(response.data);
     return response;
   }
 
-  public async resetPassword<T extends ApiTokens, R extends AxiosResponse<T>, D extends any>(
+  public async resetPassword<T extends ApiUser, R extends AxiosResponse<T>, D extends any>(
     data: { username: string; code: string; password: string; [key: string]: any },
     config?: AxiosRequestConfig<D>
   ): Promise<R> {
@@ -235,7 +249,7 @@ export class Api {
       ...config
     } as AxiosRequestConfig<D>;
     const response = await this.axiosInstance.request<T, R, D>(config);
-    this.tokenStore.next(response.data);
+    this.store.updateValue((apiState) => (apiState.user = response.data));
     return response;
   }
 
@@ -294,3 +308,6 @@ export const getApiErrorMessage = (error: any) => {
   message = message ? message : "Something went wrong.\nPlease try again later.";
   return message;
 };
+
+const api = new Api(apiConfig);
+export const getApi = () => api;

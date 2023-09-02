@@ -38,7 +38,7 @@
     "react-signalr": "^0.2.17",
     "react-timer-hook": "^3.0.7",
     "react-virtuoso": "^4.5.0",
-    "rxjs": "^7.8.1",
+    "state-pool": "^0.10.0",
     "tailwind-merge": "^1.14.0",
     "typescript": "5.1.6"
   },

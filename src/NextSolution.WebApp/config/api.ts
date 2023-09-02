@@ -1,5 +1,3 @@
-import { ApiConfig } from "@/lib/api";
-
-export const apiConfig: ApiConfig = {
+export const apiConfig = {
   baseURL: process.env.SERVER_URL
 };
