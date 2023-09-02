@@ -36,7 +36,9 @@ namespace NextSolution.Core.Models
 
         public async Task<UserWithSessionModel> MapAsync(User user, UserSessionInfo session, CancellationToken cancellationToken = default)
         {
-            var model = _mapper.Map(await MapAsync(user, cancellationToken), _mapper.Map<UserWithSessionModel>(session));
+            var model = _mapper.Map(session, _mapper.Map<UserWithSessionModel>(user));
+            model.Online = await _clientRepository.AnyAsync(_ => _.UserId == user.Id, cancellationToken);
+            model.Roles = (await _userRepository.GetRolesAsync(user, cancellationToken)).Select(_ => _.Camelize()).ToArray();
             return model;
         }
 
