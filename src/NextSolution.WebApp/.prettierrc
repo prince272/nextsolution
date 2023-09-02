@@ -4,7 +4,7 @@
   "singleQuote": false,
   "tabWidth": 2,
   "trailingComma": "none",
-  "printWidth": 140,
+  "printWidth": 180,
   "plugins": ["@ianvs/prettier-plugin-sort-imports", "prettier-plugin-tailwindcss"],
   "importOrder": [
     "^(react/(.*)$)|^(react$)",

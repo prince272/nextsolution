@@ -118,13 +118,13 @@ export class ExternalWindow {
   }
 }
 
-export type ExternalWindowErrorReasons =
-  | "WINDOW_REOPENING"
-  | "WINDOW_CLOSE_UNEXPECTEDLY"
-  | "WINDOW_OPEN_FAILED";
+export type ExternalWindowErrorReasons = "WINDOW_REOPENING" | "WINDOW_CLOSE_UNEXPECTEDLY" | "WINDOW_OPEN_FAILED";
 
 export class ExternalWindowError extends Error {
-  constructor(message: string, public reason?: ExternalWindowErrorReasons) {
+  constructor(
+    message: string,
+    public reason?: ExternalWindowErrorReasons
+  ) {
     super(message);
     this.name = "ExternalWindowError";
   }

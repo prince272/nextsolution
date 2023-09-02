@@ -1,18 +1,11 @@
-import axios, {
-  AxiosError,
-  AxiosInstance,
-  AxiosRequestConfig,
-  AxiosResponse,
-  CreateAxiosDefaults,
-  HttpStatusCode,
-  isAxiosError
-} from "axios";
+import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse, CreateAxiosDefaults, HttpStatusCode, isAxiosError } from "axios";
 import { isIdempotentRequestError, isNetworkError } from "axios-retry";
 import QueryString from "query-string";
 import { createState, State } from "state-pool";
 
-import { ExternalWindow } from "./external-window";
 import { apiConfig } from "@/config/api";
+
+import { ExternalWindow } from "./external-window";
 
 export type ApiUser = {
   id: string;
@@ -26,7 +19,6 @@ export type ApiUser = {
   active: boolean;
   activeAt: Date;
 
-  
   tokenType: string;
   accessToken: string;
   refreshToken: string;
@@ -176,10 +168,7 @@ export class Api {
     return response;
   }
 
-  public async signInWith<T extends ApiUser, R extends AxiosResponse<T>, D extends any>(
-    provider: string,
-    config?: AxiosRequestConfig<D>
-  ): Promise<R> {
+  public async signInWith<T extends ApiUser, R extends AxiosResponse<T>, D extends any>(provider: string, config?: AxiosRequestConfig<D>): Promise<R> {
     config = {
       url: `/accounts/${provider}/authenticate`,
       method: "POST",
@@ -198,10 +187,7 @@ export class Api {
     return response;
   }
 
-  public async refresh<T extends ApiUser, R extends AxiosResponse<T>, D extends any>(
-    refreshToken: string,
-    config?: AxiosRequestConfig<D>
-  ): Promise<R> {
+  public async refresh<T extends ApiUser, R extends AxiosResponse<T>, D extends any>(refreshToken: string, config?: AxiosRequestConfig<D>): Promise<R> {
     config = {
       url: `/accounts/session/refresh`,
       method: "POST",
@@ -281,11 +267,7 @@ export class Api {
     return this.axiosInstance.put<T, R, D>(url, data, config);
   }
 
-  public patch<T extends any, R extends AxiosResponse<T>, D extends any>(
-    url: string,
-    data?: D,
-    config?: AxiosRequestConfig<D>
-  ): Promise<R> {
+  public patch<T extends any, R extends AxiosResponse<T>, D extends any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R> {
     return this.axiosInstance.patch<T, R, D>(url, data, config);
   }
 }

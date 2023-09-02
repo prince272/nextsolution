@@ -190,11 +190,7 @@ export const SignUpModal: React.FC<SignUpProps> = ({ opened, onClose, ...props }
           </ModalBody>
           <ModalFooter className="flex items-center justify-center text-center text-sm">
             Already have an account?{" "}
-            <Link
-              as={NextLink}
-              className="text-sm"
-              href={queryString.stringifyUrl({ url: pathname, query: { dialogId: "sign-in", method: method ?? undefined } })}
-            >
+            <Link as={NextLink} className="text-sm" href={queryString.stringifyUrl({ url: pathname, query: { dialogId: "sign-in", method: method ?? undefined } })}>
               Sign In <ChevronRightIcon className="h-4 w-4" />
             </Link>
           </ModalFooter>

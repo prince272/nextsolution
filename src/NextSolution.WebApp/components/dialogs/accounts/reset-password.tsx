@@ -153,11 +153,7 @@ export const ResetPasswordModal: React.FC<ResetPasswordProps> = ({ opened, onClo
                           isDisabled={resendCodeTimer.isRunning}
                           onPress={() => form.handleSubmit(onSendCode)()}
                         >
-                          {state.action == "sending"
-                            ? "Sending code..."
-                            : resendCodeTimer.isRunning
-                            ? `Resend code in ${resendCodeTimer.seconds}s`
-                            : "Get code"}
+                          {state.action == "sending" ? "Sending code..." : resendCodeTimer.isRunning ? `Resend code in ${resendCodeTimer.seconds}s` : "Get code"}
                         </Button>
                       }
                     />

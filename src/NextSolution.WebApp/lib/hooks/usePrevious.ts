@@ -16,6 +16,5 @@ export const usePrevious = <TValue extends unknown>(value: TValue, isEqual?: (pr
     };
   }
 
-  
   return ref.current.prev;
 };

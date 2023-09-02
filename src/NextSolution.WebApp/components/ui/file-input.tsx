@@ -20,12 +20,10 @@ const FileInput = React.forwardRef<FilePond, FileInputProps>(({ value, onChange,
   const api = getApi();
   const [{ user: currentUser }] = api.store.useState();
 
-  const initialFiles = (Array.isArray(value) ? value.filter((source) => source) : [value as string].filter((source) => source)).map(
-    (source) => ({
-      source,
-      options: { type: "local" }
-    })
-  ) as FilePondInitialFile[];
+  const initialFiles = (Array.isArray(value) ? value.filter((source) => source) : [value as string].filter((source) => source)).map((source) => ({
+    source,
+    options: { type: "local" }
+  })) as FilePondInitialFile[];
 
   const serverProps: FilePondServerConfigProps | { [key: string]: any } = {
     server: isString(server)

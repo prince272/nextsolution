@@ -49,7 +49,7 @@ export const DialogProvider: React.FC<PropsWithChildren<DialogContextType>> = ({
     },
     close: async (id) => {
       await updateDialog(id, { opened: false, mounted: true });
-      await new Promise((resolve) => setTimeout(resolve, 150 ));
+      await new Promise((resolve) => setTimeout(resolve, 150));
       await updateDialog(id, { opened: false, mounted: false });
     }
   });

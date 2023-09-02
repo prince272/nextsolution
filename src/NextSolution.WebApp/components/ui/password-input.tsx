@@ -10,11 +10,7 @@ const PasswordInput = React.forwardRef<HTMLInputElement, InputProps>((props, ref
     <Input
       endContent={
         <button className="focus:outline-none" type="button" onClick={toggleVisibility}>
-          {isVisible ? (
-            <EyeHideIcon className="pointer-events-none h-6 w-6 text-default-400" />
-          ) : (
-            <EyeShowIcon className="pointer-events-none h-6 w-6 text-default-400" />
-          )}
+          {isVisible ? <EyeHideIcon className="pointer-events-none h-6 w-6 text-default-400" /> : <EyeShowIcon className="pointer-events-none h-6 w-6 text-default-400" />}
         </button>
       }
       type={isVisible ? props.type : "password"}

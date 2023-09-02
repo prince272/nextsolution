@@ -118,11 +118,7 @@ export const SignInModal: React.FC<SignInProps> = ({ opened, onClose, ...props }
                     )}
                   />
                   <div className="flex items-center justify-end pt-2.5 text-end text-sm">
-                    <Link
-                      as={NextLink}
-                      className="text-sm"
-                      href={queryString.stringifyUrl({ url: pathname, query: { dialogId: "reset-password" } })}
-                    >
+                    <Link as={NextLink} className="text-sm" href={queryString.stringifyUrl({ url: pathname, query: { dialogId: "reset-password" } })}>
                       Forgot password?
                     </Link>
                   </div>
@@ -160,11 +156,7 @@ export const SignInModal: React.FC<SignInProps> = ({ opened, onClose, ...props }
           </ModalBody>
           <ModalFooter className="flex items-center justify-center text-center text-sm">
             Don&apos;t have an account?{" "}
-            <Link
-              as={NextLink}
-              className="text-sm"
-              href={queryString.stringifyUrl({ url: pathname, query: { dialogId: "sign-up", method: method ?? undefined } })}
-            >
+            <Link as={NextLink} className="text-sm" href={queryString.stringifyUrl({ url: pathname, query: { dialogId: "sign-up", method: method ?? undefined } })}>
               Sign up <ChevronRightIcon className="h-4 w-4" />
             </Link>
           </ModalFooter>

@@ -4,6 +4,7 @@ import { Button, cn, Input, InputProps, Modal, ModalBody, ModalContent, ModalHea
 import { AsYouType } from "libphonenumber-js";
 import { CountryData, defaultCountries, FlagEmoji, parseCountry } from "react-international-phone";
 import { Virtuoso } from "react-virtuoso";
+
 import { useDebounce } from "@/lib/hooks";
 
 export interface CountrySelectorModalProps extends Partial<Omit<ModalProps, "onSelect">> {
@@ -13,7 +14,7 @@ export interface CountrySelectorModalProps extends Partial<Omit<ModalProps, "onS
 
 const CountrySelectorModal: React.FC<CountrySelectorModalProps> = ({ onSelect, countries = defaultCountries, ...props }) => {
   const [search, setSearch] = useState("");
-  const debouncedSearch = useDebounce<string>(search, 100)
+  const debouncedSearch = useDebounce<string>(search, 100);
 
   const organizedCountries = useMemo(() => {
     const getScore = (c: CountryData): number => {
@@ -38,10 +39,8 @@ const CountrySelectorModal: React.FC<CountrySelectorModalProps> = ({ onSelect, c
       .slice()
       .map((country) => ({ country, score: getScore(country) }))
       .sort((a, b) => b.score - a.score)
-      .filter(c => c.score > 0)
-      .map((c) => c.country)
-;
-
+      .filter((c) => c.score > 0)
+      .map((c) => c.country);
     return organizedCountries;
   }, [debouncedSearch, countries]);
 
@@ -108,63 +107,53 @@ export interface PhoneInputProps extends InputProps {
   countries?: CountryData[];
 }
 
-const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(
-  ({ value: nativeValue, onChange: onNativeChange, countries = defaultCountries, ...props }, ref) => {
-    const { onOpen: openCountrySelector, isOpen: isCountrySelectorOpen, onOpenChange: onCountrySelectorOpenChange } = useDisclosure();
+const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(({ value: nativeValue, onChange: onNativeChange, countries = defaultCountries, ...props }, ref) => {
+  const { onOpen: openCountrySelector, isOpen: isCountrySelectorOpen, onOpenChange: onCountrySelectorOpenChange } = useDisclosure();
 
-    const { defaultCountry, defaultValue } = useMemo(() => {
-      const asYouType = new AsYouType();
-      asYouType.input(nativeValue as string);
+  const { defaultCountry, defaultValue } = useMemo(() => {
+    const asYouType = new AsYouType();
+    asYouType.input(nativeValue as string);
 
-      const defaultCountry =
-        countries.map(parseCountry).find((c) => c.iso2 == asYouType.getCountry()?.toLowerCase()) ?? parseCountry(countries[0]);
-      const defaultValue = checkPhoneNumber(nativeValue) ? asYouType.getNumber()?.formatNational() : nativeValue;
-      return { defaultCountry, defaultValue };
-    }, [countries, nativeValue]);
+    const defaultCountry = countries.map(parseCountry).find((c) => c.iso2 == asYouType.getCountry()?.toLowerCase()) ?? parseCountry(countries[0]);
+    const defaultValue = checkPhoneNumber(nativeValue) ? asYouType.getNumber()?.formatNational() : nativeValue;
+    return { defaultCountry, defaultValue };
+  }, [countries, nativeValue]);
 
-    const [country, setCountry] = useState(defaultCountry);
-    const [value, setValue] = useState(defaultValue);
+  const [country, setCountry] = useState(defaultCountry);
+  const [value, setValue] = useState(defaultValue);
 
-    useEffect(() => {
-      const asYouType = new AsYouType({ defaultCallingCode: country.dialCode, defaultCountry: country.iso2.toLowerCase() as any });
-      asYouType.input(value as string);
+  useEffect(() => {
+    const asYouType = new AsYouType({ defaultCallingCode: country.dialCode, defaultCountry: country.iso2.toLowerCase() as any });
+    asYouType.input(value as string);
 
-      const newNativeValue = checkPhoneNumber(value) ? asYouType.getNumberValue() ?? value : value;
-      onNativeChange?.({ target: { value: newNativeValue } as HTMLInputElement } as ChangeEvent<HTMLInputElement>);
-    }, [value, onNativeChange, country.iso2, country.dialCode]);
+    const newNativeValue = checkPhoneNumber(value) ? asYouType.getNumberValue() ?? value : value;
+    onNativeChange?.({ target: { value: newNativeValue } as HTMLInputElement } as ChangeEvent<HTMLInputElement>);
+  }, [value, onNativeChange, country.iso2, country.dialCode]);
 
-    return (
-      <Input
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        endContent={
-          <>
-            <Button
-              className={cn("px-5", !checkPhoneNumber(value) && "hidden")}
-              color="default"
-              variant="faded"
-              size="sm"
-              type="button"
-              onPress={openCountrySelector}
-            >
-              <FlagEmoji iso2={country.iso2} className="inline-flex" /> <div className="inline-flex">+{country.dialCode}</div>{" "}
-              <ChevronDownIcon className="inline-flex h-4 w-4 flex-none text-default-400" />
-            </Button>
-            <CountrySelectorModal
-              isOpen={isCountrySelectorOpen}
-              onOpenChange={onCountrySelectorOpenChange}
-              onSelect={(selectedCountry) => {
-                setCountry(parseCountry(selectedCountry));
-              }}
-            />
-          </>
-        }
-        {...props}
-        ref={ref}
-      />
-    );
-  }
-);
+  return (
+    <Input
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+      endContent={
+        <>
+          <Button className={cn("px-5", !checkPhoneNumber(value) && "hidden")} color="default" variant="faded" size="sm" type="button" onPress={openCountrySelector}>
+            <FlagEmoji iso2={country.iso2} className="inline-flex" /> <div className="inline-flex">+{country.dialCode}</div>{" "}
+            <ChevronDownIcon className="inline-flex h-4 w-4 flex-none text-default-400" />
+          </Button>
+          <CountrySelectorModal
+            isOpen={isCountrySelectorOpen}
+            onOpenChange={onCountrySelectorOpenChange}
+            onSelect={(selectedCountry) => {
+              setCountry(parseCountry(selectedCountry));
+            }}
+          />
+        </>
+      }
+      {...props}
+      ref={ref}
+    />
+  );
+});
 PhoneInput.displayName = "PhoneInput";
 
 export { PhoneInput };
