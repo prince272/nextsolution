@@ -43,19 +43,15 @@ export const SignInModal: React.FC<SignInProps> = ({ opened, onClose, ...props }
   const componentId = useId();
 
   const [state, setState] = useState<{ action: "idle" | "loading" | "submitting"; error?: any }>({ action: "idle", error: null });
-  const updateState = useCallback(
-    (value: typeof state) => setState((prev) => ({ ...prev, ...value, error: value.error || null })),
-    [setState]
-  );
 
   const onSignIn: SubmitHandler<SignInInputs> = async (inputs) => {
     try {
-      updateState({ action: "submitting" });
+      setState({ action: "submitting" });
       await api.signIn(inputs);
-      updateState({ action: "idle" });
+      setState({ action: "idle" });
       onClose();
     } catch (error) {
-      updateState({ action: "idle", error });
+      setState({ action: "idle", error });
 
       if (isApiError(error)) {
         if (error.response) {

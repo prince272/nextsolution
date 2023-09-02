@@ -57,10 +57,6 @@ export const ResetPasswordModal: React.FC<ResetPasswordProps> = ({ opened, onClo
     action: "idle",
     error: null
   });
-  const updateState = useCallback(
-    (value: typeof state) => setState((prev) => ({ ...prev, ...value, error: value.error || null })),
-    [setState]
-  );
 
   const onResetPassword: SubmitHandler<ResetPasswordInputs> = async (inputs) => {
     try {
@@ -87,13 +83,13 @@ export const ResetPasswordModal: React.FC<ResetPasswordProps> = ({ opened, onClo
 
   const onSendCode: SubmitHandler<Exclude<ResetPasswordInputs, "password">> = async (inputs) => {
     try {
-      updateState({ action: "sending" });
+      setState({ action: "sending" });
       await api.resetPasswordCode(inputs);
       resendCodeTimer.start();
       toast.success("Password reset code sent!");
-      updateState({ action: "idle" });
+      setState({ action: "idle" });
     } catch (error) {
-      updateState({ action: "idle", error });
+      setState({ action: "idle", error });
 
       if (isApiError(error)) {
         if (error.response) {
