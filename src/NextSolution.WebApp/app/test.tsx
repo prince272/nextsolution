@@ -6,16 +6,14 @@ import { usePathname, useRouter } from "next/navigation";
 import { Button, Input, Modal, ModalBody, ModalContent, ModalHeader, ModalProps } from "@nextui-org/react";
 import queryString from "query-string";
 
-import { getApi } from "@/lib/api";
+import { useUser } from "@/lib/api";
+import { useSignalR, useSignalREffect } from "@/lib/signalr";
 import { FileInput } from "@/components/ui";
-
-import { useSignalR, useSignalREffect } from "../components/app";
 
 export default function Test() {
   const router = useRouter();
   const pathname = usePathname();
-  const api = getApi();
-  const [{ user }] = api.store.useState();
+  const currentUser = useUser();
   const [value, setValue] = useState<string | string[]>("test.txt");
 
   const signalR = useSignalR();
@@ -33,7 +31,7 @@ export default function Test() {
   return (
     <div className="mt-7 w-[500px]">
       <Button as={NextLink} className="mb-4" color="primary" href={queryString.stringifyUrl({ url: pathname, query: { dialogId: "sign-in" } })}>
-        {!user ? "Sign In" : `You're currently signed in to ${user.firstName} ${user.lastName}`}
+        {!currentUser ? "Sign In" : `You're currently signed in to ${currentUser.firstName} ${currentUser.lastName}`}
         {messages.length}
       </Button>
       <FileInput value={value} onChange={setValue} server="/files" />

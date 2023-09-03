@@ -18,7 +18,7 @@ export interface DialogProps {
   onClose: () => void;
 }
 
-export const DialogContext = React.createContext<DialogContextProps>(null!);
+export const DialogContext = React.createContext<DialogContextProps>(undefined!);
 
 export interface DialogContextType {
   dialogs: { id: string; Component: ComponentType<any> }[];

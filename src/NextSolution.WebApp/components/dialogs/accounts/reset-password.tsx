@@ -11,7 +11,7 @@ import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useTimer } from "react-timer-hook";
 
-import { getApi, getApiErrorMessage, isApiError } from "@/lib/api";
+import { getApiErrorMessage, isApiError, useApi } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { PasswordInput } from "@/components/ui";
@@ -32,7 +32,7 @@ export interface ResetPasswordInputs {
 export const ResetPasswordModal: React.FC<ResetPasswordProps> = ({ opened, onClose, ...props }) => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const api = getApi();
+  const api = useApi();
   const form = useForm<ResetPasswordInputs>({
     defaultValues: {
       username: "",

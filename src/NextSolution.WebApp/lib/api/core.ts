@@ -1,58 +1,39 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse, CreateAxiosDefaults, HttpStatusCode, isAxiosError } from "axios";
-import { isIdempotentRequestError, isNetworkError } from "axios-retry";
 import QueryString from "query-string";
 import { createState, State } from "state-pool";
 
-import { apiConfig } from "@/config/api";
+import { ExternalWindow } from "../external-window";
+import { ApiConfig, ApiState, ApiStore, User } from "./types";
+import { parseJSON, stringifyJSON } from "../utils";
 
-import { ExternalWindow } from "./external-window";
-
-export type ApiUser = {
-  id: string;
-  userName: string;
-  firstName: string;
-  lastName: string;
-  email?: string;
-  emailConfirmed: boolean;
-  phoneNumber?: string;
-  phoneNumberConfirmed: boolean;
-  active: boolean;
-  activeAt: Date;
-
-  tokenType: string;
-  accessToken: string;
-  refreshToken: string;
-  [key: string]: any;
-};
-
-export interface ApiState {
-  user?: ApiUser | null | undefined;
-}
-
-export interface ApiConfig extends CreateAxiosDefaults {
-  initialState?: ApiState;
-}
+const INITIAL_API_STATE = "__INITIAL_API_STATE__";
 
 export class Api {
-  public config: ApiConfig;
   private axiosInstance: AxiosInstance;
-  public store: State<ApiState>;
+  public config: ApiConfig;
+  private store: ApiStore;
+  public state: State<ApiState>;
 
   private refreshing: boolean;
   private retryRequests: Array<() => void>;
 
-  constructor(config?: ApiConfig) {
-    const defaultConfig = {
+  constructor(config: ApiConfig) {
+    const defaultAxiosConfig = {
       paramsSerializer: {
         encode: (params) => QueryString.stringify(params, { arrayFormat: "bracket" })
       },
       withCredentials: true
-    } as ApiConfig;
+    } as CreateAxiosDefaults;
 
-    const { initialState, ...axiosConfig } = (config = { ...defaultConfig, ...config });
+    const { store, ...axiosConfig } = (config = { ...defaultAxiosConfig, ...config });
 
     this.axiosInstance = axios.create(axiosConfig);
-    this.store = createState<ApiState>({ ...initialState } as ApiState);
+    this.config = config;
+    this.store = store;
+    this.state = createState(parseJSON(store.get(INITIAL_API_STATE)) ?? {});
+    this.state.subscribe<ApiState>((state) => {
+      this.store.set(INITIAL_API_STATE, stringifyJSON(state));
+    });
 
     this.refreshing = false;
     this.retryRequests = [];
@@ -60,10 +41,10 @@ export class Api {
     // Add request interceptor
     this.axiosInstance.interceptors.request.use(
       (requestConfig) => {
-        const apiState = this.store.getValue<ApiState>();
+        const currentState = this.state.getValue<ApiState>();
 
-        if (apiState.user) {
-          requestConfig.headers.setAuthorization(`${apiState.user.tokenType} ${apiState.user.accessToken}`);
+        if (currentState.user) {
+          requestConfig.headers.setAuthorization(`${currentState.user.tokenType} ${currentState.user.accessToken}`);
         } else {
           delete requestConfig.headers.Authorization;
         }
@@ -100,8 +81,8 @@ export class Api {
             return Promise.reject(error);
           }
 
-          const apiState = this.store.getValue<ApiState>();
-          if (!apiState.user) {
+          const currentState = this.state.getValue<ApiState>();
+          if (!currentState.user) {
             return Promise.reject(error);
           }
 
@@ -114,16 +95,16 @@ export class Api {
           }
 
           this.refreshing = true;
-          return this.refresh(apiState.user.refreshToken)
+          return this.refresh(currentState.user.refreshToken)
             .then(({ data: user }) => {
-              this.store.updateValue((apiState) => (apiState.user = user));
+              this.state.updateValue((currentState) => (currentState.user = user));
               this.refreshing = false;
               this.retryRequests.forEach((prom) => prom());
               this.retryRequests = [];
               return this.axiosInstance.request(originalRequest);
             })
             .catch(() => {
-              this.store.updateValue((apiState) => (apiState.user = null));
+              this.state.updateValue((currentState) => (currentState.user = null));
               this.refreshing = false;
               this.retryRequests.forEach((prom) => prom());
               this.retryRequests = [];
@@ -134,11 +115,9 @@ export class Api {
         return Promise.reject(error);
       }
     );
-
-    this.config = config;
   }
 
-  public async signUp<T extends ApiUser, R extends AxiosResponse<T>, D extends any>(
+  public async signUp<T extends User, R extends AxiosResponse<T>, D extends any>(
     data: { firstName: string; lastName: string; username: string; password: string; [key: string]: any },
     config?: AxiosRequestConfig<D>
   ): Promise<R> {
@@ -149,11 +128,11 @@ export class Api {
       ...config
     } as AxiosRequestConfig<D>;
     const response = await this.axiosInstance.request<T, R, D>(config);
-    this.store.updateValue((apiState) => (apiState.user = response.data));
+    this.state.updateValue((currentState) => (currentState.user = response.data));
     return response;
   }
 
-  public async signIn<T extends ApiUser, R extends AxiosResponse<T>, D extends any>(
+  public async signIn<T extends User, R extends AxiosResponse<T>, D extends any>(
     data: { username: string; password: string; [key: string]: any },
     config?: AxiosRequestConfig<D>
   ): Promise<R> {
@@ -164,11 +143,11 @@ export class Api {
       ...config
     } as AxiosRequestConfig<D>;
     const response = await this.axiosInstance.request<T, R, D>(config);
-    this.store.updateValue((apiState) => (apiState.user = response.data));
+    this.state.updateValue((currentState) => (currentState.user = response.data));
     return response;
   }
 
-  public async signInWith<T extends ApiUser, R extends AxiosResponse<T>, D extends any>(provider: string, config?: AxiosRequestConfig<D>): Promise<R> {
+  public async signInWith<T extends User, R extends AxiosResponse<T>, D extends any>(provider: string, config?: AxiosRequestConfig<D>): Promise<R> {
     config = {
       url: `/accounts/${provider}/authenticate`,
       method: "POST",
@@ -183,11 +162,11 @@ export class Api {
       console.warn(error);
     }
     const response = await this.axiosInstance.request<T, R, D>(config);
-    this.store.updateValue((apiState) => (apiState.user = response.data));
+    this.state.updateValue((currentState) => (currentState.user = response.data));
     return response;
   }
 
-  public async refresh<T extends ApiUser, R extends AxiosResponse<T>, D extends any>(refreshToken: string, config?: AxiosRequestConfig<D>): Promise<R> {
+  public async refresh<T extends User, R extends AxiosResponse<T>, D extends any>(refreshToken: string, config?: AxiosRequestConfig<D>): Promise<R> {
     config = {
       url: `/accounts/session/refresh`,
       method: "POST",
@@ -195,7 +174,7 @@ export class Api {
       ...config
     } as AxiosRequestConfig<D>;
     const response = await this.axiosInstance.request<T, R, D>(config);
-    this.store.updateValue((apiState) => (apiState.user = response.data));
+    this.state.updateValue((currentState) => (currentState.user = response.data));
     return response;
   }
 
@@ -206,11 +185,11 @@ export class Api {
       ...config
     } as AxiosRequestConfig<D>;
     const response = await this.axiosInstance.request<T, R, D>(config);
-    this.store.updateValue((apiState) => (apiState.user = null));
+    this.state.updateValue((currentState) => (currentState.user = null));
     return response;
   }
 
-  public async resetPasswordCode<T extends ApiUser, R extends AxiosResponse<T>, D extends any>(
+  public async resetPasswordCode<T extends User, R extends AxiosResponse<T>, D extends any>(
     data: { username: string; [key: string]: any },
     config?: AxiosRequestConfig<D>
   ): Promise<R> {
@@ -224,7 +203,7 @@ export class Api {
     return response;
   }
 
-  public async resetPassword<T extends ApiUser, R extends AxiosResponse<T>, D extends any>(
+  public async resetPassword<T extends User, R extends AxiosResponse<T>, D extends any>(
     data: { username: string; code: string; password: string; [key: string]: any },
     config?: AxiosRequestConfig<D>
   ): Promise<R> {
@@ -235,7 +214,7 @@ export class Api {
       ...config
     } as AxiosRequestConfig<D>;
     const response = await this.axiosInstance.request<T, R, D>(config);
-    this.store.updateValue((apiState) => (apiState.user = response.data));
+    this.state.updateValue((currentState) => (currentState.user = response.data));
     return response;
   }
 
@@ -271,25 +250,3 @@ export class Api {
     return this.axiosInstance.patch<T, R, D>(url, data, config);
   }
 }
-
-export const isApiError = isAxiosError;
-
-export const getApiErrorMessage = (error: any) => {
-  let message = "";
-
-  if (isAxiosError(error)) {
-    if (error.response) {
-      message = error.response.data?.title;
-    } else if (isNetworkError(error)) {
-      message = "Check your internet connection.";
-    } else if (isIdempotentRequestError(error)) {
-      message = "Something went wrong, Please try again.";
-    }
-  }
-
-  message = message ? message : "Something went wrong.\nPlease try again later.";
-  return message;
-};
-
-const api = new Api(apiConfig);
-export const getApi = () => api;

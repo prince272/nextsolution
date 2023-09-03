@@ -24,6 +24,7 @@
     "filepond": "^4.30.4",
     "filepond-plugin-image-preview": "^4.6.11",
     "framer-motion": "^10.15.1",
+    "js-cookie": "^3.0.5",
     "libphonenumber-js": "^1.10.41",
     "lodash": "^4.17.21",
     "next": "13.4.12",
@@ -44,6 +45,7 @@
   },
   "devDependencies": {
     "@ianvs/prettier-plugin-sort-imports": "^4.1.0",
+    "@types/js-cookie": "^3.0.3",
     "autoprefixer": "^10.4.14",
     "concurrently": "^8.2.0",
     "devcert": "^1.2.2",

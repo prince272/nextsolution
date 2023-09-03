@@ -1,11 +1,13 @@
 import "@/styles/globals.css";
 
 import type { Metadata } from "next";
+import { cookies as getCookies } from "next/headers";
 import fonts from "@/assets/fonts";
 
+import { ApiProvider } from "@/lib/api";
+import { CookiesProvider } from "@/lib/cookies";
 import { cn } from "@/lib/utils";
-
-import { App } from "../components/app";
+import { AppProvider } from "@/components/app";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -13,10 +15,16 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const cookies = getCookies();
+
   return (
     <html lang="en" className={cn(fonts.sansFont.variable)} suppressHydrationWarning>
       <body className="bg-background text-foreground">
-        <App>{children}</App>
+        <CookiesProvider value={cookies.getAll().map((cookie) => ({ name: cookie.name, value: cookie.value }))}>
+          <ApiProvider>
+            <AppProvider>{children}</AppProvider>
+          </ApiProvider>
+        </CookiesProvider>
       </body>
     </html>
   );

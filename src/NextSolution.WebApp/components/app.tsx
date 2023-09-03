@@ -1,29 +1,21 @@
 "use client";
 
-import React, { PropsWithChildren, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { FC, ReactNode, useEffect, useState } from "react";
 import { NextUIProvider, Spinner } from "@nextui-org/react";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { Toaster } from "react-hot-toast";
-import {
-  createSignalRContext // SignalR
-} from "react-signalr";
 
-import { apiConfig } from "@/config/api";
-import { Api, ApiConfig, ApiState, ApiUser, getApi } from "@/lib/api";
+import { useApi, useUser } from "@/lib/api";
 import { ExternalWindow } from "@/lib/external-window";
-import { DialogProvider, DialogRouter } from "@/components/ui/dialogs";
+import { SignalRProvider as SignalRContextProvider, SignalRLogLevel } from "@/lib/signalr";
 
 import { dialogs } from "./dialogs";
+import { DialogProvider, DialogRouter } from "./ui/dialogs";
 
-const { useSignalREffect, Provider: SignalRProvider, ...signalR } = createSignalRContext();
-
-const useSignalR = () => signalR;
-export { useSignalR, useSignalREffect };
-
-export function App({ children }: { children: React.ReactNode }) {
+export const AppProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const [loaded, setLoaded] = useState(false);
-  const api = getApi();
-  const [{ user: currentUser }] = api.store.useState();
+  const api = useApi();
+  const user = useUser();
 
   useEffect(() => {
     setTimeout(() => {
@@ -33,21 +25,23 @@ export function App({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <SignalRProvider
+    <SignalRContextProvider
       withCredentials={api.config.withCredentials}
       automaticReconnect={true}
       connectEnabled={true}
-      accessTokenFactory={() => currentUser?.accessToken!}
-      dependencies={[currentUser]} // remove previous connection and create a new connection if changed
+      accessTokenFactory={() => user?.accessToken!}
+      dependencies={[user]} // remove previous connection and create a new connection if changed
+      logger={SignalRLogLevel.None}
       url={new URL("/chat", api.config.baseURL).toString()}
     >
-      <NextUIProvider>
-        <NextThemesProvider attribute="class" defaultTheme="dark">
+      <NextThemesProvider attribute="class" defaultTheme="dark">
+        <NextUIProvider>
           {!loaded && (
             <div className="absolute z-[99999] flex h-full w-full flex-col items-center justify-center bg-background">
               <Spinner id="app-progress" size="lg" aria-label="Loading..." />
             </div>
           )}
+          {children}
           <DialogProvider dialogs={dialogs}>
             <div className={`${!loaded ? "hidden" : ""}`}> {children}</div>
             <DialogRouter loaded={loaded} />
@@ -71,8 +65,8 @@ export function App({ children }: { children: React.ReactNode }) {
               }
             }}
           />
-        </NextThemesProvider>
-      </NextUIProvider>
-    </SignalRProvider>
+        </NextUIProvider>
+      </NextThemesProvider>
+    </SignalRContextProvider>
   );
-}
+};

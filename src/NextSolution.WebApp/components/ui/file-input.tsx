@@ -8,7 +8,7 @@ import "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css";
 import { FilePondCallbackProps, FilePondInitialFile, FilePondServerConfigProps } from "filepond";
 import { isString } from "lodash";
 
-import { getApi } from "@/lib/api";
+import { useApi, useUser } from "@/lib/api";
 
 registerPlugin(FilePondPluginImagePreview);
 export interface FileInputProps extends Omit<FilePondProps, keyof FilePondCallbackProps> {
@@ -17,8 +17,8 @@ export interface FileInputProps extends Omit<FilePondProps, keyof FilePondCallba
 }
 
 const FileInput = React.forwardRef<FilePond, FileInputProps>(({ value, onChange, server, ...props }, ref) => {
-  const api = getApi();
-  const [{ user: currentUser }] = api.store.useState();
+  const api = useApi();
+  const currentUser = useUser();
 
   const initialFiles = (Array.isArray(value) ? value.filter((source) => source) : [value as string].filter((source) => source)).map((source) => ({
     source,
