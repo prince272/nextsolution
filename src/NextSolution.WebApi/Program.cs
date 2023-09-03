@@ -47,8 +47,6 @@ try
 
     builder.Services.AddValidators(assemblies);
 
-    builder.Services.AddMapper(assemblies);
-
     builder.Services.AddMediatR(options =>
     {
         options.RegisterServicesFromAssemblies(assemblies);

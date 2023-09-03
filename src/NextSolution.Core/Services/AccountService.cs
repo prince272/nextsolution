@@ -21,7 +21,7 @@ using System.Security.Claims;
 using MediatR;
 using NextSolution.Core.Events.Accounts;
 using NextSolution.Core.Models.Users;
-using NextSolution.Core.Models;
+using NextSolution.Core.Mappers;
 
 namespace NextSolution.Core.Services
 {
@@ -41,7 +41,7 @@ namespace NextSolution.Core.Services
     public class AccountService : IAccountService
     {
         private readonly IServiceProvider _validatorProvider;
-        private readonly IModelMapper _modelMapper;
+        private readonly IUserMapper _modelMapper;
         private readonly IMediator _mediator;
         private readonly IViewRenderer _viewRenderer;
         private readonly IEmailSender _emailSender;
@@ -49,7 +49,7 @@ namespace NextSolution.Core.Services
         private readonly IUserRepository _userRepository;
         private readonly IRoleRepository _roleRepository;
 
-        public AccountService(IServiceProvider validatorProvider, IModelMapper modelMapper, IMediator mediator, IViewRenderer viewRenderer, IEmailSender emailSender, ISmsSender smsSender, IUserRepository userRepository, IRoleRepository roleRepository)
+        public AccountService(IServiceProvider validatorProvider, IUserMapper modelMapper, IMediator mediator, IViewRenderer viewRenderer, IEmailSender emailSender, ISmsSender smsSender, IUserRepository userRepository, IRoleRepository roleRepository)
         {
             _validatorProvider = validatorProvider ?? throw new ArgumentNullException(nameof(validatorProvider));
             _modelMapper = modelMapper ?? throw new ArgumentNullException(nameof(modelMapper));

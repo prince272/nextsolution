@@ -52,11 +52,10 @@ namespace NextSolution.WebApi.Services
                 logger.LogError(ex, "An error occurred while seeding the database.");
             }
 
-
             try
             {
                 var clientRepository = services.GetRequiredService<IClientRepository>();
-                await clientRepository.DeleteAllAsync();
+                await clientRepository.DeactivateAllAsync();
             }
             catch (Exception ex)
             {

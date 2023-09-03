@@ -6,7 +6,7 @@ using NextSolution.Core.Entities;
 using NextSolution.Core.Exceptions;
 using NextSolution.Core.Extensions.FileStorage;
 using NextSolution.Core.Extensions.Identity;
-using NextSolution.Core.Models;
+using NextSolution.Core.Mappers;
 using NextSolution.Core.Models.Accounts;
 using NextSolution.Core.Models.Conversations;
 using NextSolution.Core.Models.Users;
@@ -30,7 +30,7 @@ namespace NextSolution.Core.Services
     public class UserService : IUserService
     {
         private readonly ILogger<UserService> _logger;
-        private readonly IModelMapper _modelMapper;
+        private readonly IUserMapper _modelMapper;
         private readonly IUserContext _userContext;
         private readonly IUserRepository _userRepository;
         private readonly IClientRepository _clientRepository;
@@ -38,7 +38,7 @@ namespace NextSolution.Core.Services
 
         public UserService(
             ILogger<UserService> logger,
-            IModelMapper modelMapper,
+            IUserMapper modelMapper,
             IUserContext userContext,
             IUserRepository userRepository,
             IClientRepository clientRepository,
@@ -55,56 +55,12 @@ namespace NextSolution.Core.Services
         public async Task<UserPageModel> GetUsersAsync(UserSearch search, int pageNumber, int pageSize)
         {
             if (search == null) throw new ArgumentNullException(nameof(search));
-            var predicate = BuildUserPredicate(search);
+            var predicate = search.Build();
 
             var page = (await _userRepository.GetManyAsync(pageNumber, pageSize, predicate: predicate));
-            var pageModel = await GetUserPageModelAsync(page);
-            return pageModel;
-
-        }
-
-        private Expression<Func<User, bool>> BuildUserPredicate(UserSearch search)
-        {
-            if (search == null) throw new ArgumentNullException(nameof(search));
-            var predicate = PredicateBuilder.True<User>();
-            return predicate;
-        }
-
-        private async Task<UserPageModel> GetUserPageModelAsync(IPageable<User> users)
-        {
-            if (users == null) throw new ArgumentNullException(nameof(users));
-
-            var pageModel = await GetUserListModelAsync<UserPageModel>(users);
-            pageModel.PageNumber = users.PageNumber;
-            pageModel.PageSize = users.PageSize;
-            pageModel.TotalPages = users.TotalPages;
-            pageModel.TotalItems = users.TotalItems;
+            var pageModel = await _modelMapper.MapAsync(page);
             return pageModel;
         }
-
-        private Task<UserListModel> GetUserListModelAsync(IEnumerable<User> users)
-        {
-            return GetUserListModelAsync<UserListModel>(users);
-        }
-
-        private async Task<TListModel> GetUserListModelAsync<TListModel>(IEnumerable<User> users)
-            where TListModel : UserListModel
-        {
-            if (users == null) throw new ArgumentNullException(nameof(users));
-
-            var items = new List<UserModel>();
-
-            foreach (var user in users)
-            {
-                var userModel = await _modelMapper.MapAsync(user);
-                items.Add(userModel);
-            }
-
-            var profileListModel = Activator.CreateInstance<TListModel>();
-            profileListModel.Items = items;
-            return profileListModel;
-        }
-
 
         private readonly CancellationToken cancellationToken = default;
         private bool disposed = false;

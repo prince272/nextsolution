@@ -81,7 +81,7 @@ namespace NextSolution.Infrastructure.Data.Repositories
             if (user.Active && currentTime - user.LastActiveAt >= threshold)
             {
                 user.LastActiveAt = currentTime;
-                await UpdateAsync(user, cancellationToken);
+                await _userManager.UpdateAsync(user);
             }
         }
 

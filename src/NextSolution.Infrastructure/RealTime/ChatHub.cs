@@ -48,7 +48,7 @@ namespace NextSolution.Infrastructure.RealTime
                 await _clientRepository.CreateAsync(client);
                 await _mediator.Publish(new ClientConnected(client));
 
-                var connections = await _clientRepository.CountAsync(_ => _.UserId == client.UserId);
+                var connections = await _clientRepository.CountAsync(_ => _.Active && _.UserId == client.UserId);
 
                 if (client.UserId.HasValue)
                 {
@@ -81,12 +81,12 @@ namespace NextSolution.Infrastructure.RealTime
 
             try
             {
-                var client = await _clientRepository.GetAsync(predicate: _ => _.ConnectionId == connectionId);
+                var client = await _clientRepository.GetAsync(predicate: _ => _.Active &&  _.ConnectionId == connectionId);
                 if (client == null) return;
 
-                await _clientRepository.DeleteAsync(client);
+                await _clientRepository.DeactivateAsync(client);
 
-                var connections = await _clientRepository.CountAsync(_ => _.UserId == client.UserId);
+                var connections = await _clientRepository.CountAsync(_ => _.Active && _.UserId == client.UserId);
 
                 if (client.UserId.HasValue)
                 {
@@ -120,6 +120,8 @@ namespace NextSolution.Infrastructure.RealTime
             return new Client
             {
                 ConnectionId = connectionId,
+                ConnectionTime = DateTimeOffset.UtcNow,
+                Active = true,
                 IpAddress = _userContext.IpAddress,
                 DeviceId = _userContext.DeviceId,
                 UserId = _userContext.UserId,

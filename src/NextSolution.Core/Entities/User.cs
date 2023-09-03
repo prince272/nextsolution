@@ -27,6 +27,8 @@ namespace NextSolution.Core.Entities
         public DateTimeOffset LastActiveAt { get; set; }
 
         public virtual ICollection<UserRole> Roles { get; set; } = new List<UserRole>();
+
+        public virtual ICollection<Client> Clients { get; set; } = new List<Client>();
     }
 
     public class  UserRole : IdentityUserRole<long>, IEntity
