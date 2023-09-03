@@ -3,8 +3,8 @@ import QueryString from "query-string";
 import { createState, State } from "state-pool";
 
 import { ExternalWindow } from "../external-window";
-import { ApiConfig, ApiState, ApiStore, User } from "./types";
 import { parseJSON, stringifyJSON } from "../utils";
+import { ApiConfig, ApiState, ApiStore, User } from "./types";
 
 const INITIAL_API_STATE = "__INITIAL_API_STATE__";
 

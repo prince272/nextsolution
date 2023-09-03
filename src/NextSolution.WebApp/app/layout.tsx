@@ -7,7 +7,10 @@ import fonts from "@/assets/fonts";
 import { ApiProvider } from "@/lib/api";
 import { CookiesProvider } from "@/lib/cookies";
 import { cn } from "@/lib/utils";
-import { AppProvider } from "@/components/app";
+import { AppFooter } from "@/components/app/footer";
+import { AppHeader } from "@/components/app/header";
+import { AppNavigation } from "@/components/app/navigation";
+import { AppProvider } from "@/components/app/provider";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -22,7 +25,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="bg-background text-foreground">
         <CookiesProvider value={cookies.getAll().map((cookie) => ({ name: cookie.name, value: cookie.value }))}>
           <ApiProvider>
-            <AppProvider>{children}</AppProvider>
+            <AppProvider>
+              <AppHeader />
+              <AppNavigation />
+              {children}
+              <AppFooter />
+            </AppProvider>
           </ApiProvider>
         </CookiesProvider>
       </body>
