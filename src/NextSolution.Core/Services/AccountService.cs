@@ -19,7 +19,7 @@ using NextSolution.Core.Extensions.EmailSender;
 using NextSolution.Core.Extensions.SmsSender;
 using System.Security.Claims;
 using MediatR;
-using NextSolution.Core.Events.Accounts;
+using NextSolution.Core.Events.Users;
 using NextSolution.Core.Models.Users;
 using NextSolution.Core.Mappers;
 

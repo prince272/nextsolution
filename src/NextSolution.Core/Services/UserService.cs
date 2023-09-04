@@ -8,7 +8,6 @@ using NextSolution.Core.Extensions.FileStorage;
 using NextSolution.Core.Extensions.Identity;
 using NextSolution.Core.Mappers;
 using NextSolution.Core.Models.Accounts;
-using NextSolution.Core.Models.Conversations;
 using NextSolution.Core.Models.Users;
 using NextSolution.Core.Repositories;
 using NextSolution.Core.Shared;

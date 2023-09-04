@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.SignalR;
-using NextSolution.Core.Events.Accounts;
 using NextSolution.Core.Events.Clients;
+using NextSolution.Core.Events.Users;
 using NextSolution.Core.Models;
 using NextSolution.Core.Repositories;
 using NextSolution.Infrastructure.Data.Repositories;

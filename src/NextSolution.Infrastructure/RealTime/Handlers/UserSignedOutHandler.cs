@@ -1,6 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.SignalR;
-using NextSolution.Core.Events.Accounts;
+using NextSolution.Core.Events.Users;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -6,15 +6,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NextSolution.Core.Events.Accounts
+namespace NextSolution.Core.Events.Users
 {
-    public class UserSignedUp : INotification
+    public class UserSignedIn : INotification
     {
-        public UserSignedUp(User user)
+        public UserSignedIn(User user)
         {
             User = user;
         }
 
-        public User User { get; set; }    
+        public User User { get; set; }
     }
 }

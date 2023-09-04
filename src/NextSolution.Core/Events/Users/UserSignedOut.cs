@@ -6,11 +6,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NextSolution.Core.Events.Accounts
+namespace NextSolution.Core.Events.Users
 {
-    public class UserSignedIn : INotification
+    public class UserSignedOut : INotification
     {
-        public UserSignedIn(User user)
+        public UserSignedOut(User user)
         {
             User = user;
         }

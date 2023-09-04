@@ -6,11 +6,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NextSolution.Core.Events.Clients
+namespace NextSolution.Core.Events.Users
 {
-    public class UserConnected : INotification
+    public class UserDisconnected : INotification
     {
-        public UserConnected(User user, long connections, Client client)
+        public UserDisconnected(User user, long connections, Client client)
         {
             User = user;
             Connections = connections;

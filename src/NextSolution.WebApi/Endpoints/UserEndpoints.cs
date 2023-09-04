@@ -13,7 +13,6 @@ using NextSolution.Core.Models.Users;
 using NextSolution.Core.Services;
 using NextSolution.Core.Utilities;
 using NextSolution.Infrastructure.Identity;
-using NextSolution.WebApi.Models;
 using Serilog.Sinks.File;
 using System.Security.Policy;
 

@@ -27,9 +27,9 @@ namespace NextSolution.Core.Models.Users
             if (Online.HasValue)
             {
                 if (Online.Value)
-                    predicate = predicate.And(user => user.Clients.Any());
+                    predicate = predicate.And(user => user.Clients.Any(_ => _.Active));
                 else
-                    predicate = predicate.And(user => !user.Clients.Any());
+                    predicate = predicate.And(user => !user.Clients.Any(_ => _.Active));
             }
 
             return predicate;
