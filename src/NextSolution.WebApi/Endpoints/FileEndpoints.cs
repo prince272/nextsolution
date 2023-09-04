@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using NextSolution.Core.Entities;
 using NextSolution.Core.Exceptions;
-using NextSolution.Core.Models.Accounts;
 using NextSolution.Core.Models.Medias;
 using NextSolution.Core.Services;
 using NextSolution.Core.Utilities;

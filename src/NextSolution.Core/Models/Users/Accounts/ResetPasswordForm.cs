@@ -7,9 +7,9 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace NextSolution.Core.Models.Accounts
+namespace NextSolution.Core.Models.Users.Accounts
 {
-    public class SignInForm
+    public class ResetPasswordForm
     {
         public string Username { get; set; } = default!;
 
@@ -17,14 +17,17 @@ namespace NextSolution.Core.Models.Accounts
         public ContactType UsernameType => ValidationHelper.GetContactType(Username);
 
         public string Password { get; set; } = default!;
+
+        public string Code { get; set; } = default!;
     }
 
-    public class SignInFormValidator : AbstractValidator<SignInForm>
+    public class ResetPasswordFormValidator : AbstractValidator<ResetPasswordForm>
     {
-        public SignInFormValidator()
+        public ResetPasswordFormValidator()
         {
             RuleFor(_ => _.Username).NotEmpty().Username();
-            RuleFor(_ => _.Password).NotEmpty();
+            RuleFor(_ => _.Password).NotEmpty().Password();
+            RuleFor(_ => _.Code).NotEmpty();
         }
     }
 }

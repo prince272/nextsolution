@@ -8,7 +8,6 @@ using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using NextSolution.Core.Exceptions;
-using NextSolution.Core.Models.Accounts;
 using NextSolution.Core.Services;
 using NextSolution.WebApi.Shared;
 using System;

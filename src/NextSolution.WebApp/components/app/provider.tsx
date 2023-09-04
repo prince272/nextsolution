@@ -9,8 +9,13 @@ import { useApi, useUser } from "@/lib/api";
 import { ExternalWindow } from "@/lib/external-window";
 import { SignalRProvider as SignalRContextProvider, SignalRLogLevel } from "@/lib/signalr";
 
-import { DialogProvider, DialogRouter } from "../ui/dialogs";
-import { dialogs as appDialogs } from "./dialogs";
+import { DialogProvider, DialogRouter } from "../ui/dialog-provider";
+import * as userDialogs from "./dialogs/users";
+
+const dialogs = Object.entries(userDialogs).map(([name, Component]) => {
+  const id = name.replace(/Modal$/, "").replace(/[A-Z]/g, (char, index) => (index !== 0 ? "-" : "") + char.toLowerCase());
+  return { id, name, Component };
+});
 
 export interface AppContextType {
   loaded: boolean;
@@ -62,7 +67,7 @@ export const AppProvider: FC<{ children: ReactNode }> = ({ children }) => {
               </div>
             )}
             {children}
-            <DialogProvider dialogs={[...appDialogs]}>
+            <DialogProvider dialogs={dialogs}>
               <div className={`${!loaded ? "hidden" : ""}`}> {children}</div>
               <DialogRouter loaded={loaded} />
             </DialogProvider>

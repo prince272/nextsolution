@@ -6,7 +6,6 @@ using Microsoft.Extensions.Options;
 using NextSolution.Core.Entities;
 using NextSolution.Core.Exceptions;
 using NextSolution.Core.Extensions.FileStorage;
-using NextSolution.Core.Models.Accounts;
 using NextSolution.Core.Models.Medias;
 using NextSolution.Core.Repositories;
 using NextSolution.Core.Utilities;

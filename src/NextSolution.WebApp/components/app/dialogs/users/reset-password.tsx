@@ -59,13 +59,13 @@ export const ResetPasswordModal: React.FC<ResetPasswordProps> = ({ opened, onClo
 
   const onResetPassword: SubmitHandler<ResetPasswordInputs> = async (inputs) => {
     try {
-      updateState({ action: "submitting" });
+      setState({ action: "submitting" });
       await api.resetPassword(inputs);
       toast.success("Password reset successfully!");
-      updateState({ action: "idle" });
+      setState({ action: "idle" });
       onClose();
     } catch (error) {
-      updateState({ action: "idle", error });
+      setState({ action: "idle", error });
 
       if (isApiError(error)) {
         if (error.response) {

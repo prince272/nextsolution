@@ -3,13 +3,14 @@ using NextSolution.Core.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace NextSolution.Core.Models.Accounts
+namespace NextSolution.Core.Models.Users.Accounts
 {
-    public class SignUpForm
+    public class SignUpWithForm
     {
         public string FirstName { get; set; } = default!;
 
@@ -17,20 +18,26 @@ namespace NextSolution.Core.Models.Accounts
 
         public string Username { get; set; } = default!;
 
+
         [JsonIgnore]
         public ContactType UsernameType => ValidationHelper.GetContactType(Username);
 
-        public string Password { get; set; } = default!;
+        public string ProviderName { get; set; } = default!;
+
+        public string ProviderKey { get; set; } = default!;
+
+        public string? ProviderDisplayName { get; set; }
     }
 
-    public class SignUpFormValidator : AbstractValidator<SignUpForm>
+    public class SignUpWithFormValidator : AbstractValidator<SignUpWithForm>
     {
-        public SignUpFormValidator()
+        public SignUpWithFormValidator()
         {
-            RuleFor(_ => _.FirstName).NotEmpty();
-            RuleFor(_ => _.LastName).NotEmpty();
+            RuleFor(_ => _.FirstName);
+            RuleFor(_ => _.LastName);
             RuleFor(_ => _.Username).NotEmpty().Username();
-            RuleFor(_ => _.Password).NotEmpty().Password();
+            RuleFor(_ => _.ProviderName).NotEmpty();
+            RuleFor(_ => _.ProviderKey).NotEmpty();
         }
     }
 }

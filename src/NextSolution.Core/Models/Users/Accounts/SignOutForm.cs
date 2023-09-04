@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NextSolution.Core.Models.Accounts
+namespace NextSolution.Core.Models.Users.Accounts
 {
     public class SignOutForm
     {

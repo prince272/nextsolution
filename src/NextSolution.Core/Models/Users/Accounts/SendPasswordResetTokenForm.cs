@@ -7,27 +7,21 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace NextSolution.Core.Models.Accounts
+namespace NextSolution.Core.Models.Users.Accounts
 {
-    public class ResetPasswordForm
+    public class SendPasswordResetTokenForm
     {
         public string Username { get; set; } = default!;
 
         [JsonIgnore]
         public ContactType UsernameType => ValidationHelper.GetContactType(Username);
-
-        public string Password { get; set; } = default!;
-
-        public string Code { get; set; } = default!;
     }
 
-    public class ResetPasswordFormValidator : AbstractValidator<ResetPasswordForm>
+    public class SendPasswordResetTokenFormValidator : AbstractValidator<SendPasswordResetTokenForm>
     {
-        public ResetPasswordFormValidator()
+        public SendPasswordResetTokenFormValidator()
         {
             RuleFor(_ => _.Username).NotEmpty().Username();
-            RuleFor(_ => _.Password).NotEmpty().Password();
-            RuleFor(_ => _.Code).NotEmpty();
         }
     }
 }

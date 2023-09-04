@@ -21,8 +21,6 @@ namespace NextSolution.Core
         {
             services.AddAutoMapper(assemblies);
 
-            services.AddScoped<IAccountService, AccountService>();
-
             services.AddScoped<IUserService, UserService>();
             services.AddTransient<IUserMapper, UserMapper>();
 

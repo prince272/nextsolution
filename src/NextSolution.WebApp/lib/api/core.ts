@@ -18,12 +18,7 @@ export class Api {
   private retryRequests: Array<() => void>;
 
   constructor(config: ApiConfig) {
-    const defaultAxiosConfig = {
-      paramsSerializer: {
-        encode: (params) => QueryString.stringify(params, { arrayFormat: "bracket" })
-      },
-      withCredentials: true
-    } as CreateAxiosDefaults;
+    const defaultAxiosConfig = {} as CreateAxiosDefaults;
 
     const { store, ...axiosConfig } = (config = { ...defaultAxiosConfig, ...config });
 
@@ -122,7 +117,7 @@ export class Api {
     config?: AxiosRequestConfig<D>
   ): Promise<R> {
     config = {
-      url: `/accounts/register`,
+      url: `/users/register`,
       method: "POST",
       data,
       ...config
@@ -137,7 +132,7 @@ export class Api {
     config?: AxiosRequestConfig<D>
   ): Promise<R> {
     config = {
-      url: `/accounts/authenticate`,
+      url: `/users/authenticate`,
       method: "POST",
       data,
       ...config
@@ -149,13 +144,13 @@ export class Api {
 
   public async signInWith<T extends User, R extends AxiosResponse<T>, D extends any>(provider: string, config?: AxiosRequestConfig<D>): Promise<R> {
     config = {
-      url: `/accounts/${provider}/authenticate`,
+      url: `/users/${provider}/authenticate`,
       method: "POST",
       ...config
     } as AxiosRequestConfig<D>;
 
     try {
-      const externalUrl = new URL(`${this.axiosInstance.defaults.baseURL}/accounts/${provider}/authenticate`);
+      const externalUrl = new URL(`${this.axiosInstance.defaults.baseURL}/users/${provider}/authenticate`);
       externalUrl.searchParams.set("returnUrl", window.location.href);
       await ExternalWindow.open(externalUrl, { center: true });
     } catch (error) {
@@ -168,7 +163,7 @@ export class Api {
 
   public async refresh<T extends User, R extends AxiosResponse<T>, D extends any>(refreshToken: string, config?: AxiosRequestConfig<D>): Promise<R> {
     config = {
-      url: `/accounts/session/refresh`,
+      url: `/users/session/refresh`,
       method: "POST",
       data: { refreshToken },
       ...config
@@ -180,7 +175,7 @@ export class Api {
 
   public async signOut<T extends any, R extends AxiosResponse<T>, D extends any>(config?: AxiosRequestConfig<D>): Promise<R> {
     config = {
-      url: `/accounts/session/revoke`,
+      url: `/users/session/revoke`,
       method: "POST",
       ...config
     } as AxiosRequestConfig<D>;
@@ -194,7 +189,7 @@ export class Api {
     config?: AxiosRequestConfig<D>
   ): Promise<R> {
     config = {
-      url: `/accounts/password/reset/send-code`,
+      url: `/users/password/reset/send-code`,
       method: "POST",
       data,
       ...config
@@ -208,7 +203,7 @@ export class Api {
     config?: AxiosRequestConfig<D>
   ): Promise<R> {
     config = {
-      url: `/accounts/password/reset`,
+      url: `/users/password/reset`,
       method: "POST",
       data,
       ...config
