@@ -2,8 +2,6 @@ import Image from "next/image";
 
 import { getApi, getUser } from "@/lib/api/server";
 
-import Test from "./test";
-
 export default function Home() {
   const api = getApi();
   const currentUser = getUser();
@@ -31,7 +29,6 @@ export default function Home() {
         <div>
           <Image className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert" src="/next.svg" alt="Next.js Logo" width={180} height={37} priority />
         </div>
-        <Test />
       </div>
 
       <div className="mb-32 grid text-center lg:mb-0 lg:grid-cols-4 lg:text-left">

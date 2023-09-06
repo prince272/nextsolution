@@ -53,7 +53,7 @@ export const AppProvider: FC<{ children: ReactNode }> = ({ children }) => {
         withCredentials={api.config.withCredentials}
         automaticReconnect={true}
         connectEnabled={true}
-        accessTokenFactory={() => user?.accessToken!}
+        accessTokenFactory={user ? () => user.accessToken : undefined}
         dependencies={[user]} // remove previous connection and create a new connection if changed
         logger={SignalRLogLevel.None}
         logMessageContent={false}
