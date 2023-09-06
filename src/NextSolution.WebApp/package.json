@@ -41,7 +41,8 @@
     "react-virtuoso": "^4.5.0",
     "state-pool": "^0.10.0",
     "tailwind-merge": "^1.14.0",
-    "typescript": "5.1.6"
+    "typescript": "5.1.6",
+    "ws": "^8.13.0"
   },
   "devDependencies": {
     "@ianvs/prettier-plugin-sort-imports": "^4.1.0",
@@ -54,5 +55,9 @@
     "prettier": "^3.0.1",
     "prettier-plugin-tailwindcss": "^0.4.1",
     "tailwindcss": "^3.3.3"
+  },
+  "optionalDependencies": {
+    "bufferutil": "^4.0.7",
+    "utf-8-validate": "^5.0.10"
   }
 }
