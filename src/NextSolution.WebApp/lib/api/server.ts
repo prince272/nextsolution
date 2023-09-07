@@ -1,5 +1,5 @@
+import { apiConfig } from "@/config/api";
 import { getCookies } from "../cookies/server";
-import { apiConfig } from "./config";
 import { Api } from "./core";
 import { ApiState, User } from "./types";
 

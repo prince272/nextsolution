@@ -1,20 +1,25 @@
 "use client";
 
-import React, { useCallback, useEffect, useId, useRef, useState } from "react";
+import { FC, useCallback, useEffect, useId, useRef, useState } from "react";
 import NextLink from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { ChevronLeftIcon, ChevronRightIcon, GoogleIcon, PersonIcon } from "@/assets/icons";
-import { Button, Input, Link, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Spinner } from "@nextui-org/react";
+import { Button } from "@nextui-org/button";
+import { Input } from "@nextui-org/input";
+import { Link } from "@nextui-org/link";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/modal";
 import { clone } from "lodash";
 import queryString from "query-string";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useTimer } from "react-timer-hook";
 
-import { getApiErrorMessage, isApiError, useApi } from "@/lib/api";
+import { useApi } from "@/lib/api/provider";
+import { getApiErrorMessage, isApiError } from "@/lib/api/utils";
 import { cn } from "@/lib/utils";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { PasswordInput } from "@/components/ui";
+
+import { ChevronLeftIcon, ChevronRightIcon, GoogleIcon, PersonIcon } from "../../../icons";
 
 export type ResetPasswordMethods = "credentials" | "google";
 
@@ -29,7 +34,7 @@ export interface ResetPasswordInputs {
   password: string;
 }
 
-export const ResetPasswordModal: React.FC<ResetPasswordProps> = ({ opened, onClose, ...props }) => {
+export const ResetPasswordModal: FC<ResetPasswordProps> = ({ opened, onClose }) => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const api = useApi();
@@ -61,8 +66,12 @@ export const ResetPasswordModal: React.FC<ResetPasswordProps> = ({ opened, onClo
     try {
       setState({ action: "submitting" });
       await api.resetPassword(inputs);
-      toast.success("Password reset successfully!");
-      setState({ action: "idle" });
+
+      try {
+        await api.signIn(inputs);
+      } catch {}
+
+      toast.success("Password reset successful!");
       onClose();
     } catch (error) {
       setState({ action: "idle", error });
@@ -176,7 +185,7 @@ export const ResetPasswordModal: React.FC<ResetPasswordProps> = ({ opened, onClo
                   )}
                 />
                 <Button color="primary" type="submit" isLoading={state.action == "submitting"}>
-                  Reset password
+                  Continue
                 </Button>
               </div>
             </form>

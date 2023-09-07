@@ -1,18 +1,24 @@
-import React, { ChangeEvent, useEffect, useMemo, useState } from "react";
-import { ChevronDownIcon } from "@/assets/icons";
-import { Button, cn, Input, InputProps, Modal, ModalBody, ModalContent, ModalHeader, ModalProps, useDisclosure } from "@nextui-org/react";
+"use client";
+
+import { ChangeEvent, FC, forwardRef, useEffect, useMemo, useState } from "react";
+import { ChevronDownIcon } from "../icons";
+import { Button } from "@nextui-org/button";
+import { Input, InputProps } from "@nextui-org/input";
+import { Link } from "@nextui-org/link";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalProps, useDisclosure } from "@nextui-org/modal";
 import { AsYouType } from "libphonenumber-js";
 import { CountryData, defaultCountries, FlagEmoji, parseCountry } from "react-international-phone";
 import { Virtuoso } from "react-virtuoso";
 
 import { useDebounce } from "@/lib/hooks";
+import { cn } from "@/lib/utils";
 
 export interface CountrySelectorModalProps extends Partial<Omit<ModalProps, "onSelect">> {
   onSelect?: (country: CountryData) => void;
   countries?: CountryData[];
 }
 
-const CountrySelectorModal: React.FC<CountrySelectorModalProps> = ({ onSelect, countries = defaultCountries, ...props }) => {
+const CountrySelectorModal: FC<CountrySelectorModalProps> = ({ onSelect, countries = defaultCountries, ...props }) => {
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce<string>(search, 100);
 
@@ -107,7 +113,7 @@ export interface PhoneInputProps extends InputProps {
   countries?: CountryData[];
 }
 
-const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(({ value: nativeValue, onChange: onNativeChange, countries = defaultCountries, ...props }, ref) => {
+const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(({ value: nativeValue, onChange: onNativeChange, countries = defaultCountries, ...props }, ref) => {
   const { onOpen: openCountrySelector, isOpen: isCountrySelectorOpen, onOpenChange: onCountrySelectorOpenChange } = useDisclosure();
 
   const { defaultCountry, defaultValue } = useMemo(() => {

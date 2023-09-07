@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, FC, ReactNode, useContext, useEffect, useMemo } from "react";
+import { createContext, FC, ReactNode, useContext, useEffect, useMemo } from "react";
 import { ServerInsertedHTMLHook } from "next/dist/shared/lib/server-inserted-html";
 import { ServerInsertedHTMLContext } from "next/navigation";
 import jsCookies from "js-cookie";

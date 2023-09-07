@@ -1,9 +1,11 @@
-import React from "react";
-import { EyeHideIcon, EyeShowIcon } from "@/assets/icons";
-import { Input, InputProps } from "@nextui-org/react";
+"use client";
 
-const PasswordInput = React.forwardRef<HTMLInputElement, InputProps>((props, ref) => {
-  const [isVisible, setIsVisible] = React.useState(false);
+import { forwardRef, useState } from "react";
+import { EyeHideIcon, EyeShowIcon } from "../icons";
+import { Input, InputProps } from "@nextui-org/input";
+
+const PasswordInput = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
+  const [isVisible, setIsVisible] = useState(false);
   const toggleVisibility = () => setIsVisible(!isVisible);
 
   return (

@@ -1,5 +1,4 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse, CreateAxiosDefaults, HttpStatusCode, isAxiosError } from "axios";
-import QueryString from "query-string";
 import { createState, State } from "state-pool";
 
 import { ExternalWindow } from "../external-window";
@@ -177,11 +176,12 @@ export class Api {
     config = {
       url: `/users/session/revoke`,
       method: "POST",
+      data: { refreshToken: this.state.getValue<ApiState>().user?.refreshToken },
       ...config
     } as AxiosRequestConfig<D>;
-    const response = await this.axiosInstance.request<T, R, D>(config);
-    this.state.updateValue((currentState) => (currentState.user = null));
-    return response;
+    return this.axiosInstance.request<T, R, D>(config).finally(() => {
+      this.state.updateValue((currentState) => (currentState.user = null));
+    });
   }
 
   public async resetPasswordCode<T extends User, R extends AxiosResponse<T>, D extends any>(

@@ -1,18 +1,24 @@
 "use client";
 
-import React, { useCallback, useEffect, useId, useRef, useState } from "react";
+import { FC, useCallback, useEffect, useId, useRef, useState } from "react";
 import NextLink from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { ChevronLeftIcon, ChevronRightIcon, GoogleIcon, PersonIcon } from "@/assets/icons";
-import { Button, Input, Link, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Spinner } from "@nextui-org/react";
+import { Button } from "@nextui-org/button";
+import { Input } from "@nextui-org/input";
+import { Link } from "@nextui-org/link";
+import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/modal";
+import { Spinner } from "@nextui-org/spinner";
 import { clone } from "lodash";
 import queryString from "query-string";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 
-import { Api, getApiErrorMessage, isApiError, useApi } from "@/lib/api";
+import { useApi } from "@/lib/api/provider";
+import { getApiErrorMessage, isApiError } from "@/lib/api/utils";
 import { cn } from "@/lib/utils";
 import { PasswordInput, PhoneInput } from "@/components/ui";
+
+import { ChevronLeftIcon, ChevronRightIcon, GoogleIcon, PersonIcon } from "../../../icons";
 
 export type SignInMethods = "credentials" | "google";
 
@@ -26,7 +32,7 @@ export interface SignInInputs {
   password: string;
 }
 
-export const SignInModal: React.FC<SignInProps> = ({ opened, onClose, ...props }) => {
+export const SignInModal: FC<SignInProps> = ({ opened, onClose }) => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [method, setMethod] = useState<SignInMethods | null>(searchParams.get("method") as any);
@@ -47,7 +53,6 @@ export const SignInModal: React.FC<SignInProps> = ({ opened, onClose, ...props }
     try {
       setState({ action: "submitting" });
       await api.signIn(inputs);
-      setState({ action: "idle" });
       onClose();
     } catch (error) {
       setState({ action: "idle", error });
@@ -75,7 +80,7 @@ export const SignInModal: React.FC<SignInProps> = ({ opened, onClose, ...props }
       toast.error(getApiErrorMessage(error), { id: componentId });
     }
   };
-  const formFeilds = form.watch();
+
   return (
     <>
       <Modal isOpen={opened} onClose={onClose}>

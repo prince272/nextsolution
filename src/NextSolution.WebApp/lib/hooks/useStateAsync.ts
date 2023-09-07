@@ -1,6 +1,6 @@
 // source: https://github.com/react-restart/hooks/blob/master/src/useStateAsync.ts
 
-import React, { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from "react";
+import { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from "react";
 
 type Updater<TState> = (state: TState) => TState;
 

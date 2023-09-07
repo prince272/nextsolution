@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import { forwardRef } from "react";
 import FilePondPluginImagePreview from "filepond-plugin-image-preview";
 import { FilePond, FilePondProps, registerPlugin } from "react-filepond";
 
@@ -8,7 +10,7 @@ import "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css";
 import { FilePondCallbackProps, FilePondInitialFile, FilePondServerConfigProps } from "filepond";
 import { isString } from "lodash";
 
-import { useApi, useUser } from "@/lib/api";
+import { useApi, useUser } from "@/lib/api/provider";
 
 registerPlugin(FilePondPluginImagePreview);
 export interface FileInputProps extends Omit<FilePondProps, keyof FilePondCallbackProps> {
@@ -16,7 +18,7 @@ export interface FileInputProps extends Omit<FilePondProps, keyof FilePondCallba
   onChange?: (value: string | string[]) => void;
 }
 
-const FileInput = React.forwardRef<FilePond, FileInputProps>(({ value, onChange, server, ...props }, ref) => {
+const FileInput = forwardRef<FilePond, FileInputProps>(({ value, onChange, server, ...props }, ref) => {
   const api = useApi();
   const currentUser = useUser();
 

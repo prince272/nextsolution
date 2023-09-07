@@ -129,6 +129,6 @@ namespace NextSolution.Infrastructure.RealTime
             };
         }
 
-        public const string Pattern = "/chat";
+        public const string Pattern = "/signalr";
     }
 }

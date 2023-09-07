@@ -2,6 +2,12 @@
 @import "./components.css";
 @import "./utilities.css";
 
+html,
+body,
+body > div:first-of-type {
+  height: 100%;
+}
+
 /* Hide the eye from a password input in MS Edge and IE [duplicate] */
 input::-ms-reveal,
 input::-ms-clear {

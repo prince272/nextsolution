@@ -1,11 +1,14 @@
 "use client";
 
-import { createContext, FC, ReactNode, useContext, useRef } from "react";
+import { createContext, FC, ReactNode, useCallback, useContext, useEffect, useMemo, useRef } from "react";
 
 import { useCookies } from "../cookies/provider";
-import { apiConfig } from "./config";
 import { Api } from "./core";
-import { User } from "./types";
+import { ApiConfig, User } from "./types";
+
+export interface useUserProps {
+  onUnauthenticated?: () => void;
+}
 
 const ApiContext = createContext<Api>(undefined!);
 
@@ -17,17 +20,28 @@ export const useApi = (): Api => {
   return context;
 };
 
-export const useUser = (): User | null | undefined => {
+export const useUser = (props?: useUserProps): User | null | undefined => {
   const context = useContext(ApiContext);
   if (context === undefined) {
     throw new Error("useUser must be used within ApiProvider");
   }
+
   const [{ user }] = context.state.useState();
+  const onUnauthenticated = useCallback(() => {
+    props?.onUnauthenticated?.();
+  }, [props]);
+
+  useMemo(() => {
+    if (!user) {
+      onUnauthenticated?.();
+    }
+  }, [onUnauthenticated, user]);
+
   return user;
 };
 
-export const ApiProvider: FC<{ children: ReactNode }> = ({ children }) => {
+export const ApiProvider: FC<{ config: ApiConfig; children: ReactNode }> = ({ config, children }) => {
   const cookies = useCookies();
-  const api = useRef(new Api({ ...apiConfig, store: cookies })).current;
+  const api = useRef(new Api({ ...config, store: cookies })).current;
   return <ApiContext.Provider value={api}>{children}</ApiContext.Provider>;
 };
