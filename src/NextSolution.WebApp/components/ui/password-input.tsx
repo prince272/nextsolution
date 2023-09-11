@@ -1,7 +1,7 @@
 "use client";
 
 import { forwardRef, useState } from "react";
-import { EyeHideIcon, EyeShowIcon } from "../icons";
+import { EyeHideIcon, EyeShowIcon } from "@/assets/icons";
 import { Input, InputProps } from "@nextui-org/input";
 
 const PasswordInput = forwardRef<HTMLInputElement, InputProps>((props, ref) => {

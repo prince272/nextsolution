@@ -2,10 +2,9 @@
 @import "./components.css";
 @import "./utilities.css";
 
-html,
-body,
-body > div:first-of-type {
+html body > div:first-of-type {
   height: 100%;
+  min-height: 100vh;
 }
 
 /* Hide the eye from a password input in MS Edge and IE [duplicate] */

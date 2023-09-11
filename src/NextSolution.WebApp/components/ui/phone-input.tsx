@@ -1,7 +1,7 @@
 "use client";
 
 import { ChangeEvent, FC, forwardRef, useEffect, useMemo, useState } from "react";
-import { ChevronDownIcon } from "../icons";
+import { ChevronDownIcon } from "@/assets/icons";
 import { Button } from "@nextui-org/button";
 import { Input, InputProps } from "@nextui-org/input";
 import { Link } from "@nextui-org/link";

@@ -14,6 +14,7 @@
   "dependencies": {
     "@nextui-org/button": "2.0.15",
     "@nextui-org/code": "2.0.13",
+    "@nextui-org/dropdown": "^2.1.9",
     "@nextui-org/input": "2.1.3",
     "@nextui-org/kbd": "2.0.14",
     "@nextui-org/link": "2.0.16",
@@ -24,6 +25,7 @@
     "@nextui-org/switch": "2.0.15",
     "@nextui-org/system": "2.0.5",
     "@nextui-org/theme": "2.1.3",
+    "@nextui-org/user": "^2.0.21",
     "@react-aria/ssr": "^3.7.1",
     "@react-aria/visually-hidden": "^3.8.3",
     "@types/js-cookie": "^3.0.3",
@@ -45,6 +47,7 @@
     "lodash": "^4.17.21",
     "next": "13.4.19",
     "next-themes": "^0.2.1",
+    "nprogress": "^0.2.0",
     "p-queue": "^7.4.1",
     "postcss": "8.4.29",
     "query-string": "^8.1.0",
@@ -64,6 +67,7 @@
   },
   "devDependencies": {
     "@ianvs/prettier-plugin-sort-imports": "^4.1.0",
+    "@types/nprogress": "^0.2.0",
     "concurrently": "^8.2.1",
     "devcert": "^1.2.2",
     "prettier": "^3.0.3",

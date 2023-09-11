@@ -1,10 +1,10 @@
-import type { RequestCookies, ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
+import type { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
 import { cookies } from "next/headers";
 
 import { CookieAttributes, Cookies } from "./types";
 
-export const getCookies = (requestCookies?: RequestCookies): Cookies => {
-  const org = requestCookies || cookies();
+export const getCookies = (): Cookies => {
+  const org = cookies();
 
   return {
     get: (name?: string) => (name == null ? Object.fromEntries(org.getAll().map((c) => [c.name, c.value])) : org.get(name)?.value) as never,

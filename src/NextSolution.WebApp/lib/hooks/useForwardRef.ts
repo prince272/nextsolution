@@ -14,4 +14,4 @@ export function useForwardRef<T>(ref: ForwardedRef<T>, initialValue: any = null)
   }, [ref]);
 
   return targetRef;
-};
+}

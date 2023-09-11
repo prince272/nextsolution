@@ -1,24 +1,25 @@
 import "@/styles/globals.css";
 
+import { ReactNode } from "react";
 import { Metadata } from "next";
-import { cookies as getCookies } from "next/headers";
-import clsx from "clsx";
+import { cookies as cookieStore } from "next/headers";
+import { fontSans } from "@/assets/fonts";
 
 import { apiConfig } from "@/config/api";
-import { fontSans } from "@/config/fonts";
-import { siteConfig } from "@/config/site";
-import { ApiProvider } from "@/lib/api/provider";
-import { CookiesProvider } from "@/lib/cookies/provider";
+import { appConfig } from "@/config/app";
+import { ApiProvider } from "@/lib/api/client";
+import { CookiesProvider } from "@/lib/cookies/client";
+import { cn } from "@/lib/utils";
+import { TopLoader } from "@/components/ui/top-loader";
 
-import { AppProvider } from "./provider";
-import { ReactNode } from "react";
+import { AppProvider } from "../components/provider";
 
 export const metadata: Metadata = {
   title: {
-    default: siteConfig.name,
-    template: `%s - ${siteConfig.name}`
+    default: appConfig.name,
+    template: `%s - ${appConfig.name}`
   },
-  description: siteConfig.description,
+  description: appConfig.description,
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "white" },
     { media: "(prefers-color-scheme: dark)", color: "black" }
@@ -31,15 +32,14 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
-  const cookies = getCookies();
-
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className="h-full" suppressHydrationWarning>
       <head />
-      <body className={clsx("min-h-screen bg-background font-sans text-foreground antialiased", fontSans.variable)}>
-        <CookiesProvider value={cookies.getAll().map((cookie) => ({ name: cookie.name, value: cookie.value }))}>
+      <body className={cn("h-full min-h-screen bg-background font-sans text-foreground antialiased", fontSans.variable)}>
+        <TopLoader showSpinner={false} />
+        <CookiesProvider value={cookieStore().getAll()}>
           <ApiProvider config={apiConfig}>
-            <AppProvider themeProps={{ attribute: "class", defaultTheme: "dark" }}>{children}</AppProvider>
+            <AppProvider>{children}</AppProvider>
           </ApiProvider>
         </CookiesProvider>
       </body>

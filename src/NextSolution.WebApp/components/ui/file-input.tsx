@@ -10,7 +10,7 @@ import "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css";
 import { FilePondCallbackProps, FilePondInitialFile, FilePondServerConfigProps } from "filepond";
 import { isString } from "lodash";
 
-import { useApi, useUser } from "@/lib/api/provider";
+import { useApi, useUser } from "@/lib/api/client";
 
 registerPlugin(FilePondPluginImagePreview);
 export interface FileInputProps extends Omit<FilePondProps, keyof FilePondCallbackProps> {
