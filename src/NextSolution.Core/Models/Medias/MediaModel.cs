@@ -1,23 +1,29 @@
-﻿using NextSolution.Core.Shared;
+﻿using AbstractProfile = AutoMapper.Profile;
+using NextSolution.Core.Entities;
+using NextSolution.Core.Models.Users;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NextSolution.Core.Entities
+namespace NextSolution.Core.Models.Medias
 {
-    public class Media : IEntity
+    public class MediaModel
     {
         public long Id { get; set; }
+
+        public string Path { get; set; } = default!;
 
         public string Name { get; set; } = default!;
 
         public long Size { get; set; }
 
-        public string Path { get; set; } = default!;
+        public string Url { get; set; } = default!;
 
         public string ContentType { get; set; } = default!;
+
+        public Stream Content { get; set; } = default!;
 
         public MediaType Type { get; set; }
 
@@ -30,12 +36,11 @@ namespace NextSolution.Core.Entities
         public DateTimeOffset UpdatedAt { get; set; }
     }
 
-    public enum MediaType
+    public class MediaProfile : AbstractProfile
     {
-        Document,
-        Image,
-        Video,
-        Audio,
-        Unknown
+        public MediaProfile()
+        {
+            CreateMap<Media, MediaModel>();
+        }
     }
 }

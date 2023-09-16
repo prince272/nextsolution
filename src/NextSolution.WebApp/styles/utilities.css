@@ -1,1 +1,8 @@
 @import "tailwindcss/utilities";
+
+@layer utilities {
+  .stretched-link::after {
+    content: "";
+    @apply pointer-events-auto absolute inset-0 z-10 bg-transparent;
+  }
+}

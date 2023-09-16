@@ -1,1 +1,4 @@
 @import "tailwindcss/components";
+
+@layer components {
+}

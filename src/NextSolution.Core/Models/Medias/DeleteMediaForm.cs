@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 
 namespace NextSolution.Core.Models.Medias
 {
-    public class DeleteMediaByFileIdForm
+    public class DeleteMediaForm
     {
-        public string FileId { get; set; } = default!;
+        public long Id { get; set; }
     }
 
-    public class DeleteMediaByFileIdFormValidator : AbstractValidator<DeleteMediaByFileIdForm>
+    public class DeleteMediaByFileIdFormValidator : AbstractValidator<DeleteMediaForm>
     {
         public DeleteMediaByFileIdFormValidator()
         {

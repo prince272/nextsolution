@@ -51,6 +51,7 @@ namespace NextSolution.Core.Repositories
 
         Task ChangeEmailAsync(User user, string newEmail, string token, CancellationToken cancellationToken = default);
 
+        Task SetEmailAsync(User user, string? email, CancellationToken cancellationToken = default);
 
         Task<string> GeneratePhoneNumberTokenAsync(User user, CancellationToken cancellationToken = default);
 
@@ -59,6 +60,8 @@ namespace NextSolution.Core.Repositories
         Task<string> GenerateChangePhoneNumberTokenAsync(User user, string newPhoneNumber, CancellationToken cancellationToken = default);
 
         Task ChangePhoneNumberAsync(User user, string newPhoneNumber, string token, CancellationToken cancellationToken = default);
+
+        Task SetPhoneNumberAsync(User user, string? phoneNumber, CancellationToken cancellationToken = default);
 
         Task<string> GeneratePasswordResetTokenAsync(User user, CancellationToken cancellationToken = default);
 
@@ -88,10 +91,16 @@ namespace NextSolution.Core.Repositories
 
         string? GetUserName(ClaimsPrincipal principal);
 
-        Task<User?> GetUser(ClaimsPrincipal principal, CancellationToken cancellationToken = default);
+        Task<User?> GetAsync(ClaimsPrincipal principal, CancellationToken cancellationToken = default);
 
         string? GetSecurityStamp(ClaimsPrincipal principal);
 
         Task GenerateUserNameAsync(User user, CancellationToken cancellationToken = default);
+
+        Task<bool> IsUserNameTakenAsync(User user, string newUserName, CancellationToken cancellationToken = default);
+
+        Task<bool> IsEmailTakenAsync(User user, string newPhoneNumber, CancellationToken cancellationToken = default);
+
+        Task<bool> IsPhoneNumberTakenAsync(User user, string newEmail, CancellationToken cancellationToken = default);
     }
 }

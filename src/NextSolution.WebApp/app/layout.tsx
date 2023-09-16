@@ -36,7 +36,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en" className="h-full" suppressHydrationWarning>
       <head />
       <body className={cn("h-full min-h-screen bg-background font-sans text-foreground antialiased", fontSans.variable)}>
-        <TopLoader showSpinner={false} />
+        <TopLoader />
         <CookiesProvider value={cookieStore().getAll()}>
           <ApiProvider config={apiConfig}>
             <AppProvider>{children}</AppProvider>

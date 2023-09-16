@@ -18,9 +18,19 @@ namespace NextSolution.Core.Entities
         {
         }
 
+        public bool EmailFirst { get; set; }
+
+        public bool PhoneNumberFirst { get; set; }
+
         public string FirstName { get; set; } = default!;
 
         public string LastName { get; set; } = default!;
+
+        public string? Bio { get; set; }
+
+        public Media? Avatar { get; set; }
+
+        public long? AvatarId { get; set; }
 
         public bool Active { get; set; }
 

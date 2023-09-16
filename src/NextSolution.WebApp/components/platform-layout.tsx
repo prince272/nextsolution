@@ -1,8 +1,6 @@
 "use client";
 
 import { FC, ReactNode, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import queryString from "query-string";
 
 import { useUser } from "@/lib/api/client";
 
@@ -12,12 +10,9 @@ import { Loader } from "./ui/loader";
 
 export const PlatformLayout: FC<{ children: ReactNode }> = ({ children }) => {
   const app = useApp();
-  const router = useRouter();
-  const currentUser = useUser();
+  app.authenticate();
 
-  useEffect(() => {
-    if (!currentUser) router.replace(queryString.stringifyUrl({ url: "/", query: { dialogId: "sign-in" } }));
-  }, [currentUser, router]);
+  const currentUser = useUser();
 
   return (
     <Loader loading={app.loading || !currentUser} className="relative flex min-h-screen flex-col">

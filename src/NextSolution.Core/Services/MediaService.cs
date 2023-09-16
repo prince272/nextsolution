@@ -21,9 +21,7 @@ namespace NextSolution.Core.Services
 {
     public interface IMediaService : IDisposable, IAsyncDisposable
     {
-        Task DeleteAsync(DeleteMediaByFileIdForm form);
-        Task UploadAsync(UploadMediaByFileChunkForm form);
-        Task UploadAsync(UploadMediaByFileContentForm form);
+        Task DeleteAsync(DeleteMediaForm form);
     }
 
     public class MediaService : IMediaService
@@ -43,60 +41,7 @@ namespace NextSolution.Core.Services
             _validatorProvider = validatorProvider ?? throw new ArgumentNullException(nameof(validatorProvider));
         }
 
-        public async Task UploadAsync(UploadMediaByFileContentForm form)
-        {
-            if (form == null) throw new ArgumentNullException(nameof(form));
-
-            var formValidator = _validatorProvider.GetRequiredService<UploadMediaByFileContentFormValidator>();
-            var formValidationResult = await formValidator.ValidateAsync(form);
-
-            if (!formValidationResult.IsValid)
-                throw new BadRequestException(formValidationResult.ToDictionary());
-
-            await _fileStorage.WriteAsync(form.FileId, form.FileName, form.Content);
-
-            var media = new Media
-            {
-                CreatedAt = DateTimeOffset.UtcNow,
-                UpdatedAt = DateTimeOffset.UtcNow,
-                MediaType = form.MediaType ?? _mediaServiceOptions.Value.GetMediaType(form.FileName),
-                ContentType = form.ContentType ?? _mediaServiceOptions.Value.GetContentType(form.FileName),
-                FileId = form.FileId,
-                FileName = form.FileName,
-                FileSize = form.FileSize
-            };
-            await _mediaRepository.CreateAsync(media);
-        }
-
-        public async Task UploadAsync(UploadMediaByFileChunkForm form)
-        {
-            if (form == null) throw new ArgumentNullException(nameof(form));
-
-            var formValidator = _validatorProvider.GetRequiredService<UploadMediaByFileChunkFormValidator>();
-            var formValidationResult = await formValidator.ValidateAsync(form);
-
-            if (!formValidationResult.IsValid)
-                throw new BadRequestException(formValidationResult.ToDictionary());
-
-            var writtenFileSize = await _fileStorage.WriteAsync(form.FileId, form.FileName, form.Content, form.FileSize, form.Offset);
-
-            if (writtenFileSize >= form.FileSize)
-            {
-                var media = new Media
-                {
-                    CreatedAt = DateTimeOffset.UtcNow,
-                    UpdatedAt = DateTimeOffset.UtcNow,
-                    MediaType = form.MediaType ?? _mediaServiceOptions.Value.GetMediaType(form.FileName),
-                    ContentType = form.ContentType ?? _mediaServiceOptions.Value.GetContentType(form.FileName),
-                    FileId = form.FileId,
-                    FileName = form.FileName,
-                    FileSize = form.FileSize
-                };
-                await _mediaRepository.CreateAsync(media);
-            }
-        }
-
-        public async Task DeleteAsync(DeleteMediaByFileIdForm form)
+        public async Task DeleteAsync(DeleteMediaForm form)
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 
@@ -106,12 +51,12 @@ namespace NextSolution.Core.Services
             if (!formValidationResult.IsValid)
                 throw new BadRequestException(formValidationResult.ToDictionary());
 
-            var media = await _mediaRepository.GetAsync(predicate: _ => _.FileId == form.FileId);
+            var media = await _mediaRepository.GetByIdAsync(form.Id);
             if (media == null) return;
 
             await _mediaRepository.DeleteAsync(media);
-            _fileStorage.DeleteAsync(media.FileId, media.FileName)
-                        .Forget(error => _logger.LogWarning(error, $"Unable to delete '{media.FileName}' file."));
+            _fileStorage.DeleteAsync(media.Path)
+                        .Forget(error => _logger.LogWarning(error, $"Unable to delete '{media.Name}' file."));
         }
 
         private readonly CancellationToken cancellationToken = default;
@@ -181,7 +126,8 @@ namespace NextSolution.Core.Services
                 MediaType.Audio => Audios,
                 _ => All,
             };
-            return mediaTypeInfos.Any(_ => _.FileExtension.Equals(fileExtension, StringComparison.OrdinalIgnoreCase));
+            var result =  mediaTypeInfos.Any(_ => _.FileExtension.Equals(fileExtension, StringComparison.OrdinalIgnoreCase));
+            return result;
         }
 
         public MediaTypeInfo? GetMediaTypeInfo(string fileName, MediaType? mediaType = null)

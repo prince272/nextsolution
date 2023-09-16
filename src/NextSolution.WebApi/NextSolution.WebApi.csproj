@@ -9,16 +9,12 @@
   <ItemGroup>
     <Compile Remove="logs\**" />
     <Compile Remove="uploads\**" />
-    <Compile Remove="wwwroot\**" />
     <Content Remove="logs\**" />
     <Content Remove="uploads\**" />
-    <Content Remove="wwwroot\**" />
     <EmbeddedResource Remove="logs\**" />
     <EmbeddedResource Remove="uploads\**" />
-    <EmbeddedResource Remove="wwwroot\**" />
     <None Remove="logs\**" />
     <None Remove="uploads\**" />
-    <None Remove="wwwroot\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -41,6 +37,10 @@
     <ProjectReference Include="..\NextSolution.Core.Templates\NextSolution.Core.Templates.csproj" />
     <ProjectReference Include="..\NextSolution.Core\NextSolution.Core.csproj" />
     <ProjectReference Include="..\NextSolution.Infrastructure\NextSolution.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\" />
   </ItemGroup>
 
 </Project>

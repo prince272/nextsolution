@@ -22,6 +22,11 @@ using NextSolution.Core.Events.Users;
 using NextSolution.Core.Models.Users;
 using NextSolution.Core.Mappers;
 using NextSolution.Core.Models.Users.Accounts;
+using NextSolution.Core.Extensions.FileStorage;
+using NextSolution.Core.Models.Medias;
+using Microsoft.Extensions.Options;
+using NextSolution.Core.Extensions.Identity;
+using System.Reflection;
 
 namespace NextSolution.Core.Services
 {
@@ -29,6 +34,7 @@ namespace NextSolution.Core.Services
     {
         // Accounts
         Task<UserWithSessionModel> RefreshSessionAsync(RefreshSessionForm form);
+        Task ChangePasswordAsync(ChangePasswordForm form);
         Task ResetPasswordAsync(ResetPasswordForm form);
         Task SendPasswordResetTokenAsync(SendPasswordResetTokenForm form);
         Task SendUsernameTokenAsync(SendUsernameTokenForm form);
@@ -39,28 +45,45 @@ namespace NextSolution.Core.Services
         Task VerifyUsernameAsync(VerifyUsernameForm form);
 
         // Users
-        Task<UserPageModel> GetUsersAsync(UserSearch search, int pageNumber, int pageSize);
+        Task<UserPageModel> GetUsersAsync(SearchUserParams search, int pageNumber, int pageSize);
+        Task<UserModel> GetCurrentUserAsync();
+        Task EditCurrentUserAsync(EditUserForm form);
+        Task UploadCurrentUserAvatarAsync(UploadMediaChunkForm form);
+        Task<MediaModel> GetCurrentUserAvatarAsync();
     }
 
     public class UserService : IUserService
     {
         private readonly IServiceProvider _validatorProvider;
-        private readonly IUserMapper _modelMapper;
+        private readonly IFileStorage _fileStorage;
+        private readonly IMapper _mapper;
+        private readonly IUserMapper _userMapper;
         private readonly IMediator _mediator;
         private readonly IViewRenderer _viewRenderer;
         private readonly IEmailSender _emailSender;
         private readonly ISmsSender _smsSender;
+        private readonly IUserContext _userContext;
+        private readonly IOptions<MediaServiceOptions> _mediaServiceOptions;
+        private readonly IMediaRepository _mediaRepository;
         private readonly IUserRepository _userRepository;
         private readonly IRoleRepository _roleRepository;
 
-        public UserService(IServiceProvider validatorProvider, IUserMapper modelMapper, IMediator mediator, IViewRenderer viewRenderer, IEmailSender emailSender, ISmsSender smsSender, IUserRepository userRepository, IRoleRepository roleRepository)
+        public UserService(IServiceProvider validatorProvider, IFileStorage fileStorage, IMapper mapper, IUserMapper userMapper,
+                           IMediator mediator, IViewRenderer viewRenderer, IEmailSender emailSender,
+                           ISmsSender smsSender, IUserContext userContext, IOptions<MediaServiceOptions> mediaServiceOptions, IMediaRepository mediaRepository, IUserRepository userRepository,
+                           IRoleRepository roleRepository)
         {
             _validatorProvider = validatorProvider ?? throw new ArgumentNullException(nameof(validatorProvider));
-            _modelMapper = modelMapper ?? throw new ArgumentNullException(nameof(modelMapper));
+            _fileStorage = fileStorage ?? throw new ArgumentNullException(nameof(fileStorage));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _userMapper = userMapper ?? throw new ArgumentNullException(nameof(userMapper));
             _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
             _viewRenderer = viewRenderer ?? throw new ArgumentNullException(nameof(viewRenderer));
             _emailSender = emailSender ?? throw new ArgumentNullException(nameof(emailSender));
             _smsSender = smsSender ?? throw new ArgumentNullException(nameof(smsSender));
+            _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext));
+            _mediaServiceOptions = mediaServiceOptions ?? throw new ArgumentNullException(nameof(mediaServiceOptions));
+            _mediaRepository = mediaRepository ?? throw new ArgumentNullException(nameof(mediaRepository));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _roleRepository = roleRepository ?? throw new ArgumentNullException(nameof(roleRepository));
         }
@@ -78,16 +101,18 @@ namespace NextSolution.Core.Services
             // Throws an exception if the username already exists.
             if (form.UsernameType switch
             {
-                ContactType.EmailAddress => await _userRepository.GetByEmailAsync(form.Username, cancellationToken),
+                ContactType.Email => await _userRepository.GetByEmailAsync(form.Username, cancellationToken),
                 ContactType.PhoneNumber => await _userRepository.GetByPhoneNumberAsync(form.Username, cancellationToken),
                 _ => null
-            } != null) throw new BadRequestException(nameof(form.Username), $"'{form.UsernameType.Humanize(LetterCasing.Title)}' is already in use.");
+            } != null) throw new BadRequestException(nameof(form.Username), $"'{form.UsernameType.Humanize(LetterCasing.Title)}' is already taken.");
 
             var user = new User();
             user.FirstName = form.FirstName;
             user.LastName = form.LastName;
-            user.Email = form.UsernameType == ContactType.EmailAddress ? form.Username : user.Email;
+            user.Email = form.UsernameType == ContactType.Email ? form.Username : user.Email;
+            user.EmailFirst = form.UsernameType == ContactType.Email;
             user.PhoneNumber = form.UsernameType == ContactType.PhoneNumber ? form.Username : user.PhoneNumber;
+            user.PhoneNumberFirst = form.UsernameType == ContactType.PhoneNumber;
             user.Active = true;
             user.LastActiveAt = DateTimeOffset.UtcNow;
             await _userRepository.GenerateUserNameAsync(user, cancellationToken);
@@ -121,7 +146,7 @@ namespace NextSolution.Core.Services
 
             var user = form.UsernameType switch
             {
-                ContactType.EmailAddress => await _userRepository.GetByEmailAsync(form.Username, cancellationToken),
+                ContactType.Email => await _userRepository.GetByEmailAsync(form.Username, cancellationToken),
                 ContactType.PhoneNumber => await _userRepository.GetByPhoneNumberAsync(form.Username, cancellationToken),
                 _ => null
             };
@@ -135,7 +160,7 @@ namespace NextSolution.Core.Services
             var session = await _userRepository.GenerateSessionAsync(user, cancellationToken);
             await _userRepository.AddSessionAsync(user, session, cancellationToken);
 
-            var model = await _modelMapper.MapAsync(user, session);
+            var model = await _userMapper.MapAsync(user, session);
             await _mediator.Publish(new UserSignedIn(user));
             return model;
         }
@@ -152,7 +177,7 @@ namespace NextSolution.Core.Services
 
             var user = form.UsernameType switch
             {
-                ContactType.EmailAddress => await _userRepository.GetByEmailAsync(form.Username, cancellationToken),
+                ContactType.Email => await _userRepository.GetByEmailAsync(form.Username, cancellationToken),
                 ContactType.PhoneNumber => await _userRepository.GetByPhoneNumberAsync(form.Username, cancellationToken),
                 _ => null
             };
@@ -164,8 +189,10 @@ namespace NextSolution.Core.Services
                 user = new User();
                 user.FirstName = form.FirstName;
                 user.LastName = form.LastName;
-                user.Email = form.UsernameType == ContactType.EmailAddress ? form.Username : user.Email;
+                user.Email = form.UsernameType == ContactType.Email ? form.Username : user.Email;
+                user.EmailFirst = form.UsernameType == ContactType.Email;
                 user.PhoneNumber = form.UsernameType == ContactType.PhoneNumber ? form.Username : user.PhoneNumber;
+                user.PhoneNumberFirst = form.UsernameType == ContactType.PhoneNumber;
                 user.Active = true;
                 user.LastActiveAt = DateTimeOffset.UtcNow;
                 await _userRepository.GenerateUserNameAsync(user, cancellationToken);
@@ -191,7 +218,7 @@ namespace NextSolution.Core.Services
             var session = await _userRepository.GenerateSessionAsync(user, cancellationToken);
             await _userRepository.AddSessionAsync(user, session, cancellationToken);
 
-            var model = await _modelMapper.MapAsync(user, session);
+            var model = await _userMapper.MapAsync(user, session);
 
             await _mediator.Publish(isNewUser ? new UserSignedUp(user) : new UserSignedIn(user), cancellationToken);
             return model;
@@ -235,7 +262,7 @@ namespace NextSolution.Core.Services
             var session = await _userRepository.GenerateSessionAsync(user, cancellationToken);
             await _userRepository.AddSessionAsync(user, session, cancellationToken);
 
-            var model = await _modelMapper.MapAsync(user, session);
+            var model = await _userMapper.MapAsync(user, session);
             return model;
         }
 
@@ -251,7 +278,7 @@ namespace NextSolution.Core.Services
 
             var user = form.UsernameType switch
             {
-                ContactType.EmailAddress => await _userRepository.GetByEmailAsync(form.Username, cancellationToken),
+                ContactType.Email => await _userRepository.GetByEmailAsync(form.Username, cancellationToken),
                 ContactType.PhoneNumber => await _userRepository.GetByPhoneNumberAsync(form.Username, cancellationToken),
                 _ => null
             };
@@ -259,7 +286,7 @@ namespace NextSolution.Core.Services
             if (user == null) throw new BadRequestException(nameof(form.Username), $"'{form.UsernameType.Humanize(LetterCasing.Title)}' does not exist.");
 
 
-            if (form.UsernameType == ContactType.EmailAddress)
+            if (form.UsernameType == ContactType.Email)
             {
                 var code = await _userRepository.GenerateEmailTokenAsync(user, cancellationToken);
 
@@ -296,16 +323,16 @@ namespace NextSolution.Core.Services
 
             var user = form.UsernameType switch
             {
-                ContactType.EmailAddress => await _userRepository.GetByEmailAsync(form.Username, cancellationToken),
+                ContactType.Email => await _userRepository.GetByEmailAsync(form.Username, cancellationToken),
                 ContactType.PhoneNumber => await _userRepository.GetByPhoneNumberAsync(form.Username, cancellationToken),
                 _ => null
             };
 
-            if (user == null) throw new BadRequestException(nameof(form.Username), $"'{form.UsernameType.Humanize(LetterCasing.LowerCase)}' is not found.");
+            if (user == null) throw new BadRequestException(nameof(form.Username), $"'{form.UsernameType.Humanize(LetterCasing.LowerCase)}' does not exist.");
 
             try
             {
-                if (form.UsernameType == ContactType.EmailAddress)
+                if (form.UsernameType == ContactType.Email)
                     await _userRepository.VerifyEmailAsync(user, form.Code, cancellationToken);
 
                 else if (form.UsernameType == ContactType.PhoneNumber)
@@ -331,14 +358,14 @@ namespace NextSolution.Core.Services
 
             var user = form.UsernameType switch
             {
-                ContactType.EmailAddress => await _userRepository.GetByEmailAsync(form.Username, cancellationToken),
+                ContactType.Email => await _userRepository.GetByEmailAsync(form.Username, cancellationToken),
                 ContactType.PhoneNumber => await _userRepository.GetByPhoneNumberAsync(form.Username, cancellationToken),
                 _ => null
             };
 
             if (user == null) throw new BadRequestException(nameof(form.Username), $"'{form.UsernameType.Humanize(LetterCasing.Title)}' does not exist.");
 
-            if (form.UsernameType == ContactType.EmailAddress)
+            if (form.UsernameType == ContactType.Email)
             {
                 var code = await _userRepository.GeneratePasswordResetTokenAsync(user, cancellationToken);
 
@@ -375,7 +402,7 @@ namespace NextSolution.Core.Services
 
             var user = form.UsernameType switch
             {
-                ContactType.EmailAddress => await _userRepository.GetByEmailAsync(form.Username, cancellationToken),
+                ContactType.Email => await _userRepository.GetByEmailAsync(form.Username, cancellationToken),
                 ContactType.PhoneNumber => await _userRepository.GetByPhoneNumberAsync(form.Username, cancellationToken),
                 _ => null
             };
@@ -392,15 +419,127 @@ namespace NextSolution.Core.Services
             }
         }
 
-        public async Task<UserPageModel> GetUsersAsync(UserSearch search, int pageNumber, int pageSize)
+        public async Task ChangePasswordAsync(ChangePasswordForm form)
+        {
+            if (form == null) throw new ArgumentNullException(nameof(form));
+
+            var formValidator = _validatorProvider.GetRequiredService<ChangePasswordFormValidator>();
+            var formValidationResult = await formValidator.ValidateAsync(form, cancellationToken);
+
+            if (!formValidationResult.IsValid)
+                throw new BadRequestException(formValidationResult.ToDictionary());
+
+            var currentUser = _userContext.UserId != null ? await _userRepository.GetByIdAsync(_userContext.UserId.Value, cancellationToken) : null;
+            if (currentUser == null) throw new UnauthorizedException();
+
+            await _userRepository.ChangePasswordAsync(currentUser, form.CurrentPassword, form.NewPassword, cancellationToken);
+        }
+
+        public async Task<UserPageModel> GetUsersAsync(SearchUserParams search, int pageNumber, int pageSize)
         {
             if (search == null) throw new ArgumentNullException(nameof(search));
             var predicate = search.Build();
 
-            var page = (await _userRepository.GetManyAsync(pageNumber, pageSize, predicate: predicate));
-            var pageModel = await _modelMapper.MapAsync(page);
+            var page = (await _userRepository.GetManyAsync(pageNumber, pageSize, predicate: predicate, cancellationToken: cancellationToken));
+            var pageModel = await _userMapper.MapAsync(page);
             return pageModel;
         }
+
+        public async Task<UserModel> GetCurrentUserAsync()
+        {
+            var currentUser = _userContext.UserId != null ? await _userRepository.GetByIdAsync(_userContext.UserId.Value, cancellationToken) : null;
+            if (currentUser == null) throw new UnauthorizedException();
+            var currentUserModel = await _userMapper.MapAsync(currentUser, cancellationToken);
+            return currentUserModel;
+        }
+
+        public async Task EditCurrentUserAsync(EditUserForm form)
+        {
+            if (form == null) throw new ArgumentNullException(nameof(form));
+
+            var formValidator = _validatorProvider.GetRequiredService<EditUserFormValidator>();
+            var formValidationResult = await formValidator.ValidateAsync(form, cancellationToken);
+
+            if (!formValidationResult.IsValid)
+                throw new BadRequestException(formValidationResult.ToDictionary());
+
+            var currentUser = _userContext.UserId != null ? await _userRepository.GetByIdAsync(_userContext.UserId.Value, cancellationToken) : null;
+            if (currentUser == null) throw new UnauthorizedException();
+
+            if (await _userRepository.IsUserNameTakenAsync(currentUser, form.UserName, cancellationToken))
+                throw new BadRequestException(nameof(form.UserName), $"'{(nameof(form.UserName).ToLower()).Humanize(LetterCasing.Title)}' is already taken.");
+
+            if (string.IsNullOrWhiteSpace(form.Email) && currentUser.EmailFirst)
+                throw new BadRequestException(nameof(form.Email), $"'{(nameof(form.Email).ToLower()).Humanize(LetterCasing.Title)}' must not be empty.");
+
+            if (string.IsNullOrWhiteSpace(form.PhoneNumber) && currentUser.PhoneNumberFirst)
+                throw new BadRequestException(nameof(form.PhoneNumber), $"'{(nameof(form.PhoneNumber).ToLower()).Humanize(LetterCasing.Title)}' must not be empty.");
+
+            await _userRepository.SetEmailAsync(currentUser, form.Email);
+            await _userRepository.SetPhoneNumberAsync(currentUser, form.PhoneNumber);
+
+            _mapper.Map(form, currentUser);
+            await _userRepository.UpdateAsync(currentUser);
+        }
+
+        public async Task UploadCurrentUserAvatarAsync(UploadMediaChunkForm form)
+        {
+            if (form == null) throw new ArgumentNullException(nameof(form));
+
+            form.Type = MediaType.Image;
+            var formValidator = _validatorProvider.GetRequiredService<UploadMediaChunkFormValidator>();
+            var formValidationResult = await formValidator.ValidateAsync(form, cancellationToken);
+
+            if (!formValidationResult.IsValid)
+                throw new BadRequestException(formValidationResult.ToDictionary());
+            
+            var status = await _fileStorage.WriteAsync(form.Path, form.Content, form.Size, form.Offset, cancellationToken);
+
+            if (status == FileChunkStatus.Started)
+            {
+                var avatar = new Media
+                {
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    UpdatedAt = DateTimeOffset.UtcNow,
+                    Type = form.Type ?? _mediaServiceOptions.Value.GetMediaType(form.Path),
+                    ContentType = form.ContentType ?? _mediaServiceOptions.Value.GetContentType(form.Path),
+                    Path = form.Path,
+                    Name = form.Name,
+                    Size = form.Size
+                };
+                await _mediaRepository.CreateAsync(avatar, cancellationToken);
+
+                form.Id = avatar.Id;
+            }
+            else if (status == FileChunkStatus.Completed)
+            {
+                var avatar = await _mediaRepository.GetByIdAsync(form.Id, cancellationToken);
+
+                if (avatar != null)
+                {
+                    avatar.UpdatedAt = DateTimeOffset.UtcNow;
+                    await _mediaRepository.UpdateAsync(avatar, cancellationToken);
+                }
+            }
+        }
+
+        public async Task<MediaModel> GetCurrentUserAvatarAsync()
+        {
+            var currentUser = _userContext.UserId != null ? await _userRepository.GetByIdAsync(_userContext.UserId.Value, cancellationToken) : null;
+            if (currentUser == null) throw new UnauthorizedException();
+
+            var avatar = currentUser.AvatarId != null ? await _mediaRepository.GetByIdAsync(currentUser.AvatarId.Value, cancellationToken) : null;
+            if (avatar == null) throw new NotFoundException();
+
+            var content = await _fileStorage.ReadAsync(avatar.Path, cancellationToken);
+            if (content == null) throw new NotFoundException();
+
+            var model = _mapper.Map<MediaModel>(avatar);
+            model.Content = content;
+            model.Url = await _fileStorage.GetPublicUrlAsync(avatar.Path);
+            return model;
+        }
+
 
         private readonly CancellationToken cancellationToken = default;
         private bool disposed = false;

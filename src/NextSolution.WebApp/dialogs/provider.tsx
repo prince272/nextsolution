@@ -8,7 +8,7 @@ import queryString from "query-string";
 import { usePrevious, useStateAsync } from "@/lib/hooks";
 import { isEqualSearchParams, sleep } from "@/lib/utils";
 
-import * as components from "./components";
+import * as components from ".";
 
 export interface DialogContextProps {
   open: (id: string, props?: any) => Promise<any>;
@@ -79,52 +79,48 @@ export const DialogProvider: FC<{ children: ReactNode }> = ({ children }) => {
   );
 };
 
-export const DIALOG_QUERY_NAME = "dialogId";
+export const DIALOG_QUERY_KEY = "dialogId";
 
 export const DialogRouter: FC<{ loading: boolean }> = ({ loading }) => {
+  const queueRef = useRef(new PQueue({ concurrency: 1 }));
+
   const dialog = useDialog();
 
   const router = useRouter();
+
   const pathname = usePathname();
   const searchParams = useSearchParams();
-
-  const prevPathname = usePrevious(pathname);
-  const prevSearchParams = usePrevious(searchParams, (prev, current) => isEqualSearchParams(prev, current));
-
-  const returnHref = useRef("/");
+  const href = queryString.stringifyUrl({ url: pathname, query: Object.fromEntries(searchParams) });
+  const prevHref = usePrevious(href) ?? queryString.parseUrl(href)?.url;
 
   useEffect(() => {
-    (async () => {
-      if (loading) return;
+    queueRef.current.add(() =>
+      (async () => {
+        let prevUrl = queryString.parseUrl(prevHref);
+        let url = queryString.parseUrl(href);
 
-      const dialogId = searchParams.get(DIALOG_QUERY_NAME);
-
-      if (dialogId) {
-        if (prevPathname && prevSearchParams) {
-          const prevDialogId = prevSearchParams.get(DIALOG_QUERY_NAME);
-          returnHref.current = prevDialogId ? returnHref.current : queryString.stringifyUrl({ url: prevPathname, query: Object.fromEntries(prevSearchParams) });
-        }
-
-        const prevDialogId = prevSearchParams?.get(DIALOG_QUERY_NAME);
+        const prevDialogId = prevUrl.query[DIALOG_QUERY_KEY] as string;
         if (prevDialogId) await dialog.close(prevDialogId);
 
-        await dialog.open(dialogId, {
-          onClose: async (force?: boolean) => {
-            // Close the dialog when it's closed.
-            await dialog.close(dialogId);
+        const dialogId = url.query[DIALOG_QUERY_KEY] as string;
 
-            if (force) {
-              router.replace("/");
-            } else {
-              router.replace(returnHref.current);
+        if (dialogId) {
+          await dialog.open(dialogId, {
+            onClose: async (force: boolean = true) => {
+              // Close the dialog when it's closed.
+              await dialog.close(dialogId);
+
+              if (force) {
+                router.replace(queryString.stringifyUrl({ url: url.url }));
+              } else {
+                router.replace(queryString.stringifyUrl(prevUrl));
+              }
             }
-          }
-        });
-      } else {
-        returnHref.current = "/";
-      }
-    })();
-  }, [dialog, loading, pathname, prevPathname, prevSearchParams, router, searchParams]);
+          });
+        }
+      })()
+    );
+  }, [dialog, href, prevHref, router]);
 
   return <></>;
 };

@@ -11,7 +11,9 @@ namespace NextSolution.Core.Models.Users
 {
     public class UserWithSessionModel : UserModel
     {
+
         public bool EmailConfirmed { get; set; }
+
 
         public bool PhoneNumberConfirmed { get; set; }
 

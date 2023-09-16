@@ -14,6 +14,10 @@ export const getApiErrorMessage = (error: any) => {
     } else if (isIdempotentRequestError(error)) {
       message = "Something went wrong, Please try again.";
     }
+  } else if (typeof error === "object" && error !== null) {
+    message = error.title;
+  } else {
+    return (message = error);
   }
 
   message = message ? message : "Something went wrong.\nPlease try again later.";

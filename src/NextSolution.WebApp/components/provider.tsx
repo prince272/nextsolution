@@ -1,16 +1,20 @@
 "use client";
 
 import { createContext, FC, ReactNode, useContext, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { DialogProvider, DialogRouter } from "@/dialogs/provider";
 import { NextUIProvider } from "@nextui-org/system";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
+import queryString from "query-string";
 import { Toaster, ToastOptions } from "react-hot-toast";
 
 import { useApi, useUser } from "@/lib/api/client";
 import { ExternalWindow } from "@/lib/external-window";
+import { useDebounceCallback } from "@/lib/hooks/useDebounceCallback";
 import { SignalRProvider } from "@/lib/signalr";
 
 export interface AppContextType {
+  authenticate: () => void;
   loading: boolean;
   sidebar: {
     open: () => void;
@@ -36,10 +40,12 @@ export interface AppProviderProps {
 
 export function AppProvider({ children }: AppProviderProps) {
   const api = useApi();
+  const router = useRouter();
   const currentUser = useUser();
   const [loading, setLoading] = useState(true);
   const [sidebarOpened, setSidebarOpened] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const authenticateCallback = useDebounceCallback(500);
 
   useEffect(() => {
     setMounted(true);
@@ -50,6 +56,10 @@ export function AppProvider({ children }: AppProviderProps) {
   }, []);
 
   const value = {
+    authenticate: () =>
+      authenticateCallback(() => {
+        if (!currentUser) router.replace(queryString.stringifyUrl({ url: "/", query: { dialogId: "sign-in" } }));
+      }),
     loading,
     sidebar: {
       opened: sidebarOpened,

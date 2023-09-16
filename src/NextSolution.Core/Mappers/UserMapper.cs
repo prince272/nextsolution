@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using NextSolution.Core.Entities;
+using NextSolution.Core.Extensions.FileStorage;
 using NextSolution.Core.Extensions.Identity;
+using NextSolution.Core.Models.Medias;
 using NextSolution.Core.Models.Users;
 using NextSolution.Core.Repositories;
 using NextSolution.Core.Shared;
@@ -27,14 +29,18 @@ namespace NextSolution.Core.Mappers
     public class UserMapper : IUserMapper
     {
         private readonly IMapper _mapper;
+        private readonly IFileStorage _fileStorage;
         private readonly IUserRepository _userRepository;
+        private readonly IMediaRepository _mediaRepository;
         private readonly IUserContext _userContext;
         private readonly IClientRepository _clientRepository;
 
-        public UserMapper(IMapper mapper, IUserRepository userRepository, IUserContext userContext, IClientRepository clientRepository)
+        public UserMapper(IMapper mapper, IFileStorage fileStorage, IUserRepository userRepository, IMediaRepository mediaRepository, IUserContext userContext, IClientRepository clientRepository)
         {
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _fileStorage = fileStorage ?? throw new ArgumentNullException(nameof(fileStorage));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+            _mediaRepository = mediaRepository ?? throw new ArgumentNullException(nameof(mediaRepository));
             _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext));
             _clientRepository = clientRepository ?? throw new ArgumentNullException(nameof(clientRepository));
         }
@@ -44,14 +50,25 @@ namespace NextSolution.Core.Mappers
             var model = _mapper.Map(session, _mapper.Map<UserWithSessionModel>(user));
             model.Online = await _clientRepository.AnyAsync(_ => _.Active && _.UserId == user.Id, cancellationToken);
             model.Roles = (await _userRepository.GetRolesAsync(user, cancellationToken)).Select(_ => _.Camelize()).ToArray();
+            if ((user.Avatar = (user.AvatarId != null ? await _mediaRepository.GetByIdAsync(user.AvatarId.Value) : null)) != null)
+            {
+                model.AvatarUrl = await _fileStorage.GetPublicUrlAsync(user.Avatar.Path, cancellationToken);
+            }
             return model;
         }
 
         public async Task<UserModel> MapAsync(User user, CancellationToken cancellationToken = default)
         {
             var model = _mapper.Map<UserModel>(user);
+
             model.Online = await _clientRepository.AnyAsync(_ => _.Active && _.UserId == user.Id, cancellationToken);
             model.Roles = (await _userRepository.GetRolesAsync(user, cancellationToken)).Select(_ => _.Camelize()).ToArray();
+
+            if ((user.Avatar = (user.AvatarId != null ? await _mediaRepository.GetByIdAsync(user.AvatarId.Value) : null)) != null)
+            {
+                model.AvatarUrl = await _fileStorage.GetPublicUrlAsync(user.Avatar.Path, cancellationToken);
+            }
+
             return model;
         }
 

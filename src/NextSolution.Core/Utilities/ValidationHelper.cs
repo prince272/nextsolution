@@ -9,6 +9,7 @@ using System.Security;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using UAParser;
 
 namespace NextSolution.Core.Utilities
 {
@@ -17,6 +18,7 @@ namespace NextSolution.Core.Utilities
         public static MailAddress ParseEmail(string value)
         {
             ArgumentException.ThrowIfNullOrEmpty(value?.Trim(), nameof(value));
+            Exception? innerException = null;
 
             try
             {
@@ -27,15 +29,16 @@ namespace NextSolution.Core.Utilities
                     return emailAddress;
                 }
             }
-            catch (Exception) { }
+            catch (Exception exception) { innerException = exception; }
 
-            throw new FormatException($"Input '{value}' was not recognized as a valid email address.");
+            throw new FormatException($"Input '{value}' was not recognized as a valid email address.", innerException);
 
         }
 
         public static PhoneNumber ParsePhoneNumber(string value)
         {
             ArgumentException.ThrowIfNullOrEmpty(value?.Trim(), nameof(value));
+            Exception? innerException = null;
 
             try
             {
@@ -46,23 +49,25 @@ namespace NextSolution.Core.Utilities
                 {
                     return phoneNumber;
                 }
-            }
-            catch (Exception) { }
 
-            throw new FormatException($"Input '{value}' was not recognized as a valid phone number.");
+            }
+            catch (Exception exception) { innerException = exception; }
+
+            throw new FormatException($"Input '{value}' was not recognized as a valid phone number.", innerException);
         }
 
         public static UAParser.ClientInfo ParseUserAgent(string value)
         {
             ArgumentException.ThrowIfNullOrEmpty(value?.Trim(), nameof(value));
+            Exception? innerException = null;
 
             try
             {
                 return UAParser.Parser.GetDefault().Parse(value);
             }
-            catch (Exception) { }
+            catch (Exception exception) { innerException = exception; }
 
-            throw new FormatException($"Input '{value}' was not recognized as a valid user agent.");
+            throw new FormatException($"Input '{value}' was not recognized as a valid user agent.", innerException);
         }
 
         public static bool TryParseEmail(string? value, [NotNullWhen(true)] out MailAddress? email)
@@ -113,9 +118,13 @@ namespace NextSolution.Core.Utilities
             return false;
         }
 
-        public static string FormatPhoneNumber(PhoneNumber phoneNumber)
+        [return: NotNullIfNotNull(nameof(phoneNumber))]
+        public static string? NormalizePhoneNumber(string? phoneNumber)
         {
-            return PhoneNumberUtil.GetInstance().Format(phoneNumber, PhoneNumberFormat.INTERNATIONAL);
+            if (TryParsePhoneNumber(phoneNumber, out var parsedPhoneNumber))
+                return PhoneNumberUtil.GetInstance().Format(parsedPhoneNumber, PhoneNumberFormat.E164);
+
+            else return phoneNumber;
         }
 
         public static ContactType GetContactType(string value)
@@ -124,7 +133,7 @@ namespace NextSolution.Core.Utilities
 
             if (!Regex.IsMatch(value.ToLower(), "^[-+0-9() ]+$"))
             {
-                return ContactType.EmailAddress;
+                return ContactType.Email;
             }
             else
             {
@@ -135,7 +144,7 @@ namespace NextSolution.Core.Utilities
 
     public enum ContactType
     {
-        EmailAddress,
+        Email,
         PhoneNumber
     }
 }

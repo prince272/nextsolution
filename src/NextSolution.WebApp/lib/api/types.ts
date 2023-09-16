@@ -6,9 +6,13 @@ export type User = {
   firstName: string;
   lastName: string;
   email?: string;
+  emailFirst: boolean;
   emailConfirmed: boolean;
   phoneNumber?: string;
+  phoneNumberFirst: boolean;
   phoneNumberConfirmed: boolean;
+  avatarId?: string;
+  avatarUrl: string;
   active: boolean;
   activeAt: Date;
   tokenType: string;

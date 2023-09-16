@@ -1,10 +1,10 @@
 "use client";
 
-import { ElementRef, forwardRef, useEffect, useId, useState } from "react";
+import { ElementRef, forwardRef, LegacyRef, useEffect, useRef, useState } from "react";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalProps, useDisclosure } from "@nextui-org/modal";
 import { ModalSlots, SlotsToClasses } from "@nextui-org/theme";
 
-import { useMediaQuery } from "@/lib/hooks";
+import { useForwardRef, useResponsive } from "@/lib/hooks";
 import { cn } from "@/lib/utils";
 
 export interface SheetProps extends Omit<ModalProps, "placement"> {
@@ -15,9 +15,9 @@ export interface SheetProps extends Omit<ModalProps, "placement"> {
 const Sheet = forwardRef<ElementRef<typeof Modal>, SheetProps>(
   ({ placement = "left", shouldBlockScroll, isOpen, isDismissable, isSticky = false, onOpenChange, classNames, ...props }, ref) => {
     const [mounted, setMounted] = useState(false);
-    const sheetId = useId();
-    const isSmallDevice = useMediaQuery("only screen and (max-width : 768px)");
-    isSticky = !isSmallDevice && isSticky;
+    const containerRef = useRef<HTMLDivElement>(null);
+    const { md } = useResponsive();
+    isSticky = mounted && md && isSticky;
 
     const extendedClassNames = {
       backdrop: cn(isSticky && "hidden", classNames?.backdrop),
@@ -51,23 +51,25 @@ const Sheet = forwardRef<ElementRef<typeof Modal>, SheetProps>(
     useEffect(() => {
       onOpenChange?.(false);
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isSmallDevice]);
+    }, [md]);
 
     return (
-      <div id={sheetId} className={cn(isSticky && "sticky top-0 h-screen")}>
+      <>
+        <div ref={containerRef} className={cn(isSticky && "sticky top-0 h-screen")}></div>
         <Modal
-          ref={ref}
           shouldBlockScroll={!isSticky && shouldBlockScroll}
           isOpen={mounted ? isSticky || isOpen : false}
           onOpenChange={onOpenChange}
           isDismissable={!isSticky && isDismissable}
+          disableAnimation={isSticky}
           hideCloseButton={isSticky}
           classNames={extendedClassNames}
           motionProps={motionProps}
-          portalContainer={mounted ? document.getElementById(sheetId) ?? undefined : undefined}
+          portalContainer={containerRef.current!}
           {...props}
+          ref={ref}
         />
-      </div>
+      </>
     );
   }
 );

@@ -5,7 +5,7 @@ import { ExternalWindow } from "../external-window";
 import { parseJSON, stringifyJSON } from "../utils";
 import { ApiConfig, ApiState, ApiStore, User } from "./types";
 
-const INITIAL_API_STATE = "__INITIAL_API_STATE__";
+const API_STATE_KEY = "API_STATE";
 
 export class Api {
   private axiosInstance: AxiosInstance;
@@ -24,9 +24,9 @@ export class Api {
     this.axiosInstance = axios.create(axiosConfig);
     this.config = config;
     this.store = store;
-    this.state = createState(parseJSON(store.get(INITIAL_API_STATE)) ?? {});
+    this.state = createState(parseJSON(store.get(API_STATE_KEY)) ?? {});
     this.state.subscribe<ApiState>((state) => {
-      this.store.set(INITIAL_API_STATE, stringifyJSON(state));
+      this.store.set(API_STATE_KEY, stringifyJSON(state));
     });
 
     this.refreshing = false;
@@ -75,8 +75,8 @@ export class Api {
             return Promise.reject(error);
           }
 
-          const currentState = this.state.getValue<ApiState>();
-          if (!currentState.user) {
+          const currentUser = this.state.getValue<ApiState>().user;
+          if (!currentUser) {
             return Promise.reject(error);
           }
 
@@ -89,7 +89,7 @@ export class Api {
           }
 
           this.refreshing = true;
-          return this.refresh(currentState.user.refreshToken)
+          return this.refresh()
             .then(({ data: user }) => {
               this.state.updateValue((currentState) => (currentState.user = user));
               this.refreshing = false;
@@ -131,7 +131,7 @@ export class Api {
     config?: AxiosRequestConfig<D>
   ): Promise<R> {
     config = {
-      url: `/users/authenticate`,
+      url: `/users/session/generate`,
       method: "POST",
       data,
       ...config
@@ -143,13 +143,13 @@ export class Api {
 
   public async signInWith<T extends User, R extends AxiosResponse<T>, D extends any>(provider: string, config?: AxiosRequestConfig<D>): Promise<R> {
     config = {
-      url: `/users/${provider}/authenticate`,
+      url: `/users/${provider}/session/generate`,
       method: "POST",
       ...config
     } as AxiosRequestConfig<D>;
 
     try {
-      const externalUrl = new URL(`${this.axiosInstance.defaults.baseURL}/users/${provider}/authenticate`);
+      const externalUrl = new URL(`${this.axiosInstance.defaults.baseURL}/users/${provider}/session/generate`);
       externalUrl.searchParams.set("returnUrl", window.location.href);
       await ExternalWindow.open(externalUrl, { center: true });
     } catch (error) {
@@ -160,16 +160,27 @@ export class Api {
     return response;
   }
 
-  public async refresh<T extends User, R extends AxiosResponse<T>, D extends any>(refreshToken: string, config?: AxiosRequestConfig<D>): Promise<R> {
+  public async refresh<T extends User, R extends AxiosResponse<T>, D extends any>(config?: AxiosRequestConfig<D>): Promise<R> {
+    const currentUser = this.state.getValue<ApiState>().user;
+    const data = currentUser != null ? { userId: currentUser.id, refreshToken: currentUser.refreshToken } : {};
+
     config = {
       url: `/users/session/refresh`,
       method: "POST",
-      data: { refreshToken },
+      data: data,
       ...config
     } as AxiosRequestConfig<D>;
-    const response = await this.axiosInstance.request<T, R, D>(config);
-    this.state.updateValue((currentState) => (currentState.user = response.data));
-    return response;
+
+    try {
+      const response = await this.axiosInstance.request<T, R, D>(config);
+      this.state.updateValue((currentState) => (currentState.user = response.data));
+      return response;
+    } catch (error) {
+      if (isAxiosError(error) && error.response && (error.response.status == HttpStatusCode.BadRequest || error.response.status == HttpStatusCode.Unauthorized)) {
+        this.state.updateValue((currentState) => (currentState.user = null));
+      }
+      throw error;
+    }
   }
 
   public async signOut<T extends any, R extends AxiosResponse<T>, D extends any>(config?: AxiosRequestConfig<D>): Promise<R> {
@@ -184,7 +195,7 @@ export class Api {
     });
   }
 
-  public async resetPasswordCode<T extends User, R extends AxiosResponse<T>, D extends any>(
+  public async sendResetPasswordCode<T extends User, R extends AxiosResponse<T>, D extends any>(
     data: { username: string; [key: string]: any },
     config?: AxiosRequestConfig<D>
   ): Promise<R> {
@@ -204,6 +215,35 @@ export class Api {
   ): Promise<R> {
     config = {
       url: `/users/password/reset`,
+      method: "POST",
+      data,
+      ...config
+    } as AxiosRequestConfig<D>;
+    const response = await this.axiosInstance.request<T, R, D>(config);
+    this.state.updateValue((currentState) => (currentState.user = response.data));
+    return response;
+  }
+
+  public async sendUsernameVerifyCode<T extends User, R extends AxiosResponse<T>, D extends any>(
+    data: { username: string; usernameType: string; [key: string]: any },
+    config?: AxiosRequestConfig<D>
+  ): Promise<R> {
+    config = {
+      url: `/users/username/verify/send-code`,
+      method: "POST",
+      data,
+      ...config
+    } as AxiosRequestConfig<D>;
+    const response = await this.axiosInstance.request<T, R, D>(config);
+    return response;
+  }
+
+  public async verifyUsername<T extends User, R extends AxiosResponse<T>, D extends any>(
+    data: { username: string; usernameType: string; code: string; [key: string]: any },
+    config?: AxiosRequestConfig<D>
+  ): Promise<R> {
+    config = {
+      url: `/users/username/verify`,
       method: "POST",
       data,
       ...config

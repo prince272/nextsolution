@@ -1,6 +1,6 @@
 "use client";
 
-import { FC, useId, useRef, useState } from "react";
+import { FC, useRef, useState } from "react";
 import NextLink from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { ChevronLeftIcon, ChevronRightIcon, GoogleIcon, PersonIcon } from "@/assets/icons";
@@ -13,18 +13,20 @@ import { clone } from "lodash";
 import queryString from "query-string";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
+import { v4 as uuidv4 } from "uuid";
 
 import { useApi } from "@/lib/api/client";
 import { getApiErrorMessage, isApiError } from "@/lib/api/utils";
+import { useConditionalState } from "@/lib/hooks";
 import { cn } from "@/lib/utils";
+import { PasswordInput } from "@/components/ui/password-input";
 import { PhoneInput } from "@/components/ui/phone-input";
-import { PasswordInput } from "@/components/ui";
 
 export type SignUpMethods = "credentials" | "google";
 
 export interface SignUpProps {
   opened: boolean;
-  onClose: () => void;
+  onClose: (force?: boolean) => void;
 }
 
 export interface SignUpInputs {
@@ -47,9 +49,8 @@ export const SignUpModal: FC<SignUpProps> = ({ opened, onClose }) => {
       password: ""
     }
   });
-  const formErrorsRef = useRef(clone(form.formState.errors));
-  const formErrors = form.formState.isSubmitting ? formErrorsRef.current : (formErrorsRef.current = clone(form.formState.errors));
-  const componentId = useId();
+  const formErrors = useConditionalState(clone(form.formState.errors), !form.formState.isSubmitting);
+  const componentId = useRef(uuidv4()).current;
 
   const [state, setState] = useState<{ action: "idle" | "loading" | "submitting"; error?: any }>({ action: "idle", error: null });
 
@@ -107,7 +108,7 @@ export const SignUpModal: FC<SignUpProps> = ({ opened, onClose }) => {
                       onChange={(e) => onChange(e.target.value)}
                       onBlur={onBlur}
                       value={value}
-                      validationState="valid"
+                      isInvalid={!!formErrors.firstName}
                       errorMessage={formErrors.firstName?.message}
                       autoComplete="off"
                       label="First name"
@@ -124,7 +125,7 @@ export const SignUpModal: FC<SignUpProps> = ({ opened, onClose }) => {
                       onChange={(e) => onChange(e.target.value)}
                       onBlur={onBlur}
                       value={value}
-                      validationState="valid"
+                      isInvalid={!!formErrors.lastName}
                       errorMessage={formErrors.lastName?.message}
                       autoComplete="off"
                       label="Last name"
@@ -141,11 +142,12 @@ export const SignUpModal: FC<SignUpProps> = ({ opened, onClose }) => {
                       onChange={(e) => onChange(e.target.value)}
                       onBlur={onBlur}
                       value={value}
-                      validationState="valid"
+                      isInvalid={!!formErrors.username}
                       errorMessage={formErrors.username?.message}
                       autoComplete="off"
                       label="Email or phone number"
                       className="col-span-12"
+                      countryVisibility="auto"
                     />
                   )}
                 />
@@ -158,7 +160,7 @@ export const SignUpModal: FC<SignUpProps> = ({ opened, onClose }) => {
                       onChange={(e) => onChange(e.target.value)}
                       onBlur={onBlur}
                       value={value}
-                      validationState="valid"
+                      isInvalid={!!formErrors.password}
                       errorMessage={formErrors.password?.message}
                       autoComplete="off"
                       label="Password"

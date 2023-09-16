@@ -13,8 +13,7 @@ namespace NextSolution.Core.Models.Users.Accounts
     {
         public string Username { get; set; } = default!;
 
-        [JsonIgnore]
-        public ContactType UsernameType => ValidationHelper.GetContactType(Username);
+        public ContactType UsernameType { get; set; }
 
         public string Code { get; set; } = default!;
     }
@@ -24,6 +23,7 @@ namespace NextSolution.Core.Models.Users.Accounts
         public VerifyUsernameFormValidator()
         {
             RuleFor(_ => _.Username).NotEmpty().Username();
+            RuleFor(_ => _.Code).NotEmpty();
         }
     }
 }

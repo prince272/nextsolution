@@ -10,13 +10,13 @@ namespace NextSolution.Core.Utilities
 {
     public static class ValidationExtensions
     {
-        public static IRuleBuilder<T, string> Username<T>(this IRuleBuilder<T, string> ruleBuilder)
+        public static IRuleBuilderOptionsConditions<T, string> Username<T>(this IRuleBuilder<T, string> ruleBuilder)
         {
-            ruleBuilder.Custom((value, context) =>
+            return ruleBuilder.Custom((value, context) =>
             {
                 var contactType = ValidationHelper.GetContactType(value);
 
-                if (contactType == ContactType.EmailAddress)
+                if (contactType == ContactType.Email)
                 {
                     if (!ValidationHelper.TryParseEmail(value, out var _))
                         context.AddFailure($"'Email address' is not valid.");
@@ -31,9 +31,26 @@ namespace NextSolution.Core.Utilities
                     throw new InvalidOperationException($"Input '{value}' was not recognized as a valid email or phone number.");
                 }
             });
-
-            return ruleBuilder;
         }
+
+        public static IRuleBuilderOptionsConditions<T, string> Email<T>(this IRuleBuilder<T, string> ruleBuilder)
+        {
+            return ruleBuilder.Custom((value, context) =>
+             {
+                 if (!ValidationHelper.TryParseEmail(value, out var _))
+                     context.AddFailure($"'Email address' is not valid.");
+             });
+        }
+
+        public static IRuleBuilderOptionsConditions<T, string> PhoneNumber<T>(this IRuleBuilder<T, string> ruleBuilder)
+        {
+            return ruleBuilder.Custom((value, context) =>
+             {
+                 if (!ValidationHelper.TryParsePhoneNumber(value, out var _))
+                     context.AddFailure($"'Phone number' is not valid.");
+             });
+        }
+
 
         // How can I create strong passwords with FluentValidation?
         // source: https://stackoverflow.com/questions/63864594/how-can-i-create-strong-passwords-with-fluentvalidation

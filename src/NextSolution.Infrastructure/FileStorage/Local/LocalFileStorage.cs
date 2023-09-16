@@ -1,8 +1,10 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 using NextSolution.Core.Extensions.FileStorage;
 using NextSolution.Core.Utilities;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,42 +14,46 @@ namespace NextSolution.Infrastructure.FileStorage.Local
     public class LocalFileStorage : IFileStorage
     {
         private readonly IOptions<LocalFileStorageOptions> _storageOptions;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public LocalFileStorage(IOptions<LocalFileStorageOptions> storageOptions)
+        public LocalFileStorage(IOptions<LocalFileStorageOptions> storageOptions, IHttpContextAccessor httpContextAccessor)
         {
             _storageOptions = storageOptions ?? throw new ArgumentNullException(nameof(storageOptions));
+            _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         }
 
-        public async Task WriteAsync(string directoryName, string fileName, Stream content)
+        public async Task WriteAsync(string path, Stream content, CancellationToken cancellationToken = default)
         {
-            if (fileName == null) throw new ArgumentNullException(nameof(fileName));
+            if (path == null) throw new ArgumentNullException(nameof(path));
             if (content == null) throw new ArgumentNullException(nameof(content));
 
-            var filePath = GetFilePath(directoryName, fileName);
+            var filePath = GetFilePath(path);
             using var fileStream = File.Create(filePath);
-            await content.CopyToAsync(fileStream);
+            await content.CopyToAsync(fileStream, cancellationToken);
         }
 
-        public async Task<long> WriteAsync(string directoryName, string fileName, Stream chunk, long length, long offset)
+        public async Task<FileChunkStatus> WriteAsync(string path, Stream chunk, long length, long offset, CancellationToken cancellationToken = default)
         {
-            if (fileName == null) throw new ArgumentNullException(nameof(fileName));
+            if (path == null) throw new ArgumentNullException(nameof(path));
             if (chunk == null) throw new ArgumentNullException(nameof(chunk));
 
-            var tempFilePath = GetTempFilePath(directoryName, fileName);
+            var tempFilePath = GetTempFilePath(path);
 
             try
             {
+                var chunkStatus = !File.Exists(tempFilePath) ? FileChunkStatus.Started : FileChunkStatus.Processing;
+
                 using (var tempFileStream = new FileStream(tempFilePath, FileMode.OpenOrCreate, FileAccess.Write))
                 {
                     tempFileStream.Seek(offset, SeekOrigin.Begin);
-                    await chunk.CopyToAsync(tempFileStream);
+                    await chunk.CopyToAsync(tempFileStream, cancellationToken);
                 }
 
                 var fileLength = new FileInfo(tempFilePath).Length;
 
                 if (fileLength >= length)
                 {
-                    var filePath = GetFilePath(directoryName, fileName);
+                    var filePath = GetFilePath(path);
 
                     if (File.Exists(filePath))
                     {
@@ -55,9 +61,11 @@ namespace NextSolution.Infrastructure.FileStorage.Local
                     }
 
                     File.Move(tempFilePath, filePath);
+
+                    chunkStatus = FileChunkStatus.Completed;
                 }
 
-                return fileLength;
+                return chunkStatus;
             }
             finally
             {
@@ -66,11 +74,11 @@ namespace NextSolution.Infrastructure.FileStorage.Local
             }
         }
 
-        public Task<Stream?> ReadAsync(string directoryName, string fileName)
+        public Task<Stream?> ReadAsync(string path, CancellationToken cancellationToken = default)
         {
-            if (fileName == null) throw new ArgumentNullException(nameof(fileName));
+            if (path == null) throw new ArgumentNullException(nameof(path));
 
-            var filePath = GetFilePath(directoryName, fileName);
+            var filePath = GetFilePath(path);
 
             if (File.Exists(filePath))
             {
@@ -80,11 +88,11 @@ namespace NextSolution.Infrastructure.FileStorage.Local
             return Task.FromResult<Stream?>(null);
         }
 
-        public Task DeleteAsync(string directoryName, string fileName)
+        public Task DeleteAsync(string path, CancellationToken cancellationToken = default)
         {
-            if (fileName == null) throw new ArgumentNullException(nameof(fileName));
+            if (path == null) throw new ArgumentNullException(nameof(path));
 
-            var filePath = GetFilePath(directoryName, fileName);
+            var filePath = GetFilePath(path);
 
             if (File.Exists(filePath))
             {
@@ -94,41 +102,59 @@ namespace NextSolution.Infrastructure.FileStorage.Local
             return Task.CompletedTask;
         }
 
-        public Task<bool> ExistsAsync(string directoryName, string fileName)
+        public Task<bool> ExistsAsync(string path, CancellationToken cancellationToken = default)
         {
-            if (fileName == null) throw new ArgumentNullException(nameof(fileName));
+            if (path == null) throw new ArgumentNullException(nameof(path));
 
-            var filePath = GetFilePath(directoryName, fileName);
+            var filePath = GetFilePath(path);
             return Task.FromResult(File.Exists(filePath));
         }
 
-        private string GetFilePath(string directoryName, string fileName)
+        public Task<string> GetPublicUrlAsync(string path, CancellationToken cancellationToken = default)
         {
-            if (directoryName == null) throw new ArgumentNullException(nameof(directoryName));
-            if (fileName == null) throw new ArgumentNullException(nameof(fileName));
+            if (path == null) throw new ArgumentNullException(nameof(path));
+            return Task.FromResult(GetFileUrl(path));
+        }
 
-            var invalidDirectoryNameChars = directoryName.Where(c => Path.GetInvalidPathChars().Concat(new[] { '/', '\\' }).Contains(c)).ToArray();
-            if (invalidDirectoryNameChars.Length > 0) throw new ArgumentException($"Invalid characters in directory name: {string.Join(", ", invalidDirectoryNameChars)}");
+        private string GetFileUrl(string path)
+        {
+            if (path == null) throw new ArgumentNullException(nameof(path));
+            var request = (_httpContextAccessor.HttpContext?.Request) ?? throw new InvalidOperationException();
+            var baseUrl = new Uri($"{request.Scheme}://{request.Host}{request.PathBase}");
+            var url = baseUrl.CombinePaths(_storageOptions.Value.WebRootPath, path);
+            return url.ToString();
+        }
+
+        private string GetFilePath(string path)
+        {
+            if (path == null) throw new ArgumentNullException(nameof(path));
+
+            var fileName = Path.GetFileName(path);
 
             var invalidFileNameChars = fileName.Where(c => Path.GetInvalidPathChars().Concat(new[] { '/', '\\' }).Contains(c)).ToArray();
             if (invalidFileNameChars.Length > 0) throw new ArgumentException($"Invalid characters in file name: {string.Join(", ", invalidFileNameChars)}");
 
-            var directoryPath = directoryName = Path.Combine(_storageOptions.Value.RootPath, directoryName);
-            var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
-            var fileExtension = Path.GetExtension(fileName)?.ToLower();
+            var directoryNames = Path.GetDirectoryName(path)?.Split(new char[] { '/', '\\' }) ?? Array.Empty<string>();
 
-            if (!Directory.Exists(directoryName))
+            foreach (var directoryName in directoryNames)
             {
-                Directory.CreateDirectory(directoryName);
+                var invalidDirectoryNameChars = directoryName.Where(c => Path.GetInvalidPathChars().Concat(new[] { '/', '\\' }).Contains(c)).ToArray();
+                if (invalidDirectoryNameChars.Length > 0) throw new ArgumentException($"Invalid characters in directory name: {string.Join(", ", invalidDirectoryNameChars)}");
             }
 
-            var filePath = Path.Combine(directoryName, $"{fileNameWithoutExtension}{fileExtension}");
+            var filePath = Path.Combine(_storageOptions.Value.RootPath, path.Replace('/', '\\').TrimStart('\\', '/'));
+
+            if (!Directory.Exists(Path.GetDirectoryName(filePath)))
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
+            }
+
             return filePath;
         }
 
-        private string GetTempFilePath(string directoryName, string fileName)
+        private string GetTempFilePath(string path)
         {
-            return GetFilePath(directoryName, fileName) + ".temp";
+            return GetFilePath(path) + ".temp";
         }
     }
 }

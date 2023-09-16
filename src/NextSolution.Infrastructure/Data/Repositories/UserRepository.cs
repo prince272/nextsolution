@@ -37,7 +37,7 @@ namespace NextSolution.Infrastructure.Data.Repositories
             if (user == null) throw new ArgumentNullException(nameof(user));
             if (password == null) throw new ArgumentNullException(nameof(password));
 
-            user.PhoneNumber = NormalizePhoneNumber(user.PhoneNumber);
+            user.PhoneNumber = ValidationHelper.NormalizePhoneNumber(user.PhoneNumber);
             var result = await _userManager.CreateAsync(user, password);
 
             if (!result.Succeeded) throw new InvalidOperationException(result.Errors.GetMessage());
@@ -47,7 +47,7 @@ namespace NextSolution.Infrastructure.Data.Repositories
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
 
-            user.PhoneNumber = NormalizePhoneNumber(user.PhoneNumber);
+            user.PhoneNumber = ValidationHelper.NormalizePhoneNumber(user.PhoneNumber);
             var result = await _userManager.CreateAsync(user);
 
             if (!result.Succeeded) throw new InvalidOperationException(result.Errors.GetMessage());
@@ -57,7 +57,7 @@ namespace NextSolution.Infrastructure.Data.Repositories
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
 
-            user.PhoneNumber = NormalizePhoneNumber(user.PhoneNumber);
+            user.PhoneNumber = ValidationHelper.NormalizePhoneNumber(user.PhoneNumber);
             var result = await _userManager.UpdateAsync(user);
 
             if (!result.Succeeded) throw new InvalidOperationException(result.Errors.GetMessage());
@@ -96,7 +96,7 @@ namespace NextSolution.Infrastructure.Data.Repositories
         {
             if (phoneNumber == null) throw new ArgumentNullException(nameof(phoneNumber));
 
-            phoneNumber = NormalizePhoneNumber(phoneNumber);
+            phoneNumber = ValidationHelper.NormalizePhoneNumber(phoneNumber);
             return _userManager.Users.FirstOrDefaultAsync(_ => _.PhoneNumber == phoneNumber, cancellationToken);
         }
 
@@ -232,6 +232,16 @@ namespace NextSolution.Infrastructure.Data.Repositories
             if (!result.Succeeded) throw new InvalidOperationException(result.Errors.GetMessage());
         }
 
+        public async Task SetEmailAsync(User user, string? email, CancellationToken cancellationToken = default)
+        {
+            if (user == null) throw new ArgumentNullException(nameof(user));
+            if (email == null || user.NormalizedEmail != _userManager.NormalizeEmail(email))
+            {
+                var result = await _userManager.SetEmailAsync(user, email);
+                if (!result.Succeeded) throw new InvalidOperationException(result.Errors.GetMessage());
+            }
+        }
+
         public Task<string> GeneratePhoneNumberTokenAsync(User user, CancellationToken cancellationToken = default)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
@@ -261,6 +271,17 @@ namespace NextSolution.Infrastructure.Data.Repositories
 
             var result = await _userManager.ChangePhoneNumberAsync(user, newPhoneNumber, token);
             if (!result.Succeeded) throw new InvalidOperationException(result.Errors.GetMessage());
+        }
+
+        public async Task SetPhoneNumberAsync(User user, string? phoneNumber, CancellationToken cancellationToken = default)
+        {
+            if (user == null) throw new ArgumentNullException(nameof(user));
+            if (phoneNumber == null || user.PhoneNumber != phoneNumber)
+            {
+                phoneNumber = ValidationHelper.NormalizePhoneNumber(phoneNumber);
+                var result = await _userManager.SetPhoneNumberAsync(user, phoneNumber);
+                if (!result.Succeeded) throw new InvalidOperationException(result.Errors.GetMessage());
+            }
         }
 
         public async Task<string> GeneratePasswordResetTokenAsync(User user, CancellationToken cancellationToken = default)
@@ -346,7 +367,7 @@ namespace NextSolution.Infrastructure.Data.Repositories
             return long.TryParse(principal.FindFirst(_userManager.Options.ClaimsIdentity.UserIdClaimType) is Claim claim ? claim.Value : null, out long userId) ? userId : null;
         }
 
-        public Task<User?> GetUser(ClaimsPrincipal principal, CancellationToken cancellationToken = default)
+        public Task<User?> GetAsync(ClaimsPrincipal principal, CancellationToken cancellationToken = default)
         {
             return _userManager.GetUserAsync(principal);
         }
@@ -370,13 +391,35 @@ namespace NextSolution.Infrastructure.Data.Repositories
             user.UserName = await AlgorithmHelper.GenerateSlugAsync($"{user.FirstName} {user.LastName}".ToLower(), userName => _userManager.Users.AnyAsync(_ => _.UserName == userName, cancellationToken));
         }
 
-        [return: NotNullIfNotNull(nameof(phoneNumber))]
-        private string? NormalizePhoneNumber(string? phoneNumber)
+        public async Task<bool> IsUserNameTakenAsync(User existingUser, string newUserName, CancellationToken cancellationToken = default)
         {
-            if (ValidationHelper.TryParsePhoneNumber(phoneNumber, out var parsedPhoneNumber))
-                return ValidationHelper.FormatPhoneNumber(parsedPhoneNumber);
+            if (existingUser == null) throw new ArgumentNullException(nameof(existingUser));
+            if (newUserName == null) throw new ArgumentNullException(nameof(newUserName));
 
-            else return null;
+            var normalizedNewUserName = _userManager.NormalizeName(newUserName);
+            var result = await _userManager.Users.AnyAsync(_ => _.Id != existingUser.Id && _.NormalizedUserName == normalizedNewUserName, cancellationToken);
+            return result;
+        }
+
+
+        public async Task<bool> IsEmailTakenAsync(User existingUser, string newEmail, CancellationToken cancellationToken = default)
+        {
+            if (existingUser == null) throw new ArgumentNullException(nameof(existingUser));
+            if (newEmail == null) throw new ArgumentNullException(nameof(newEmail));
+
+            var normalizedNewEmail = _userManager.NormalizeEmail(newEmail);
+            var result = await _userManager.Users.AnyAsync(_ => _.Id != existingUser.Id && _.NormalizedEmail == normalizedNewEmail, cancellationToken);
+            return result;
+        }
+
+        public async Task<bool> IsPhoneNumberTakenAsync(User existingUser, string newPhoneNumber, CancellationToken cancellationToken = default)
+        {
+            if (existingUser == null) throw new ArgumentNullException(nameof(existingUser));
+            if (newPhoneNumber == null) throw new ArgumentNullException(nameof(newPhoneNumber));
+
+            var normalizedNewPhoneNumber = ValidationHelper.NormalizePhoneNumber(newPhoneNumber);
+            var result = await _userManager.Users.AnyAsync(_ => _.Id != existingUser.Id && _.PhoneNumber == normalizedNewPhoneNumber, cancellationToken);
+            return result;
         }
     }
 }

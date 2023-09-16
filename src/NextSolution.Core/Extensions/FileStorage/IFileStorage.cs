@@ -8,14 +8,23 @@ namespace NextSolution.Core.Extensions.FileStorage
 {
     public interface IFileStorage
     {
-        Task WriteAsync(string directoryName, string fileName, Stream content);
+        Task WriteAsync(string path, Stream content, CancellationToken cancellationToken = default);
 
-        Task<long> WriteAsync(string directoryName, string fileName, Stream chunk, long length, long offset);
+        Task<FileChunkStatus> WriteAsync(string path, Stream chunk, long length, long offset, CancellationToken cancellationToken = default);
 
-        Task<Stream?> ReadAsync(string directoryName, string fileName);
+        Task<Stream?> ReadAsync(string path, CancellationToken cancellationToken = default);
 
-        Task DeleteAsync(string directoryName, string fileName);
+        Task DeleteAsync(string path, CancellationToken cancellationToken = default);
 
-        Task<bool> ExistsAsync(string directoryName, string fileName);
+        Task<bool> ExistsAsync(string path, CancellationToken cancellationToken = default);
+
+        Task<string> GetPublicUrlAsync(string path, CancellationToken cancellationToken = default);
+    }
+
+    public enum FileChunkStatus
+    {
+        Started,
+        Processing,
+        Completed,
     }
 }

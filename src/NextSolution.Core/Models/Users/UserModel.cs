@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using NextSolution.Core.Entities;
 using NextSolution.Core.Extensions.Identity;
+using NextSolution.Core.Models.Medias;
 
 namespace NextSolution.Core.Models.Users
 {
@@ -21,7 +22,15 @@ namespace NextSolution.Core.Models.Users
 
         public string? Email { get; set; }
 
+        public bool EmailFirst { get; set; }
+
         public string? PhoneNumber { get; set; }
+
+        public bool PhoneNumberFirst { get; set; }
+
+        public long? AvatarId { get; set; }
+
+        public string? AvatarUrl { get; set; }
 
         public bool Active { get; set; }
 

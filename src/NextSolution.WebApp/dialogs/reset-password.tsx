@@ -1,6 +1,6 @@
 "use client";
 
-import { FC, useId, useRef, useState } from "react";
+import { FC, useRef, useState } from "react";
 import NextLink from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { ChevronLeftIcon, ChevronRightIcon, GoogleIcon, PersonIcon } from "@/assets/icons";
@@ -13,18 +13,18 @@ import queryString from "query-string";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useTimer } from "react-timer-hook";
+import { v4 as uuidv4 } from "uuid";
 
 import { useApi } from "@/lib/api/client";
 import { getApiErrorMessage, isApiError } from "@/lib/api/utils";
+import { useConditionalState } from "@/lib/hooks";
 import { cn } from "@/lib/utils";
+import { PasswordInput } from "@/components/ui/password-input";
 import { PhoneInput } from "@/components/ui/phone-input";
-import { PasswordInput } from "@/components/ui";
-
-export type ResetPasswordMethods = "credentials" | "google";
 
 export interface ResetPasswordProps {
   opened: boolean;
-  onClose: () => void;
+  onClose: (force?: boolean) => void;
 }
 
 export interface ResetPasswordInputs {
@@ -35,7 +35,6 @@ export interface ResetPasswordInputs {
 
 export const ResetPasswordModal: FC<ResetPasswordProps> = ({ opened, onClose }) => {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const api = useApi();
   const form = useForm<ResetPasswordInputs>({
     defaultValues: {
@@ -44,9 +43,8 @@ export const ResetPasswordModal: FC<ResetPasswordProps> = ({ opened, onClose }) 
       password: ""
     }
   });
-  const formErrorsRef = useRef(clone(form.formState.errors));
-  const formErrors = form.formState.isSubmitting ? formErrorsRef.current : (formErrorsRef.current = clone(form.formState.errors));
-  const componentId = useId();
+  const formErrors = useConditionalState(clone(form.formState.errors), !form.formState.isSubmitting);
+  const componentId = useRef(uuidv4()).current;
 
   const resendCodeTimer = useTimer({
     expiryTimestamp: new Date(new Date().getTime() + 59 * 1000),
@@ -91,7 +89,7 @@ export const ResetPasswordModal: FC<ResetPasswordProps> = ({ opened, onClose }) 
   const onSendCode: SubmitHandler<Exclude<ResetPasswordInputs, "password">> = async (inputs) => {
     try {
       setState({ action: "sending" });
-      await api.resetPasswordCode(inputs);
+      await api.sendResetPasswordCode(inputs);
       resendCodeTimer.start();
       toast.success("Password reset code sent!");
       setState({ action: "idle" });
@@ -128,7 +126,7 @@ export const ResetPasswordModal: FC<ResetPasswordProps> = ({ opened, onClose }) 
                       onChange={(e) => onChange(e.target.value)}
                       onBlur={onBlur}
                       value={value}
-                      validationState="valid"
+                      isInvalid={!!formErrors.username}
                       errorMessage={formErrors.username?.message}
                       autoComplete="off"
                       label="Email or phone number"
@@ -144,7 +142,7 @@ export const ResetPasswordModal: FC<ResetPasswordProps> = ({ opened, onClose }) 
                       onChange={(e) => onChange(e.target.value)}
                       onBlur={onBlur}
                       value={value}
-                      validationState="valid"
+                      isInvalid={!!formErrors.code}
                       errorMessage={formErrors.code?.message}
                       autoComplete="off"
                       label="Code"
@@ -176,7 +174,7 @@ export const ResetPasswordModal: FC<ResetPasswordProps> = ({ opened, onClose }) 
                       onChange={(e) => onChange(e.target.value)}
                       onBlur={onBlur}
                       value={value}
-                      validationState="valid"
+                      isInvalid={!!formErrors.password}
                       errorMessage={formErrors.password?.message}
                       autoComplete="off"
                       label="New password"

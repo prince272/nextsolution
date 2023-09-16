@@ -16,7 +16,7 @@ namespace NextSolution.Infrastructure.Data.Configurations
         {
             builder.ToTable(nameof(Media));
 
-            builder.HasIndex(m => new { m.FileId }).IsUnique();
+            builder.HasIndex(m => new { m.Path }).IsUnique();
         }
     }
 }

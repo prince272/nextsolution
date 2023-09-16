@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace NextSolution.Core.Exceptions
 {
@@ -23,14 +24,14 @@ namespace NextSolution.Core.Exceptions
             Errors = new Dictionary<string, string[]>();
         }
 
-        public BadRequestException(IDictionary<string, string[]> errors, string? title = "One or more validation errors occurred.", Exception? innerException = null)
-            : base(STATUS_CODE, title, innerException)
+        public BadRequestException(IDictionary<string, string[]> errors, string? title = null, Exception? innerException = null)
+            : base(STATUS_CODE, title ??= (errors.Count > 1 ? "One or more validation errors occurred." : errors.First().Value.Humanize()), innerException)
         {
             Errors = errors.AsReadOnly();
         }
 
-        public BadRequestException(string propertyName, string propertyMessage, string? title = "One or more validation errors occurred.", Exception? innerException = null)
-            : base(STATUS_CODE, title, innerException)
+        public BadRequestException(string propertyName, string propertyMessage, string? title = null, Exception? innerException = null)
+            : base(STATUS_CODE, title ??= (propertyMessage), innerException)
         {
             Errors = new Dictionary<string, string[]> { { propertyName, new[] { propertyMessage } } };
         }

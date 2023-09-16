@@ -113,7 +113,8 @@ try
     builder.Services.AddRazorViewRenderer();
     builder.Services.AddLocalStorage(options =>
     {
-        options.RootPath = Path.Combine(builder.Environment.ContentRootPath, "uploads");
+        options.RootPath = Path.Combine(builder.Environment.WebRootPath, "uploads");
+        options.WebRootPath = "/uploads";
     });
 
     builder.Services.AddCors(options =>
@@ -183,6 +184,7 @@ try
     }
 
     app.UseHttpsRedirection();
+    app.UseStaticFiles();
 
     app.UseCors();
 

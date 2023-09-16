@@ -6,9 +6,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using NextSolution.Core.Entities;
 using NextSolution.Core.Exceptions;
+using NextSolution.Core.Models.Medias;
 using NextSolution.Core.Models.Users;
 using NextSolution.Core.Models.Users.Accounts;
 using NextSolution.Core.Services;
+using NextSolution.Core.Utilities;
 using NextSolution.Infrastructure.Identity;
 using System.Security.Claims;
 using System.Security.Policy;
@@ -27,9 +29,9 @@ namespace NextSolution.WebApi.Endpoints
             var endpoints = MapGroup("/users");
 
             endpoints.MapPost("/register", SignUpAsync);
-            endpoints.MapPost("/authenticate", SignInAsync);
-            endpoints.MapPost("/{provider}/authenticate", SignInWithAsync);
-            endpoints.MapGet("/{provider}/authenticate", SignInWithRedirectAsync);
+            endpoints.MapPost("/session/generate", SignInAsync);
+            endpoints.MapPost("/{provider}/session/generate", SignInWithAsync);
+            endpoints.MapGet("/{provider}/session/generate", SignInWithRedirectAsync);
             endpoints.MapPost("/session/revoke", SignOutAsync).RequireAuthorization();
             endpoints.MapPost("/session/refresh", RefreshSessionAsync);
 
@@ -38,8 +40,15 @@ namespace NextSolution.WebApi.Endpoints
 
             endpoints.MapPost("/password/reset/send-code", SendPasswordResetTokenAsync);
             endpoints.MapPost("/password/reset", ResetPasswordAsync);
+            endpoints.MapPost("/password/change", ChangePasswordAsync);
 
             endpoints.MapGet("/", GetUsersAsync);
+            endpoints.MapGet("/current", GetCurrentUserAsync);
+            endpoints.MapPut("/current", EditCurrentUserAsync);
+
+            endpoints.MapPost("/current/avatar", UploadCurrentUserAvatarAsync);
+            endpoints.MapPatch("/current/avatar/{avatarId}", UploadCurrentUserAvatarAsync);
+            endpoints.MapGet("/current/avatar/{avatarId}", GetCurrentUserAvatarAsync);
 
             endpoints.MapGet("/protected", () => "Protected").RequireAuthorization();
         }
@@ -56,8 +65,8 @@ namespace NextSolution.WebApi.Endpoints
         }
 
         public async Task<IResult> SignInWithAsync(
-            [FromServices] IUserService userService, 
-            [FromServices] SignInManager<User> signInManager, 
+            [FromServices] IUserService userService,
+            [FromServices] SignInManager<User> signInManager,
             [FromRoute] string provider)
         {
             if (provider == null)
@@ -155,9 +164,61 @@ namespace NextSolution.WebApi.Endpoints
             return Results.Ok();
         }
 
-        public async Task<IResult> GetUsersAsync([FromServices] IUserService userService, [AsParameters] UserSearch search, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 100)
+        public async Task<IResult> ChangePasswordAsync([FromServices] IUserService userService, [FromBody] ChangePasswordForm form)
+        {
+            await userService.ChangePasswordAsync(form);
+            return Results.Ok();
+        }
+
+        public async Task<IResult> GetUsersAsync([FromServices] IUserService userService, [AsParameters] SearchUserParams search, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 100)
         {
             return Results.Ok(await userService.GetUsersAsync(search, pageNumber, pageSize));
+        }
+
+        public async Task<IResult> GetCurrentUserAsync([FromServices] IUserService userService)
+        {
+            return Results.Ok(await userService.GetCurrentUserAsync());
+        }
+
+        public async Task<IResult> EditCurrentUserAsync([FromServices] IUserService userService, [FromBody] EditUserForm form)
+        {
+            await userService.EditCurrentUserAsync(form);
+            return Results.Ok();
+        }
+
+        public async Task<IResult> UploadCurrentUserAvatarAsync(
+            [FromServices] IUserService userService,
+            [FromHeader(Name = "Upload-Id")] string fileId,
+            [FromHeader(Name = "Upload-Name")] string fileName,
+            [FromHeader(Name = "Upload-Length")] long fileSize,
+            [FromHeader(Name = "Upload-Type")] string contentType,
+            [FromHeader(Name = "Upload-Offset")] long offset,
+            HttpContext httpContext)
+        {
+            string? avatarId = HttpMethods.IsPost(httpContext.Request.Method) ? null :
+                               HttpMethods.IsPatch(httpContext.Request.Method) ? httpContext.GetRouteValue(nameof(avatarId))?.ToString() 
+                               ?? throw new InvalidOperationException($"'{nameof(avatarId)}' not found in route values.") : null;
+
+            using var content = await httpContext.Request.Body.ToMemoryStreamAsync();
+            var form = new UploadMediaChunkForm
+            {
+                Id = long.TryParse(avatarId, out long value) ? value : 0,
+                Name = fileName,
+                Size = fileSize,
+                Content = content,
+                ContentType = contentType,
+                Path = $"/avatars/{AlgorithmHelper.GenerateMD5Hash(fileId)}/{Path.GetFileNameWithoutExtension(fileName)}{Path.GetExtension(fileName).ToLower()}",
+                Offset = offset
+            };
+
+            await userService.UploadCurrentUserAvatarAsync(form);
+            return Results.Content(form.Id.ToString());
+        }
+
+        public async Task<IResult> GetCurrentUserAvatarAsync([FromServices] IUserService userService)
+        {
+            var result = await userService.GetCurrentUserAvatarAsync();
+            return Results.File(result.Content, result.ContentType, result.Name, result.UpdatedAt);
         }
     }
 }
