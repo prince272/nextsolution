@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace NextSolution.Core.Extensions.Identity
 {
-    public interface IUserSessionStore
+    public interface IUserSessionStorage
     {
         Task AddSessionAsync(User user, UserSessionInfo session, CancellationToken cancellationToken = default);
 

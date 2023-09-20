@@ -38,7 +38,7 @@ namespace NextSolution.Infrastructure.Data
         public virtual async Task DeleteAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
             if (entity == null) throw new ArgumentNullException(nameof(entity));
-         
+
             _dbContext.Remove(entity);
             await _dbContext.SaveChangesAsync(cancellationToken);
         }

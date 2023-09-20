@@ -47,7 +47,7 @@ namespace NextSolution.Infrastructure.Identity
                 OnAuthenticationFailed = context =>
                 {
                     var logger = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>().CreateLogger(nameof(JwtBearerEvents));
-                    logger.LogError($"Authentication failed {context.Exception}");
+                    logger.LogError(context.Exception, $"JWT Authentication failed");
                     return Task.CompletedTask;
                 },
                 OnTokenValidated = async context =>

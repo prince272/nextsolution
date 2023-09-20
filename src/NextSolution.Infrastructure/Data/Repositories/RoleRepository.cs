@@ -2,7 +2,6 @@
 using NextSolution.Core.Entities;
 using NextSolution.Core.Repositories;
 using NextSolution.Core.Shared;
-using NextSolution.Infrastructure.Data;
 using NextSolution.Infrastructure.Data.Extensions;
 using System;
 using System.Collections.Generic;

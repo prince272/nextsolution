@@ -4,7 +4,6 @@ using NextSolution.Core.Entities;
 using NextSolution.Core.Extensions.Identity;
 using NextSolution.Core.Repositories;
 using NextSolution.Core.Utilities;
-using NextSolution.Infrastructure.Data.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;

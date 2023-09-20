@@ -13,12 +13,12 @@ using System.Threading.Tasks;
 
 namespace NextSolution.Infrastructure.Data
 {
-    public class AppDbContext : IdentityDbContext<User, Role, long, IdentityUserClaim<long>, 
+    public class AppDbContext : IdentityDbContext<User, Role, long, IdentityUserClaim<long>,
         UserRole, IdentityUserLogin<long>, IdentityRoleClaim<long>, IdentityUserToken<long>>
     {
         public AppDbContext()
         {
-            
+
         }
 
         public AppDbContext(DbContextOptions options) : base(options)

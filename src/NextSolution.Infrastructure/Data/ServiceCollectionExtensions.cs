@@ -21,7 +21,7 @@ namespace NextSolution.Infrastructure.Data
             foreach (var concreteType in repositoryTypes)
             {
                 var matchingInterfaceType = concreteType.GetInterfaces().FirstOrDefault(x => string.Equals(x.Name, $"I{concreteType.Name}", StringComparison.Ordinal));
-               
+
                 if (matchingInterfaceType != null)
                 {
                     services.AddScoped(matchingInterfaceType, concreteType);

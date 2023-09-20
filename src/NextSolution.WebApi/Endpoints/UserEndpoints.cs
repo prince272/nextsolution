@@ -170,9 +170,9 @@ namespace NextSolution.WebApi.Endpoints
             return Results.Ok();
         }
 
-        public async Task<IResult> GetUsersAsync([FromServices] IUserService userService, [AsParameters] SearchUserParams search, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 100)
+        public async Task<IResult> GetUsersAsync([FromServices] IUserService userService, [AsParameters] UserSearchParams searchParams, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 100)
         {
-            return Results.Ok(await userService.GetUsersAsync(search, pageNumber, pageSize));
+            return Results.Ok(await userService.GetUsersAsync(searchParams, pageNumber, pageSize));
         }
 
         public async Task<IResult> GetCurrentUserAsync([FromServices] IUserService userService)

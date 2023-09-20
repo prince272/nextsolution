@@ -9,7 +9,6 @@ using NextSolution.Core.Exceptions;
 using NextSolution.Core.Extensions.Identity;
 using NextSolution.Core.Repositories;
 using NextSolution.Core.Services;
-using NextSolution.Infrastructure.Data.Repositories;
 using NextSolution.Infrastructure.Identity;
 using System;
 using System.Collections.Generic;
@@ -81,7 +80,7 @@ namespace NextSolution.Infrastructure.RealTime
 
             try
             {
-                var client = await _clientRepository.GetAsync(predicate: _ => _.Active &&  _.ConnectionId == connectionId);
+                var client = await _clientRepository.GetAsync(predicate: _ => _.Active && _.ConnectionId == connectionId);
                 if (client == null) return;
 
                 await _clientRepository.DeactivateAsync(client);

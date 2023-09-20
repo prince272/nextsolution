@@ -14,14 +14,14 @@ using System.Threading.Tasks;
 
 namespace NextSolution.Infrastructure.Identity
 {
-    public class UserSessionStore : IUserSessionStore
+    public class UserSessionStorage : IUserSessionStorage
     {
         private readonly AppDbContext _dbContext;
         private readonly IOptions<UserSessionOptions> _userSessionOptions;
 
-        public UserSessionStore(AppDbContext dbContext, IOptions<UserSessionOptions> userSessionOptions)
+        public UserSessionStorage(AppDbContext dbContext, IOptions<UserSessionOptions> userSessionOptions)
         {
-            _dbContext = dbContext ?? throw new ArgumentNullException();
+            _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
             _userSessionOptions = userSessionOptions ?? throw new ArgumentNullException(nameof(userSessionOptions));
         }
 

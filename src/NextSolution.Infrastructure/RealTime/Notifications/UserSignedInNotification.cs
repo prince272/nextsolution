@@ -4,7 +4,6 @@ using NextSolution.Core.Events.Clients;
 using NextSolution.Core.Events.Users;
 using NextSolution.Core.Models;
 using NextSolution.Core.Repositories;
-using NextSolution.Infrastructure.Data.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;

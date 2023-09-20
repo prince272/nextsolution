@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace NextSolution.Core.Models.Users
 {
-    public class SearchUserParams
+    public class UserSearchParams
     {
         public long[]? Ids { get; set; }
 

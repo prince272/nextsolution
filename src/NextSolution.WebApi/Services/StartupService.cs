@@ -10,7 +10,7 @@ namespace NextSolution.WebApi.Services
 {
     public class StartupService : IHostedService
     {
-        private IServiceProvider _serviceProvider;
+        private readonly IServiceProvider _serviceProvider;
         public StartupService(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
@@ -28,7 +28,7 @@ namespace NextSolution.WebApi.Services
             {
                 // Ensure database is created.
                 var dbContext = services.GetRequiredService<AppDbContext>();
-                await dbContext.Database.EnsureCreatedAsync();
+                await dbContext.Database.EnsureCreatedAsync(cancellationToken);
             }
 
             try
@@ -37,11 +37,11 @@ namespace NextSolution.WebApi.Services
 
                 var roleRepository = services.GetRequiredService<IRoleRepository>();
 
-                if (!(await roleRepository.AnyAsync()))
+                if (!(await roleRepository.AnyAsync(cancellationToken)))
                 {
                     foreach (var roleName in Roles.All)
                     {
-                        await roleRepository.CreateAsync(new Role(roleName));
+                        await roleRepository.CreateAsync(new Role(roleName), cancellationToken);
                     }
                 }
 
@@ -55,7 +55,7 @@ namespace NextSolution.WebApi.Services
             try
             {
                 var clientRepository = services.GetRequiredService<IClientRepository>();
-                await clientRepository.DeactivateAllAsync();
+                await clientRepository.DeactivateAllAsync(cancellationToken);
             }
             catch (Exception ex)
             {

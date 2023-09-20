@@ -65,7 +65,7 @@ namespace NextSolution.Infrastructure.Identity
         {
             builder.Services.AddScoped<IUserClaimsPrincipalFactory<User>, UserClaimsPrincipalFactory>();
             builder.Services.AddScoped<IUserSessionFactory, UserSessionFactory>();
-            builder.Services.AddScoped<IUserSessionStore, UserSessionStore>();
+            builder.Services.AddScoped<IUserSessionStorage, UserSessionStorage>();
             builder.Services.AddScoped<IUserContext, UserContext>();
 
             builder.Services.ConfigureOptions<ConfigureJwtBearerOptions>();

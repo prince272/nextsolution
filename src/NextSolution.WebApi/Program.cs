@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using NextSolution.Core;
-using NextSolution.Infrastructure.Data;
 using NextSolution.WebApi.Shared;
 using Serilog;
 using Serilog.Settings.Configuration;
@@ -20,8 +19,9 @@ using Humanizer.Configuration;
 using NextSolution.Infrastructure.FileStorage.Local;
 using NextSolution.Infrastructure.SmsSender.Fake;
 using NextSolution.WebApi.Services;
-using NextSolution.Infrastructure.Data.Middlewares;
 using NextSolution.Infrastructure.RealTime;
+using NextSolution.Infrastructure.Data.Middlewares;
+using NextSolution.Infrastructure.Data;
 
 try
 {
@@ -193,7 +193,7 @@ try
 
     app.UseAuthorization();
 
-    app.UseDbTransaction();
+    app.UseDbTransaction<AppDbContext>();
 
     app.UseSession();
 

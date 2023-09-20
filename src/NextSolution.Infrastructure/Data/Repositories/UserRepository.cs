@@ -3,8 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using NextSolution.Core.Entities;
 using NextSolution.Core.Utilities;
 using NextSolution.Core.Repositories;
-using NextSolution.Infrastructure.Data;
-using NextSolution.Infrastructure.Data.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +14,7 @@ using System.Diagnostics.CodeAnalysis;
 using NextSolution.Core.Extensions.Identity;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
+using NextSolution.Infrastructure.Data.Extensions;
 
 namespace NextSolution.Infrastructure.Data.Repositories
 {
@@ -23,13 +22,13 @@ namespace NextSolution.Infrastructure.Data.Repositories
     {
         private readonly UserManager<User> _userManager;
         private readonly IUserSessionFactory _userSessionFactory;
-        private readonly IUserSessionStore _userSessionStore;
+        private readonly IUserSessionStorage _userSessionStorage;
 
-        public UserRepository(UserManager<User> userManager, AppDbContext dbContext, IUserSessionFactory userSessionFactory, IUserSessionStore userSessionStore) : base(dbContext)
+        public UserRepository(UserManager<User> userManager, AppDbContext dbContext, IUserSessionFactory userSessionFactory, IUserSessionStorage userSessionStorage) : base(dbContext)
         {
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             _userSessionFactory = userSessionFactory ?? throw new ArgumentNullException(nameof(userSessionFactory));
-            _userSessionStore = userSessionStore ?? throw new ArgumentNullException(nameof(userSessionStore));
+            _userSessionStorage = userSessionStorage ?? throw new ArgumentNullException(nameof(userSessionStorage));
         }
 
         public async Task CreateAsync(User user, string password, CancellationToken cancellationToken = default)
@@ -301,21 +300,21 @@ namespace NextSolution.Infrastructure.Data.Repositories
         public Task<UserSessionInfo> GenerateSessionAsync(User user, CancellationToken cancellationToken = default)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
-            return _userSessionFactory.GenerateAsync(user);
+            return _userSessionFactory.GenerateAsync(user, cancellationToken);
         }
 
         public Task AddSessionAsync(User user, UserSessionInfo session, CancellationToken cancellationToken = default)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
 
-            return _userSessionStore.AddSessionAsync(user, session);
+            return _userSessionStorage.AddSessionAsync(user, session, cancellationToken);
         }
 
         public Task RemoveSessionAsync(User user, string token, CancellationToken cancellationToken = default)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
 
-            return _userSessionStore.RemoveSessionAsync(user, token);
+            return _userSessionStorage.RemoveSessionAsync(user, token, cancellationToken);
         }
 
         public Task AddLoginAsync(User user, UserLoginInfo login, CancellationToken cancellationToken = default)
@@ -333,14 +332,14 @@ namespace NextSolution.Infrastructure.Data.Repositories
         {
             if (accessToken == null) throw new ArgumentNullException(nameof(accessToken));
 
-            return _userSessionStore.GetUserByAccessTokenAsync(accessToken, cancellationToken);
+            return _userSessionStorage.GetUserByAccessTokenAsync(accessToken, cancellationToken);
         }
 
         public Task<User?> GetByRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default)
         {
             if (refreshToken == null) throw new ArgumentNullException(nameof(refreshToken));
 
-            return _userSessionStore.GetUserByRefreshTokenAsync(refreshToken, cancellationToken);
+            return _userSessionStorage.GetUserByRefreshTokenAsync(refreshToken, cancellationToken);
         }
 
         public Task<bool> ValidateAccessTokenAsync(string accessToken, CancellationToken cancellationToken = default)
