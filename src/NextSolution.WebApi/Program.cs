@@ -196,7 +196,7 @@ try
 
     app.UseSession();
 
-    app.MapHub<ChatHub>(ChatHub.Pattern);
+    app.MapHub<SignalRHub>(SignalRHub.Endpoint);
 
     app.MapEndpoints();
 

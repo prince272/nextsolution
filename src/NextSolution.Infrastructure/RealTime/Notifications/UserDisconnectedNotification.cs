@@ -10,23 +10,23 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NextSolution.Infrastructure.RealTime.Handlers
+namespace NextSolution.Infrastructure.RealTime.Notifications
 {
-    public class UserConnectedHandler : INotificationHandler<UserConnected>
+    public class UserDisconnectedNotification : INotificationHandler<UserDisconnected>
     {
-        private readonly IHubContext<ChatHub> _hubContext;
+        private readonly IHubContext<SignalRHub> _hubContext;
 
-        public UserConnectedHandler(IHubContext<ChatHub> hubContext)
+        public UserDisconnectedNotification(IHubContext<SignalRHub> hubContext)
         {
             _hubContext = hubContext ?? throw new ArgumentNullException(nameof(hubContext));
         }
 
-        public async Task Handle(UserConnected notification, CancellationToken cancellationToken)
+        public async Task Handle(UserDisconnected notification, CancellationToken cancellationToken)
         {
             var message = new
             {
                 UserId = notification.User.Id,
-                Connections = notification.Connections,
+                notification.Connections,
                 ClientId = notification.Client.Id,
             };
 

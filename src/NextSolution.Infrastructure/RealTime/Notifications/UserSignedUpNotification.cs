@@ -7,18 +7,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NextSolution.Infrastructure.RealTime.Handlers
+namespace NextSolution.Infrastructure.RealTime.Notifications
 {
-    public class UserSignedOutHandler : INotificationHandler<UserSignedOut>
+    public class UserSignedUpNotification : INotificationHandler<UserSignedUp>
     {
-        private readonly IHubContext<ChatHub> _hubContext;
+        private readonly IHubContext<SignalRHub> _hubContext;
 
-        public UserSignedOutHandler(IHubContext<ChatHub> hubContext)
+        public UserSignedUpNotification(IHubContext<SignalRHub> hubContext)
         {
             _hubContext = hubContext ?? throw new ArgumentNullException(nameof(hubContext));
         }
 
-        public async Task Handle(UserSignedOut notification, CancellationToken cancellationToken)
+        public async Task Handle(UserSignedUp notification, CancellationToken cancellationToken)
         {
             var message = new
             {

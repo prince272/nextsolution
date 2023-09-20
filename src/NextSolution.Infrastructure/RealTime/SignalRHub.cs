@@ -20,15 +20,15 @@ using System.Threading.Tasks;
 
 namespace NextSolution.Infrastructure.RealTime
 {
-    public class ChatHub : Hub
+    public class SignalRHub : Hub
     {
-        private readonly ILogger<ChatHub> _logger;
+        private readonly ILogger<SignalRHub> _logger;
         private readonly IMediator _mediator;
         private readonly IUserContext _userContext;
         private readonly IUserRepository _userRepository;
         private readonly IClientRepository _clientRepository;
 
-        public ChatHub(ILogger<ChatHub> logger, IMediator mediator, IUserContext userContext, IUserRepository userRepository, IClientRepository clientRepository)
+        public SignalRHub(ILogger<SignalRHub> logger, IMediator mediator, IUserContext userContext, IUserRepository userRepository, IClientRepository clientRepository)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
@@ -129,6 +129,6 @@ namespace NextSolution.Infrastructure.RealTime
             };
         }
 
-        public const string Pattern = "/signalr";
+        public const string Endpoint = "/signalr";
     }
 }

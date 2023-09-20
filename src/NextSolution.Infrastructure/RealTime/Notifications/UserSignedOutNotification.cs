@@ -1,28 +1,24 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.SignalR;
-using NextSolution.Core.Events.Clients;
 using NextSolution.Core.Events.Users;
-using NextSolution.Core.Models;
-using NextSolution.Core.Repositories;
-using NextSolution.Infrastructure.Data.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NextSolution.Infrastructure.RealTime.Handlers
+namespace NextSolution.Infrastructure.RealTime.Notifications
 {
-    public class UserSignedInHandler : INotificationHandler<UserSignedIn>
+    public class UserSignedOutNotification : INotificationHandler<UserSignedOut>
     {
-        private readonly IHubContext<ChatHub> _hubContext;
+        private readonly IHubContext<SignalRHub> _hubContext;
 
-        public UserSignedInHandler(IHubContext<ChatHub> hubContext)
+        public UserSignedOutNotification(IHubContext<SignalRHub> hubContext)
         {
             _hubContext = hubContext ?? throw new ArgumentNullException(nameof(hubContext));
         }
 
-        public async Task Handle(UserSignedIn notification, CancellationToken cancellationToken)
+        public async Task Handle(UserSignedOut notification, CancellationToken cancellationToken)
         {
             var message = new
             {
