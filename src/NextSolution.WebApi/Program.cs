@@ -29,7 +29,8 @@ try
 
     var builder = WebApplication.CreateBuilder(args);
 
-    Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration).Enrich.FromLogContext().CreateLogger();
+    Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration, 
+        new ConfigurationReaderOptions { SectionName = "SerilogOptions" }).Enrich.FromLogContext().CreateLogger();
 
     builder.Logging.ClearProviders();
     builder.Host.UseSerilog(Log.Logger);
@@ -98,12 +99,12 @@ try
         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
 
     })
-        .AddBearer(builder.Configuration.GetRequiredSection("Authentication:Bearer"))
+        .AddBearer(builder.Configuration.GetRequiredSection("BearerAuthOptions"))
         .AddGoogle(GoogleDefaults.AuthenticationScheme, options =>
         {
             options.SignInScheme = IdentityConstants.ExternalScheme;
-            options.ClientId = builder.Configuration.GetValue<string>("Authentication:Google:ClientId")!;
-            options.ClientSecret = builder.Configuration.GetValue<string>("Authentication:Google:ClientSecret")!;
+            options.ClientId = builder.Configuration.GetValue<string>("GoogleAuthOptions:ClientId")!;
+            options.ClientSecret = builder.Configuration.GetValue<string>("GoogleAuthOptions:ClientSecret")!;
         });
 
     builder.Services.AddAuthorization();
