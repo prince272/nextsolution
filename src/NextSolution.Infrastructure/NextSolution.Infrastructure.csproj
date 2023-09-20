@@ -16,15 +16,10 @@
 		<PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.2.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.9" />
 		<PackageReference Include="MailKit" Version="4.1.0" />
-		<PackageReference Include="OpenAI" Version="1.7.2" />
 	</ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\NextSolution.Core\NextSolution.Core.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="AI\ChatGPT\" />
   </ItemGroup>
 
 </Project>

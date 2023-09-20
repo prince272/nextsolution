@@ -258,7 +258,7 @@ export const EditProfileView: FC<{ footerId: string }> = ({ footerId }) => {
                 isInvalid={!!formErrors.email}
                 errorMessage={formErrors.email?.message}
                 autoComplete="off"
-                label={`Email${currentUser.emailFirst ? ' (primary)' : ''}`}
+                label={`Email${currentUser.emailRequired ? ' (primary)' : ''}`}
                 description={
                   currentUser.email &&
                   !currentUser.emailConfirmed && (
@@ -287,7 +287,7 @@ export const EditProfileView: FC<{ footerId: string }> = ({ footerId }) => {
                 errorMessage={formErrors.phoneNumber?.message}
                 autoComplete="off"
                 countryVisibility={true}
-                label={`Phone number${currentUser.phoneNumberFirst ? ' (primary)' : ''}`}
+                label={`Phone number${currentUser.phoneNumberRequired ? ' (primary)' : ''}`}
                 description={
                   currentUser.phoneNumber &&
                   !currentUser.phoneNumberConfirmed && (

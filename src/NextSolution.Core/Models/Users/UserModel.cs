@@ -22,11 +22,11 @@ namespace NextSolution.Core.Models.Users
 
         public string? Email { get; set; }
 
-        public bool EmailFirst { get; set; }
+        public bool EmailRequired { get; set; }
 
         public string? PhoneNumber { get; set; }
 
-        public bool PhoneNumberFirst { get; set; }
+        public bool PhoneNumberRequired { get; set; }
 
         public long? AvatarId { get; set; }
 

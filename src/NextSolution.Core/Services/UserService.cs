@@ -110,9 +110,9 @@ namespace NextSolution.Core.Services
             user.FirstName = form.FirstName;
             user.LastName = form.LastName;
             user.Email = form.UsernameType == ContactType.Email ? form.Username : user.Email;
-            user.EmailFirst = form.UsernameType == ContactType.Email;
+            user.EmailRequired = form.UsernameType == ContactType.Email;
             user.PhoneNumber = form.UsernameType == ContactType.PhoneNumber ? form.Username : user.PhoneNumber;
-            user.PhoneNumberFirst = form.UsernameType == ContactType.PhoneNumber;
+            user.PhoneNumberRequired = form.UsernameType == ContactType.PhoneNumber;
             user.Active = true;
             user.LastActiveAt = DateTimeOffset.UtcNow;
             await _userRepository.GenerateUserNameAsync(user, cancellationToken);
@@ -190,9 +190,9 @@ namespace NextSolution.Core.Services
                 user.FirstName = form.FirstName;
                 user.LastName = form.LastName;
                 user.Email = form.UsernameType == ContactType.Email ? form.Username : user.Email;
-                user.EmailFirst = form.UsernameType == ContactType.Email;
+                user.EmailRequired = form.UsernameType == ContactType.Email;
                 user.PhoneNumber = form.UsernameType == ContactType.PhoneNumber ? form.Username : user.PhoneNumber;
-                user.PhoneNumberFirst = form.UsernameType == ContactType.PhoneNumber;
+                user.PhoneNumberRequired = form.UsernameType == ContactType.PhoneNumber;
                 user.Active = true;
                 user.LastActiveAt = DateTimeOffset.UtcNow;
                 await _userRepository.GenerateUserNameAsync(user, cancellationToken);
@@ -469,10 +469,10 @@ namespace NextSolution.Core.Services
             if (await _userRepository.IsUserNameTakenAsync(currentUser, form.UserName, cancellationToken))
                 throw new BadRequestException(nameof(form.UserName), $"'{(nameof(form.UserName).ToLower()).Humanize(LetterCasing.Title)}' is already taken.");
 
-            if (string.IsNullOrWhiteSpace(form.Email) && currentUser.EmailFirst)
+            if (string.IsNullOrWhiteSpace(form.Email) && currentUser.EmailRequired)
                 throw new BadRequestException(nameof(form.Email), $"'{(nameof(form.Email).ToLower()).Humanize(LetterCasing.Title)}' must not be empty.");
 
-            if (string.IsNullOrWhiteSpace(form.PhoneNumber) && currentUser.PhoneNumberFirst)
+            if (string.IsNullOrWhiteSpace(form.PhoneNumber) && currentUser.PhoneNumberRequired)
                 throw new BadRequestException(nameof(form.PhoneNumber), $"'{(nameof(form.PhoneNumber).ToLower()).Humanize(LetterCasing.Title)}' must not be empty.");
 
             await _userRepository.SetEmailAsync(currentUser, form.Email);

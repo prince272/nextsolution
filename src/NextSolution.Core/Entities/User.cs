@@ -18,9 +18,9 @@ namespace NextSolution.Core.Entities
         {
         }
 
-        public bool EmailFirst { get; set; }
+        public bool EmailRequired { get; set; }
 
-        public bool PhoneNumberFirst { get; set; }
+        public bool PhoneNumberRequired { get; set; }
 
         public string FirstName { get; set; } = default!;
 

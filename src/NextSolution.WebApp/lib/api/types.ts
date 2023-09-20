@@ -6,10 +6,10 @@ export type User = {
   firstName: string;
   lastName: string;
   email?: string;
-  emailFirst: boolean;
+  emailRequired: boolean;
   emailConfirmed: boolean;
   phoneNumber?: string;
-  phoneNumberFirst: boolean;
+  phoneNumberRequired: boolean;
   phoneNumberConfirmed: boolean;
   avatarId?: string;
   avatarUrl: string;
