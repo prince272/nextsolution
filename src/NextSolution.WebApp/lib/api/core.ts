@@ -1,17 +1,20 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse, CreateAxiosDefaults, HttpStatusCode, isAxiosError } from "axios";
-import { createState, State } from "state-pool";
+import CryptoES from "crypto-es";
+import { BehaviorSubject } from "rxjs";
 
 import { ExternalWindow } from "../external-window";
 import { parseJSON, stringifyJSON } from "../utils";
-import { ApiConfig, ApiState, ApiStore, User } from "./types";
+import { ApiConfig, ApiStore, User } from "./types";
 
-const API_STATE_KEY = "API_STATE";
+const API_STORE_NAME = "API_STORE";
+
+const API_STORE_KEY = "Hn411*x,Y1vB,K}\u00A3'I<g<u\":&[9Uu7;Y\u00A3:ns|.Q2?e#:1!_8Db";
 
 export class Api {
   private axiosInstance: AxiosInstance;
   public config: ApiConfig;
+  public user: BehaviorSubject<User | null | undefined>;
   private store: ApiStore;
-  public state: State<ApiState>;
 
   private refreshing: boolean;
   private retryRequests: Array<() => void>;
@@ -24,10 +27,11 @@ export class Api {
     this.axiosInstance = axios.create(axiosConfig);
     this.config = config;
     this.store = store;
-    this.state = createState(parseJSON(store.get(API_STATE_KEY)) ?? {});
-    this.state.subscribe<ApiState>((state) => {
-      this.store.set(API_STATE_KEY, stringifyJSON(state));
+    this.user = new BehaviorSubject(parseJSON(CryptoES.AES.decrypt(store.get(API_STORE_NAME) || "", API_STORE_KEY).toString()) || null);
+    this.user.subscribe((currentUser) => {
+      this.store.set(API_STORE_NAME, CryptoES.AES.encrypt(stringifyJSON(currentUser) || "", API_STORE_KEY));
     });
+    
 
     this.refreshing = false;
     this.retryRequests = [];
@@ -35,10 +39,10 @@ export class Api {
     // Add request interceptor
     this.axiosInstance.interceptors.request.use(
       (requestConfig) => {
-        const currentState = this.state.getValue<ApiState>();
+        const currentUser = this.user.getValue();
 
-        if (currentState.user) {
-          requestConfig.headers.setAuthorization(`${currentState.user.tokenType} ${currentState.user.accessToken}`);
+        if (currentUser) {
+          requestConfig.headers.setAuthorization(`${currentUser.tokenType} ${currentUser.accessToken}`);
         } else {
           delete requestConfig.headers.Authorization;
         }
@@ -75,7 +79,7 @@ export class Api {
             return Promise.reject(error);
           }
 
-          const currentUser = this.state.getValue<ApiState>().user;
+          const currentUser = this.user.getValue();
           if (!currentUser) {
             return Promise.reject(error);
           }
@@ -90,15 +94,15 @@ export class Api {
 
           this.refreshing = true;
           return this.refresh()
-            .then(({ data: user }) => {
-              this.state.updateValue((currentState) => (currentState.user = user));
+            .then(({ data: value }) => {
+              this.user.next(value);
               this.refreshing = false;
               this.retryRequests.forEach((prom) => prom());
               this.retryRequests = [];
               return this.axiosInstance.request(originalRequest);
             })
             .catch(() => {
-              this.state.updateValue((currentState) => (currentState.user = null));
+              this.user.next(null);
               this.refreshing = false;
               this.retryRequests.forEach((prom) => prom());
               this.retryRequests = [];
@@ -122,7 +126,7 @@ export class Api {
       ...config
     } as AxiosRequestConfig<D>;
     const response = await this.axiosInstance.request<T, R, D>(config);
-    this.state.updateValue((currentState) => (currentState.user = response.data));
+    this.user.next(response.data);
     return response;
   }
 
@@ -137,7 +141,7 @@ export class Api {
       ...config
     } as AxiosRequestConfig<D>;
     const response = await this.axiosInstance.request<T, R, D>(config);
-    this.state.updateValue((currentState) => (currentState.user = response.data));
+    this.user.next(response.data);
     return response;
   }
 
@@ -156,12 +160,12 @@ export class Api {
       console.warn(error);
     }
     const response = await this.axiosInstance.request<T, R, D>(config);
-    this.state.updateValue((currentState) => (currentState.user = response.data));
+    this.user.next(response.data);
     return response;
   }
 
   public async refresh<T extends User, R extends AxiosResponse<T>, D extends any>(config?: AxiosRequestConfig<D>): Promise<R> {
-    const currentUser = this.state.getValue<ApiState>().user;
+    const currentUser = this.user.getValue();
     const data = currentUser != null ? { userId: currentUser.id, refreshToken: currentUser.refreshToken } : {};
 
     config = {
@@ -173,11 +177,11 @@ export class Api {
 
     try {
       const response = await this.axiosInstance.request<T, R, D>(config);
-      this.state.updateValue((currentState) => (currentState.user = response.data));
+      this.user.next(response.data);
       return response;
     } catch (error) {
       if (isAxiosError(error) && error.response && (error.response.status == HttpStatusCode.BadRequest || error.response.status == HttpStatusCode.Unauthorized)) {
-        this.state.updateValue((currentState) => (currentState.user = null));
+        this.user.next(null);
       }
       throw error;
     }
@@ -187,11 +191,11 @@ export class Api {
     config = {
       url: `/users/session/revoke`,
       method: "POST",
-      data: { refreshToken: this.state.getValue<ApiState>().user?.refreshToken },
+      data: { refreshToken: this.user.getValue()?.refreshToken },
       ...config
     } as AxiosRequestConfig<D>;
     return this.axiosInstance.request<T, R, D>(config).finally(() => {
-      this.state.updateValue((currentState) => (currentState.user = null));
+      this.user.next(null);
     });
   }
 
@@ -220,7 +224,7 @@ export class Api {
       ...config
     } as AxiosRequestConfig<D>;
     const response = await this.axiosInstance.request<T, R, D>(config);
-    this.state.updateValue((currentState) => (currentState.user = response.data));
+    this.user.next(response.data);
     return response;
   }
 
@@ -249,7 +253,7 @@ export class Api {
       ...config
     } as AxiosRequestConfig<D>;
     const response = await this.axiosInstance.request<T, R, D>(config);
-    this.state.updateValue((currentState) => (currentState.user = response.data));
+    this.user.next(response.data);
     return response;
   }
 

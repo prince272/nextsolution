@@ -11,7 +11,7 @@ namespace NextSolution.Core.Models.Users
 {
     public class UserSearchParams
     {
-        public long[]? Ids { get; set; }
+        public long[]? Id { get; set; }
 
         public bool? Online { get; set; }
 
@@ -19,9 +19,9 @@ namespace NextSolution.Core.Models.Users
         {
             var predicate = PredicateBuilder.True<User>();
 
-            if (Ids != null && Ids.Any())
+            if (Id != null && Id.Any())
             {
-                predicate = predicate.And(user => Ids.Contains(user.Id));
+                predicate = predicate.And(user => Id.Contains(user.Id));
             }
 
             if (Online.HasValue)

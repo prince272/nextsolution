@@ -6,44 +6,14 @@ import { usePathname, useRouter } from "next/navigation";
 import { DarkThemeIcon, PersonArrowRightIcon, SettingsIcon } from "@/assets/icons";
 import { Button } from "@nextui-org/button";
 import { Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from "@nextui-org/dropdown";
-import { Select, SelectItem } from "@nextui-org/select";
 import { User as UserAvatar } from "@nextui-org/user";
 import { useTheme } from "next-themes";
 import queryString from "query-string";
 
 import { useApi, useUser } from "@/lib/api/client";
 import { User } from "@/lib/api/types";
-import { useApp } from "@/components/provider";
 
-import { Sheet, SheetBody, SheetContent, SheetFooter, SheetHeader } from "./ui/sheet";
-
-export const PlatformSidebar: FC = () => {
-  const { sidebar } = useApp();
-
-  return (
-    <Sheet
-      placement="left"
-      classNames={{
-        base: "max-w-[250px]"
-      }}
-      isSticky={true}
-      isOpen={sidebar.opened}
-      onOpenChange={(opened) => {
-        (opened ? sidebar.open : sidebar.close)();
-      }}
-    >
-      <SheetContent>
-        <SheetHeader className="flex flex-col gap-1">Modal Title</SheetHeader>
-        <SheetBody></SheetBody>
-        <SheetFooter>
-          <UserButton />
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
-  );
-};
-
-const UserButton: FC = () => {
+export const UserButton: FC = () => {
   const api = useApi();
   const pathname = usePathname();
   const currentUser = useUser() ?? ({} as User);

@@ -5,16 +5,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NextSolution.Core.Models.Medias
+namespace NextSolution.Core.Models.Chats
 {
-    public class DeleteMediaForm
+    public class GetChatForm
     {
         public long Id { get; set; }
     }
 
-    public class DeleteMediaFormValidator : AbstractValidator<DeleteMediaForm>
+    public class GetChatFormValidator : AbstractValidator<GetChatForm>
     {
-        public DeleteMediaFormValidator()
+        public GetChatFormValidator()
         {
         }
     }

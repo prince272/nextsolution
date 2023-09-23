@@ -36,9 +36,9 @@ namespace NextSolution.Core.Models.Medias
         public DateTimeOffset UpdatedAt { get; set; }
     }
 
-    public class MediaProfile : AbstractProfile
+    public class MediaModelProfile : AbstractProfile
     {
-        public MediaProfile()
+        public MediaModelProfile()
         {
             CreateMap<Media, MediaModel>();
         }

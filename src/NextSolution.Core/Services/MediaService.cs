@@ -19,11 +19,6 @@ using System.Threading.Tasks;
 
 namespace NextSolution.Core.Services
 {
-    public interface IMediaService : IDisposable, IAsyncDisposable
-    {
-        Task DeleteAsync(DeleteMediaForm form);
-    }
-
     public class MediaService : IMediaService
     {
         private readonly ILogger<MediaService> _logger;
@@ -45,7 +40,7 @@ namespace NextSolution.Core.Services
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 
-            var formValidator = _validatorProvider.GetRequiredService<DeleteMediaByFileIdFormValidator>();
+            var formValidator = _validatorProvider.GetRequiredService<DeleteMediaFormValidator>();
             var formValidationResult = await formValidator.ValidateAsync(form);
 
             if (!formValidationResult.IsValid)
@@ -102,6 +97,12 @@ namespace NextSolution.Core.Services
             return ValueTask.CompletedTask;
         }
     }
+
+    public interface IMediaService : IDisposable, IAsyncDisposable
+    {
+        Task DeleteAsync(DeleteMediaForm form);
+    }
+
 
     public class MediaServiceOptions
     {

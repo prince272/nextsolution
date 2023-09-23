@@ -2,8 +2,13 @@
 
 import { DetailedHTMLProps, FC, HTMLAttributes, Key, useEffect, useRef, useState } from "react";
 import NextLink from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { ChevronLeftIcon, PasswordIcon, PersonIcon, SettingsIcon } from "@/assets/icons";
+import { FileInput } from "@/ui/file-input";
+import { Portal } from "@/ui/misc/portal";
+import { Render } from "@/ui/misc/render";
+import { PasswordInput } from "@/ui/password-input";
+import { PhoneInput } from "@/ui/phone-input";
 import { Button } from "@nextui-org/button";
 import { Input, Textarea } from "@nextui-org/input";
 import { Link } from "@nextui-org/link";
@@ -16,17 +21,11 @@ import toast from "react-hot-toast";
 import StickyBox from "react-sticky-box";
 import { v4 as uuidv4 } from "uuid";
 
-import { useApi, useUser } from "@/lib/api/client";
+import { useApi, useAuthentication, useUser } from "@/lib/api/client";
 import { User } from "@/lib/api/types";
 import { getApiErrorMessage, isApiError } from "@/lib/api/utils";
 import { useConditionalState, useResponsive } from "@/lib/hooks";
 import { cn, sleep } from "@/lib/utils";
-import { FileInput } from "@/components/ui/file-input";
-import { PhoneInput } from "@/components/ui/phone-input";
-import { Portal } from "@/components/misc/portal";
-import { Render } from "@/components/misc/render";
-import { useApp } from "@/components/provider";
-import { PasswordInput } from "@/components/ui/password-input";
 
 export interface SettingsProps {
   opened: boolean;
@@ -34,8 +33,11 @@ export interface SettingsProps {
 }
 
 export const SettingsModal: FC<SettingsProps> = ({ opened, onClose }) => {
-  const app = useApp();
-  app.authenticate();
+  const router = useRouter();
+  
+  useAuthentication(() => {
+    router.replace(queryString.stringifyUrl({ url: "/", query: { dialogId: "sign-in" } }));
+  });
 
   const [selectedKeys, setSelectedKeys] = useState<Key[]>([]);
   const { md } = useResponsive();
@@ -258,7 +260,7 @@ export const EditProfileView: FC<{ footerId: string }> = ({ footerId }) => {
                 isInvalid={!!formErrors.email}
                 errorMessage={formErrors.email?.message}
                 autoComplete="off"
-                label={`Email${currentUser.emailRequired ? ' (primary)' : ''}`}
+                label={`Email${currentUser.emailRequired ? " (primary)" : ""}`}
                 description={
                   currentUser.email &&
                   !currentUser.emailConfirmed && (
@@ -287,7 +289,7 @@ export const EditProfileView: FC<{ footerId: string }> = ({ footerId }) => {
                 errorMessage={formErrors.phoneNumber?.message}
                 autoComplete="off"
                 countryVisibility={true}
-                label={`Phone number${currentUser.phoneNumberRequired ? ' (primary)' : ''}`}
+                label={`Phone number${currentUser.phoneNumberRequired ? " (primary)" : ""}`}
                 description={
                   currentUser.phoneNumber &&
                   !currentUser.phoneNumberConfirmed && (

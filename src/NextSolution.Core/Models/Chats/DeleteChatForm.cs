@@ -1,20 +1,21 @@
 ﻿using FluentValidation;
+using NextSolution.Core.Models.Medias;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NextSolution.Core.Models.Medias
+namespace NextSolution.Core.Models.Chats
 {
-    public class DeleteMediaForm
+    public class DeleteChatForm
     {
         public long Id { get; set; }
     }
 
-    public class DeleteMediaFormValidator : AbstractValidator<DeleteMediaForm>
+    public class DeleteChatFormValidator : AbstractValidator<DeleteChatForm>
     {
-        public DeleteMediaFormValidator()
+        public DeleteChatFormValidator()
         {
         }
     }

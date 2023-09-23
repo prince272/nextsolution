@@ -4,7 +4,7 @@ import { nextui } from "@nextui-org/theme";
 module.exports = {
   content: [
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./dialogs/**/*.{js,ts,jsx,tsx,mdx}",
+    "./ui/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./assets/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
@@ -18,5 +18,15 @@ module.exports = {
     }
   },
   darkMode: "class",
-  plugins: [nextui()]
+  plugins: [
+    nextui({
+      layout: {
+        borderWidth: {
+          small: "1px", // border-small
+          medium: "1px", // border-medium
+          large: "2px" // border-large
+        }
+      }
+    })
+  ]
 };

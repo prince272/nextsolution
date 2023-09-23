@@ -1,6 +1,6 @@
 "use client";
 
-import { ElementRef, forwardRef, LegacyRef, useEffect, useRef, useState } from "react";
+import { ElementRef, FC, forwardRef, LegacyRef, useEffect, useRef, useState } from "react";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalProps, useDisclosure } from "@nextui-org/modal";
 import { ModalSlots, SlotsToClasses } from "@nextui-org/theme";
 
@@ -12,7 +12,7 @@ export interface SheetProps extends Omit<ModalProps, "placement"> {
   isSticky?: boolean;
 }
 
-const Sheet = forwardRef<ElementRef<typeof Modal>, SheetProps>(
+const Sheet: FC<SheetProps> = forwardRef<ElementRef<typeof Modal>, SheetProps>(
   ({ placement = "left", shouldBlockScroll, isOpen, isDismissable, isSticky = false, onOpenChange, classNames, ...props }, ref) => {
     const [mounted, setMounted] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -49,7 +49,7 @@ const Sheet = forwardRef<ElementRef<typeof Modal>, SheetProps>(
     }, []);
 
     useEffect(() => {
-      onOpenChange?.(false);
+      if (!md) onOpenChange?.(false);
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [md]);
 
@@ -61,7 +61,6 @@ const Sheet = forwardRef<ElementRef<typeof Modal>, SheetProps>(
           isOpen={mounted ? isSticky || isOpen : false}
           onOpenChange={onOpenChange}
           isDismissable={!isSticky && isDismissable}
-          disableAnimation={isSticky}
           hideCloseButton={isSticky}
           classNames={extendedClassNames}
           motionProps={motionProps}

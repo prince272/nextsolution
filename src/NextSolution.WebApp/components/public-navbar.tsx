@@ -3,6 +3,7 @@
 import NextLink from "next/link";
 import { usePathname } from "next/navigation";
 import { DiscordIcon, GithubIcon, HeartFilledIcon, Logo, SearchIcon, TwitterIcon } from "@/assets/icons";
+import { ThemeSwitch } from "@/ui/theme-switch";
 import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
 import { Kbd } from "@nextui-org/kbd";
@@ -13,7 +14,6 @@ import queryString from "query-string";
 
 import { appConfig } from "@/config/app";
 import { cn } from "@/lib/utils";
-import { ThemeSwitch } from "@/components/ui/theme-switch";
 
 export const PublicNavbar = () => {
   const pathname = usePathname();

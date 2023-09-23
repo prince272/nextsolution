@@ -4,13 +4,13 @@ import { ReactNode } from "react";
 import { Metadata } from "next";
 import { cookies as cookieStore } from "next/headers";
 import { fontSans } from "@/assets/fonts";
+import { TopLoader } from "@/ui/top-loader";
 
 import { apiConfig } from "@/config/api";
 import { appConfig } from "@/config/app";
 import { ApiProvider } from "@/lib/api/client";
 import { CookiesProvider } from "@/lib/cookies/client";
 import { cn } from "@/lib/utils";
-import { TopLoader } from "@/components/ui/top-loader";
 
 import { AppProvider } from "../components/provider";
 

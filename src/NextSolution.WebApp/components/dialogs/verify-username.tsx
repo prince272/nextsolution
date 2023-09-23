@@ -4,6 +4,7 @@ import { FC, useEffect, useRef, useState } from "react";
 import NextLink from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { ChevronLeftIcon, ChevronRightIcon, GoogleIcon, PersonIcon } from "@/assets/icons";
+import { PhoneInput } from "@/ui/phone-input";
 import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
 import { Link } from "@nextui-org/link";
@@ -17,9 +18,8 @@ import { v4 as uuidv4 } from "uuid";
 
 import { useApi, useUser } from "@/lib/api/client";
 import { getApiErrorMessage, isApiError } from "@/lib/api/utils";
-import { cn } from "@/lib/utils";
-import { PhoneInput } from "@/components/ui/phone-input";
 import { useConditionalState } from "@/lib/hooks";
+import { cn } from "@/lib/utils";
 
 export interface VerifyUsernameProps {
   opened: boolean;

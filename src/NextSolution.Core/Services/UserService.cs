@@ -20,44 +20,22 @@ using System.Security.Claims;
 using MediatR;
 using NextSolution.Core.Events.Users;
 using NextSolution.Core.Models.Users;
-using NextSolution.Core.Mappers;
 using NextSolution.Core.Models.Users.Accounts;
 using NextSolution.Core.Extensions.FileStorage;
 using NextSolution.Core.Models.Medias;
 using Microsoft.Extensions.Options;
 using NextSolution.Core.Extensions.Identity;
 using System.Reflection;
+using NextSolution.Core.Models;
 
 namespace NextSolution.Core.Services
 {
-    public interface IUserService : IDisposable, IAsyncDisposable
-    {
-        // Accounts
-        Task<UserWithSessionModel> RefreshSessionAsync(RefreshSessionForm form);
-        Task ChangePasswordAsync(ChangePasswordForm form);
-        Task ResetPasswordAsync(ResetPasswordForm form);
-        Task SendPasswordResetTokenAsync(SendPasswordResetTokenForm form);
-        Task SendUsernameTokenAsync(SendUsernameTokenForm form);
-        Task<UserWithSessionModel> SignInAsync(SignInForm form);
-        Task<UserWithSessionModel> SignInWithAsync(SignUpWithForm form);
-        Task SignOutAsync(SignOutForm form);
-        Task SignUpAsync(SignUpForm form);
-        Task VerifyUsernameAsync(VerifyUsernameForm form);
-
-        // Users
-        Task<UserPageModel> GetUsersAsync(UserSearchParams searchParams, int pageNumber, int pageSize);
-        Task<UserModel> GetCurrentUserAsync();
-        Task EditCurrentUserAsync(EditUserForm form);
-        Task UploadCurrentUserAvatarAsync(UploadMediaChunkForm form);
-        Task<MediaModel> GetCurrentUserAvatarAsync();
-    }
-
     public class UserService : IUserService
     {
-        private readonly IServiceProvider _validatorProvider;
+        private readonly IServiceProvider _serviceProvider;
         private readonly IFileStorage _fileStorage;
         private readonly IMapper _mapper;
-        private readonly IUserMapper _userMapper;
+        private readonly IModelBuilder _modelBuilder;
         private readonly IMediator _mediator;
         private readonly IViewRenderer _viewRenderer;
         private readonly IEmailSender _emailSender;
@@ -68,15 +46,15 @@ namespace NextSolution.Core.Services
         private readonly IUserRepository _userRepository;
         private readonly IRoleRepository _roleRepository;
 
-        public UserService(IServiceProvider validatorProvider, IFileStorage fileStorage, IMapper mapper, IUserMapper userMapper,
+        public UserService(IServiceProvider serviceProvider, IFileStorage fileStorage, IMapper mapper, IModelBuilder modelBuilder,
                            IMediator mediator, IViewRenderer viewRenderer, IEmailSender emailSender,
                            ISmsSender smsSender, IUserContext userContext, IOptions<MediaServiceOptions> mediaServiceOptions, IMediaRepository mediaRepository, IUserRepository userRepository,
                            IRoleRepository roleRepository)
         {
-            _validatorProvider = validatorProvider ?? throw new ArgumentNullException(nameof(validatorProvider));
+            _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
             _fileStorage = fileStorage ?? throw new ArgumentNullException(nameof(fileStorage));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-            _userMapper = userMapper ?? throw new ArgumentNullException(nameof(userMapper));
+            _modelBuilder = modelBuilder ?? throw new ArgumentNullException(nameof(modelBuilder));
             _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
             _viewRenderer = viewRenderer ?? throw new ArgumentNullException(nameof(viewRenderer));
             _emailSender = emailSender ?? throw new ArgumentNullException(nameof(emailSender));
@@ -92,7 +70,7 @@ namespace NextSolution.Core.Services
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 
-            var formValidator = _validatorProvider.GetRequiredService<SignUpFormValidator>();
+            var formValidator = _serviceProvider.GetRequiredService<SignUpFormValidator>();
             var formValidationResult = await formValidator.ValidateAsync(form, cancellationToken);
 
             if (!formValidationResult.IsValid)
@@ -138,7 +116,7 @@ namespace NextSolution.Core.Services
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 
-            var formValidator = _validatorProvider.GetRequiredService<SignInFormValidator>();
+            var formValidator = _serviceProvider.GetRequiredService<SignInFormValidator>();
             var formValidationResult = await formValidator.ValidateAsync(form, cancellationToken);
 
             if (!formValidationResult.IsValid)
@@ -160,7 +138,7 @@ namespace NextSolution.Core.Services
             var session = await _userRepository.GenerateSessionAsync(user, cancellationToken);
             await _userRepository.AddSessionAsync(user, session, cancellationToken);
 
-            var model = await _userMapper.MapAsync(user, session);
+            var model = await _modelBuilder.BuildAsync(user, session);
             await _mediator.Publish(new UserSignedIn(user));
             return model;
         }
@@ -169,7 +147,7 @@ namespace NextSolution.Core.Services
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 
-            var formValidator = _validatorProvider.GetRequiredService<SignUpWithFormValidator>();
+            var formValidator = _serviceProvider.GetRequiredService<SignUpWithFormValidator>();
             var formValidationResult = await formValidator.ValidateAsync(form, cancellationToken);
 
             if (!formValidationResult.IsValid)
@@ -218,7 +196,7 @@ namespace NextSolution.Core.Services
             var session = await _userRepository.GenerateSessionAsync(user, cancellationToken);
             await _userRepository.AddSessionAsync(user, session, cancellationToken);
 
-            var model = await _userMapper.MapAsync(user, session);
+            var model = await _modelBuilder.BuildAsync(user, session);
 
             await _mediator.Publish(isNewUser ? new UserSignedUp(user) : new UserSignedIn(user), cancellationToken);
             return model;
@@ -228,7 +206,7 @@ namespace NextSolution.Core.Services
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 
-            var formValidator = _validatorProvider.GetRequiredService<SignOutFormValidator>();
+            var formValidator = _serviceProvider.GetRequiredService<SignOutFormValidator>();
             var formValidationResult = await formValidator.ValidateAsync(form, cancellationToken);
 
             if (!formValidationResult.IsValid)
@@ -247,7 +225,7 @@ namespace NextSolution.Core.Services
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 
-            var formValidator = _validatorProvider.GetRequiredService<RefreshSessionFormValidator>();
+            var formValidator = _serviceProvider.GetRequiredService<RefreshSessionFormValidator>();
             var formValidationResult = await formValidator.ValidateAsync(form, cancellationToken);
 
             if (!formValidationResult.IsValid)
@@ -262,7 +240,7 @@ namespace NextSolution.Core.Services
             var session = await _userRepository.GenerateSessionAsync(user, cancellationToken);
             await _userRepository.AddSessionAsync(user, session, cancellationToken);
 
-            var model = await _userMapper.MapAsync(user, session);
+            var model = await _modelBuilder.BuildAsync(user, session);
             return model;
         }
 
@@ -270,7 +248,7 @@ namespace NextSolution.Core.Services
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 
-            var formValidator = _validatorProvider.GetRequiredService<SendUsernameTokenFormValidator>();
+            var formValidator = _serviceProvider.GetRequiredService<SendUsernameTokenFormValidator>();
             var formValidationResult = await formValidator.ValidateAsync(form, cancellationToken);
 
             if (!formValidationResult.IsValid)
@@ -315,7 +293,7 @@ namespace NextSolution.Core.Services
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 
-            var formValidator = _validatorProvider.GetRequiredService<VerifyUsernameFormValidator>();
+            var formValidator = _serviceProvider.GetRequiredService<VerifyUsernameFormValidator>();
             var formValidationResult = await formValidator.ValidateAsync(form, cancellationToken);
 
             if (!formValidationResult.IsValid)
@@ -350,7 +328,7 @@ namespace NextSolution.Core.Services
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 
-            var formValidator = _validatorProvider.GetRequiredService<SendPasswordResetTokenFormValidator>();
+            var formValidator = _serviceProvider.GetRequiredService<SendPasswordResetTokenFormValidator>();
             var formValidationResult = await formValidator.ValidateAsync(form, cancellationToken);
 
             if (!formValidationResult.IsValid)
@@ -394,7 +372,7 @@ namespace NextSolution.Core.Services
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 
-            var formValidator = _validatorProvider.GetRequiredService<ResetPasswordFormValidator>();
+            var formValidator = _serviceProvider.GetRequiredService<ResetPasswordFormValidator>();
             var formValidationResult = await formValidator.ValidateAsync(form, cancellationToken);
 
             if (!formValidationResult.IsValid)
@@ -423,7 +401,7 @@ namespace NextSolution.Core.Services
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 
-            var formValidator = _validatorProvider.GetRequiredService<ChangePasswordFormValidator>();
+            var formValidator = _serviceProvider.GetRequiredService<ChangePasswordFormValidator>();
             var formValidationResult = await formValidator.ValidateAsync(form, cancellationToken);
 
             if (!formValidationResult.IsValid)
@@ -441,7 +419,7 @@ namespace NextSolution.Core.Services
             var predicate = searchParams.Build();
 
             var page = (await _userRepository.GetManyAsync(pageNumber, pageSize, predicate: predicate, cancellationToken: cancellationToken));
-            var pageModel = await _userMapper.MapAsync(page);
+            var pageModel = await _modelBuilder.BuildAsync(page, cancellationToken);
             return pageModel;
         }
 
@@ -449,7 +427,7 @@ namespace NextSolution.Core.Services
         {
             var currentUser = _userContext.UserId != null ? await _userRepository.GetByIdAsync(_userContext.UserId.Value, cancellationToken) : null;
             if (currentUser == null) throw new UnauthorizedException();
-            var currentUserModel = await _userMapper.MapAsync(currentUser, cancellationToken);
+            var currentUserModel = await _modelBuilder.BuildAsync(currentUser, cancellationToken);
             return currentUserModel;
         }
 
@@ -457,7 +435,7 @@ namespace NextSolution.Core.Services
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 
-            var formValidator = _validatorProvider.GetRequiredService<EditUserFormValidator>();
+            var formValidator = _serviceProvider.GetRequiredService<EditUserFormValidator>();
             var formValidationResult = await formValidator.ValidateAsync(form, cancellationToken);
 
             if (!formValidationResult.IsValid)
@@ -487,7 +465,7 @@ namespace NextSolution.Core.Services
             if (form == null) throw new ArgumentNullException(nameof(form));
 
             form.Type = MediaType.Image;
-            var formValidator = _validatorProvider.GetRequiredService<UploadMediaChunkFormValidator>();
+            var formValidator = _serviceProvider.GetRequiredService<UploadMediaChunkFormValidator>();
             var formValidationResult = await formValidator.ValidateAsync(form, cancellationToken);
 
             if (!formValidationResult.IsValid)
@@ -583,5 +561,27 @@ namespace NextSolution.Core.Services
 
             return ValueTask.CompletedTask;
         }
+    }
+
+    public interface IUserService : IDisposable, IAsyncDisposable
+    {
+        // Account
+        Task<UserWithSessionModel> RefreshSessionAsync(RefreshSessionForm form);
+        Task ChangePasswordAsync(ChangePasswordForm form);
+        Task ResetPasswordAsync(ResetPasswordForm form);
+        Task SendPasswordResetTokenAsync(SendPasswordResetTokenForm form);
+        Task SendUsernameTokenAsync(SendUsernameTokenForm form);
+        Task<UserWithSessionModel> SignInAsync(SignInForm form);
+        Task<UserWithSessionModel> SignInWithAsync(SignUpWithForm form);
+        Task SignOutAsync(SignOutForm form);
+        Task SignUpAsync(SignUpForm form);
+        Task VerifyUsernameAsync(VerifyUsernameForm form);
+
+        // User
+        Task<UserPageModel> GetUsersAsync(UserSearchParams searchParams, int pageNumber, int pageSize);
+        Task<UserModel> GetCurrentUserAsync();
+        Task EditCurrentUserAsync(EditUserForm form);
+        Task UploadCurrentUserAvatarAsync(UploadMediaChunkForm form);
+        Task<MediaModel> GetCurrentUserAvatarAsync();
     }
 }

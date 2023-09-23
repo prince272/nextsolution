@@ -9,8 +9,8 @@ export const appConfig = {
       href: "/"
     },
     {
-      label: "Platform",
-      href: "/platform"
+      label: "ChatGPT",
+      href: "/chatgpt"
     },
     {
       label: "About",

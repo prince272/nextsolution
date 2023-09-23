@@ -3,12 +3,12 @@
 import { FC, ReactNode } from "react";
 import { Link } from "@nextui-org/link";
 
-import { useApp } from "./provider";
+import { Loader } from "../ui/loader";
 import { PublicNavbar } from "./public-navbar";
-import { Loader } from "./ui/loader";
+import { useAppStore } from "./state";
 
 export const PublicLayout: FC<{ children: ReactNode }> = ({ children }) => {
-  const app = useApp();
+  const app = useAppStore();
 
   return (
     <Loader loading={app.loading} className="relative flex min-h-screen flex-col">

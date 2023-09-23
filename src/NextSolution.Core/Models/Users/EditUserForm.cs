@@ -41,9 +41,9 @@ namespace NextSolution.Core.Models.Users
         }
     }
 
-    public class EditUserProfile : AbstractProfile
+    public class EditUserFormProfile : AbstractProfile
     {
-        public EditUserProfile()
+        public EditUserFormProfile()
         {
             CreateMap<EditUserForm, User>();
         }

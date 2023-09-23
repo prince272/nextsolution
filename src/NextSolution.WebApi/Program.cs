@@ -44,14 +44,16 @@ try
         options.UseSqlServer(connectionString, sqlOptions => sqlOptions.MigrationsAssembly(typeof(AppDbContext).Assembly.GetName().Name));
     });
 
-    builder.Services.AddRepositories(assemblies);
-
-    builder.Services.AddValidators(assemblies);
+    builder.Services.AddAutoMapper(assemblies);
 
     builder.Services.AddMediatR(options =>
     {
         options.RegisterServicesFromAssemblies(assemblies);
     });
+
+    builder.Services.AddRepositories(assemblies);
+
+    builder.Services.AddValidators(assemblies);
 
     // Add identity services.
     builder.Services.AddIdentity<User, Role>(options =>
@@ -112,7 +114,7 @@ try
     builder.Services.AddMailKitEmailSender(builder.Configuration.GetRequiredSection("Mailing:MailKit"));
     builder.Services.AddFakeSmsSender();
     builder.Services.AddRazorViewRenderer();
-    builder.Services.AddLocalStorage(options =>
+    builder.Services.AddLocalFileStorage(options =>
     {
         options.RootPath = Path.Combine(builder.Environment.WebRootPath, "uploads");
         options.WebRootPath = "/uploads";
@@ -142,7 +144,6 @@ try
         options.Cookie.HttpOnly = true;
         options.Cookie.IsEssential = true;
     });
-
 
     builder.Services.AddSignalR();
 

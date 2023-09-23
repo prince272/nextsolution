@@ -41,9 +41,9 @@ namespace NextSolution.Core.Models.Users
         public IEnumerable<string> Roles { get; set; } = Array.Empty<string>();
     }
 
-    public class UserProfile : AbstractProfile
+    public class UserModelProfile : AbstractProfile
     {
-        public UserProfile()
+        public UserModelProfile()
         {
             CreateMap<User, UserModel>();
         }

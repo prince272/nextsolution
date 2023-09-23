@@ -1,38 +1,19 @@
 "use client";
 
-import { createContext, FC, ReactNode, useContext, useEffect, useState } from "react";
+import { Component, createContext, FC, ReactNode, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { DialogProvider, DialogRouter } from "@/dialogs/provider";
+import { DialogProvider, DialogRouter } from "@/ui/dialog-provider";
 import { NextUIProvider } from "@nextui-org/system";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
-import queryString from "query-string";
 import { Toaster, ToastOptions } from "react-hot-toast";
 
 import { useApi, useUser } from "@/lib/api/client";
 import { ExternalWindow } from "@/lib/external-window";
-import { useDebounceCallback } from "@/lib/hooks/useDebounceCallback";
+import { useLocalStorage } from "@/lib/hooks";
 import { SignalRProvider } from "@/lib/signalr";
 
-export interface AppContextType {
-  authenticate: () => void;
-  loading: boolean;
-  sidebar: {
-    open: () => void;
-    close: () => void;
-    toggle: () => void;
-    opened: boolean;
-  };
-}
-
-const AppContext = createContext<AppContextType>(undefined!);
-
-export const useApp = () => {
-  const context = useContext(AppContext);
-  if (context === undefined) {
-    throw new Error("useApp must be used within AppProvider");
-  }
-  return context;
-};
+import * as dialogs from "./dialogs";
+import { useAppStore } from "./state";
 
 export interface AppProviderProps {
   children: ReactNode;
@@ -40,34 +21,17 @@ export interface AppProviderProps {
 
 export function AppProvider({ children }: AppProviderProps) {
   const api = useApi();
-  const router = useRouter();
+  const app = useAppStore();
   const currentUser = useUser();
-  const [loading, setLoading] = useState(true);
-  const [sidebarOpened, setSidebarOpened] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const authenticateCallback = useDebounceCallback(500);
 
   useEffect(() => {
     setMounted(true);
     setTimeout(() => {
-      setLoading(false);
+      app.completeLoading();
       ExternalWindow.notify();
     }, 1500);
   }, []);
-
-  const value = {
-    authenticate: () =>
-      authenticateCallback(() => {
-        if (!currentUser) router.replace(queryString.stringifyUrl({ url: "/", query: { dialogId: "sign-in" } }));
-      }),
-    loading,
-    sidebar: {
-      opened: sidebarOpened,
-      open: () => setSidebarOpened(true),
-      close: () => setSidebarOpened(false),
-      toggle: () => setSidebarOpened((prev) => !prev)
-    }
-  };
 
   const toastOptions = {
     duration: 5000,
@@ -88,25 +52,23 @@ export function AppProvider({ children }: AppProviderProps) {
   } as ToastOptions;
 
   return (
-    <AppContext.Provider value={value}>
-      <SignalRProvider
-        withCredentials={api.config.withCredentials}
-        automaticReconnect={true}
-        connectEnabled={mounted}
-        accessTokenFactory={currentUser ? () => currentUser.accessToken : undefined}
-        dependencies={[currentUser]} // remove previous connection and create a new connection if changed
-        url={new URL("/signalr", api.config.baseURL).toString()}
-      >
-        <NextUIProvider>
-          <NextThemesProvider {...{ attribute: "class", defaultTheme: "dark" }}>
-            <DialogProvider>
-              <DialogRouter loading={loading} />
-              {children}
-            </DialogProvider>
-          </NextThemesProvider>
-          <Toaster toastOptions={toastOptions} />
-        </NextUIProvider>
-      </SignalRProvider>
-    </AppContext.Provider>
+    <SignalRProvider
+      withCredentials={api.config.withCredentials}
+      automaticReconnect={true}
+      connectEnabled={mounted}
+      accessTokenFactory={currentUser ? () => currentUser.accessToken : undefined}
+      dependencies={[currentUser]} // remove previous connection and create a new connection if changed
+      url={new URL("/signalr", api.config.baseURL).toString()}
+    >
+      <NextUIProvider>
+        <NextThemesProvider {...{ attribute: "class", defaultTheme: "dark" }}>
+          <DialogProvider components={Object.entries(dialogs).map(([name, Component]) => ({ name, Component }))}>
+            <DialogRouter loading={app.loading} />
+            {children}
+          </DialogProvider>
+        </NextThemesProvider>
+        <Toaster toastOptions={toastOptions} />
+      </NextUIProvider>
+    </SignalRProvider>
   );
 }

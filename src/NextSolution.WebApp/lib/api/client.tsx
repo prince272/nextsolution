@@ -1,29 +1,48 @@
 "use client";
 
-import { createContext, FC, ReactNode, useContext, useRef } from "react";
+import { createContext, FC, ReactNode, useContext, useEffect, useRef, useState } from "react";
 
 import { useCookies } from "../cookies/client";
+import { useDebounceCallback } from "../hooks";
 import { Api } from "./core";
 import { ApiConfig, User } from "./types";
 
 const ApiContext = createContext<Api>(undefined!);
 
 export const useApi = (): Api => {
-  const context = useContext(ApiContext);
-  if (context === undefined) {
+  const api = useContext(ApiContext);
+  if (api === undefined) {
     throw new Error("useApi must be used within ApiProvider");
   }
-  return context;
+  return api;
 };
 
 export const useUser = (): User | null | undefined => {
-  const context = useContext(ApiContext);
-  if (context === undefined) {
+  const api = useContext(ApiContext);
+  if (api === undefined) {
     throw new Error("useUser must be used within ApiProvider");
   }
 
-  const [{ user }] = context.state.useState();
+  const [user, setUser] = useState<User | null | undefined>(api.user.value);
+
+  useEffect(() => {
+    const subscription = api.user.subscribe((currentUser) => {
+      setUser(currentUser);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [api.user]);
   return user;
+};
+
+export const useAuthentication = (fn: () => void) => {
+  const currentUser = useUser();
+  const authenticateCallback = useDebounceCallback(1000);
+  authenticateCallback(() => {
+    if (!currentUser) fn();
+  });
 };
 
 export const ApiProvider: FC<{ config: ApiConfig; children: ReactNode }> = ({ config, children }) => {

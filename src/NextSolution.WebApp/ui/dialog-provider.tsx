@@ -6,9 +6,7 @@ import PQueue from "p-queue";
 import queryString from "query-string";
 
 import { usePrevious, useStateAsync } from "@/lib/hooks";
-import { isEqualSearchParams, sleep } from "@/lib/utils";
-
-import * as components from ".";
+import { sleep } from "@/lib/utils";
 
 export interface DialogContextProps {
   open: (id: string, props?: any) => Promise<any>;
@@ -36,15 +34,15 @@ export const useDialog = () => {
   return context;
 };
 
-const dialogComponents = Object.entries(components).map(([name, Component]) => {
-  const id = name.replace(/Modal$/, "").replace(/[A-Z]/g, (char, index) => (index !== 0 ? "-" : "") + char.toLowerCase());
-  return { id, name, Component };
-});
-
-export const DialogProvider: FC<{ children: ReactNode }> = ({ children }) => {
+export const DialogProvider: FC<{ children: ReactNode; components: { name: string; Component: ComponentType<any> }[] }> = ({ children, components }) => {
   const queueRef = useRef(new PQueue({ concurrency: 1 }));
 
-  const [dialogs, setDialogs] = useStateAsync<DialogProps[]>(dialogComponents as any);
+  const [dialogs, setDialogs] = useStateAsync<DialogProps[]>(
+    components.map(({ name, Component }) => {
+      const id = name.replace(/Modal$/, "").replace(/[A-Z]/g, (char, index) => (index !== 0 ? "-" : "") + char.toLowerCase());
+      return { id, name, Component };
+    }) as any
+  );
 
   const updateDialog = (id: string, dialog: Partial<DialogProps>) => {
     return setDialogs((prevDialogs) => prevDialogs.map((d) => (d.id === id ? { ...d, ...dialog } : d)));

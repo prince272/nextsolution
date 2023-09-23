@@ -39,6 +39,7 @@
     "axios": "^1.5.0",
     "axios-retry": "^3.7.0",
     "clsx": "^2.0.0",
+    "crypto-es": "^2.0.4",
     "eslint": "8.48.0",
     "eslint-config-next": "13.4.19",
     "filepond-plugin-image-preview": "^4.6.11",
@@ -64,10 +65,11 @@
     "react-sticky-box": "^2.0.4",
     "react-timer-hook": "^3.0.7",
     "react-virtuoso": "^4.5.1",
-    "state-pool": "^0.10.0",
+    "rxjs": "^7.8.1",
     "tailwind-variants": "^0.1.13",
     "tailwindcss": "3.3.3",
-    "typescript": "5.0.4"
+    "typescript": "5.0.4",
+    "zustand": "^4.4.1"
   },
   "devDependencies": {
     "@ianvs/prettier-plugin-sort-imports": "^4.1.0",

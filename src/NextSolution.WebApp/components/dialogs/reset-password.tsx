@@ -4,6 +4,8 @@ import { FC, useRef, useState } from "react";
 import NextLink from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { ChevronLeftIcon, ChevronRightIcon, GoogleIcon, PersonIcon } from "@/assets/icons";
+import { PasswordInput } from "@/ui/password-input";
+import { PhoneInput } from "@/ui/phone-input";
 import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
 import { Link } from "@nextui-org/link";
@@ -19,8 +21,6 @@ import { useApi } from "@/lib/api/client";
 import { getApiErrorMessage, isApiError } from "@/lib/api/utils";
 import { useConditionalState } from "@/lib/hooks";
 import { cn } from "@/lib/utils";
-import { PasswordInput } from "@/components/ui/password-input";
-import { PhoneInput } from "@/components/ui/phone-input";
 
 export interface ResetPasswordProps {
   opened: boolean;

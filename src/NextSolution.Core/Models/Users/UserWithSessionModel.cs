@@ -11,9 +11,7 @@ namespace NextSolution.Core.Models.Users
 {
     public class UserWithSessionModel : UserModel
     {
-
         public bool EmailConfirmed { get; set; }
-
 
         public bool PhoneNumberConfirmed { get; set; }
 
@@ -24,9 +22,9 @@ namespace NextSolution.Core.Models.Users
         public string? TokenType { get; set; }
     }
 
-    public class UserSessionProfile : AbstractProfile
+    public class UserWithSessionModelProfile : AbstractProfile
     {
-        public UserSessionProfile()
+        public UserWithSessionModelProfile()
         {
             CreateMap<User, UserWithSessionModel>();
             CreateMap<UserSessionInfo, UserWithSessionModel>();

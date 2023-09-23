@@ -15,21 +15,21 @@ namespace NextSolution.Infrastructure.FileStorage.Local
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddLocalStorage(this IServiceCollection services, Action<LocalFileStorageOptions> options)
+        public static IServiceCollection AddLocalFileStorage(this IServiceCollection services, Action<LocalFileStorageOptions> options)
         {
             services.Configure(options);
-            services.AddLocalStorage();
+            services.AddLocalFileStorage();
             return services;
         }
 
-        public static IServiceCollection AddLocalStorage(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddLocalFileStorage(this IServiceCollection services, IConfiguration configuration)
         {
             services.Configure<LocalFileStorageOptions>(configuration);
-            services.AddLocalStorage();
+            services.AddLocalFileStorage();
             return services;
         }
 
-        public static IServiceCollection AddLocalStorage(this IServiceCollection services)
+        public static IServiceCollection AddLocalFileStorage(this IServiceCollection services)
         {
             services.AddTransient<IFileStorage, LocalFileStorage>();
             return services;

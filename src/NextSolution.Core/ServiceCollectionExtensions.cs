@@ -11,7 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using NextSolution.Core.Entities;
 using FluentValidation;
-using NextSolution.Core.Mappers;
+using NextSolution.Core.Models;
 
 namespace NextSolution.Core
 {
@@ -19,10 +19,8 @@ namespace NextSolution.Core
     {
         public static IServiceCollection AddApplication(this IServiceCollection services, IEnumerable<Assembly> assemblies)
         {
-            services.AddAutoMapper(assemblies);
-
             services.AddScoped<IUserService, UserService>();
-            services.AddTransient<IUserMapper, UserMapper>();
+            services.AddTransient<IModelBuilder, ModelBuilder>();
 
             services.Configure<MediaServiceOptions>(options =>
             {

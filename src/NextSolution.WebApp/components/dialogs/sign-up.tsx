@@ -4,6 +4,8 @@ import { FC, useRef, useState } from "react";
 import NextLink from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { ChevronLeftIcon, ChevronRightIcon, GoogleIcon, PersonIcon } from "@/assets/icons";
+import { PasswordInput } from "@/ui/password-input";
+import { PhoneInput } from "@/ui/phone-input";
 import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
 import { Link } from "@nextui-org/link";
@@ -19,28 +21,30 @@ import { useApi } from "@/lib/api/client";
 import { getApiErrorMessage, isApiError } from "@/lib/api/utils";
 import { useConditionalState } from "@/lib/hooks";
 import { cn } from "@/lib/utils";
-import { PasswordInput } from "@/components/ui/password-input";
-import { PhoneInput } from "@/components/ui/phone-input";
 
-export type SignInMethods = "credentials" | "google";
+export type SignUpMethods = "credentials" | "google";
 
-export interface SignInProps {
+export interface SignUpProps {
   opened: boolean;
   onClose: (force?: boolean) => void;
 }
 
-export interface SignInInputs {
+export interface SignUpInputs {
+  firstName: string;
+  lastName: string;
   username: string;
   password: string;
 }
 
-export const SignInModal: FC<SignInProps> = ({ opened, onClose }) => {
+export const SignUpModal: FC<SignUpProps> = ({ opened, onClose }) => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [method, setMethod] = useState<SignInMethods | null>(searchParams.get("method") as any);
+  const [method, setMethod] = useState<SignUpMethods | null>(searchParams.get("method") as any);
   const api = useApi();
-  const form = useForm<SignInInputs>({
+  const form = useForm<SignUpInputs>({
     defaultValues: {
+      firstName: "",
+      lastName: "",
       username: "",
       password: ""
     }
@@ -50,11 +54,16 @@ export const SignInModal: FC<SignInProps> = ({ opened, onClose }) => {
 
   const [state, setState] = useState<{ action: "idle" | "loading" | "submitting"; error?: any }>({ action: "idle", error: null });
 
-  const onSignIn: SubmitHandler<SignInInputs> = async (inputs) => {
+  const onSignUp: SubmitHandler<SignUpInputs> = async (inputs) => {
     try {
       setState({ action: "submitting" });
-      await api.signIn(inputs);
-      onClose(false);
+      await api.signUp(inputs);
+
+      try {
+        await api.signIn(inputs);
+      } catch {}
+
+      onClose();
     } catch (error) {
       setState({ action: "idle", error });
 
@@ -71,11 +80,11 @@ export const SignInModal: FC<SignInProps> = ({ opened, onClose }) => {
     }
   };
 
-  const onSignInWith = async (provider: Exclude<SignInMethods, "credentials">) => {
+  const onSignUpWith = async (provider: Exclude<SignUpMethods, "credentials">) => {
     try {
       setMethod(provider);
       await api.signInWith(provider);
-      onClose(false);
+      onClose();
     } catch (error) {
       setMethod(null);
       toast.error(getApiErrorMessage(error), { id: componentId });
@@ -86,10 +95,44 @@ export const SignInModal: FC<SignInProps> = ({ opened, onClose }) => {
     <>
       <Modal isOpen={opened} onClose={onClose}>
         <ModalContent>
-          <ModalHeader className="flex flex-col gap-1">Sign in to your account</ModalHeader>
+          <ModalHeader className="flex flex-col gap-1">Create a new account</ModalHeader>
           <ModalBody>
-            <form onSubmit={form.handleSubmit(onSignIn)}>
-              <div className={cn("grid gap-y-5 pb-2.5", method != "credentials" && "hidden")}>
+            <form onSubmit={form.handleSubmit(onSignUp)}>
+              <div className={cn("grid grid-cols-12 gap-x-5 gap-y-5 pb-2.5", method != "credentials" && "hidden")}>
+                <Controller
+                  control={form.control}
+                  name="firstName"
+                  render={({ field: { onChange, onBlur, value, ref } }) => (
+                    <Input
+                      ref={ref}
+                      onChange={(e) => onChange(e.target.value)}
+                      onBlur={onBlur}
+                      value={value}
+                      isInvalid={!!formErrors.firstName}
+                      errorMessage={formErrors.firstName?.message}
+                      autoComplete="off"
+                      label="First name"
+                      className="col-span-6"
+                    />
+                  )}
+                />
+                <Controller
+                  control={form.control}
+                  name="lastName"
+                  render={({ field: { onChange, onBlur, value, ref } }) => (
+                    <Input
+                      ref={ref}
+                      onChange={(e) => onChange(e.target.value)}
+                      onBlur={onBlur}
+                      value={value}
+                      isInvalid={!!formErrors.lastName}
+                      errorMessage={formErrors.lastName?.message}
+                      autoComplete="off"
+                      label="Last name"
+                      className="col-span-6"
+                    />
+                  )}
+                />
                 <Controller
                   control={form.control}
                   name="username"
@@ -103,37 +146,32 @@ export const SignInModal: FC<SignInProps> = ({ opened, onClose }) => {
                       errorMessage={formErrors.username?.message}
                       autoComplete="off"
                       label="Email or phone number"
+                      className="col-span-12"
                       countryVisibility="auto"
                     />
                   )}
                 />
-                <div>
-                  <Controller
-                    control={form.control}
-                    name="password"
-                    render={({ field: { onChange, onBlur, value, ref } }) => (
-                      <PasswordInput
-                        ref={ref}
-                        onChange={(e) => onChange(e.target.value)}
-                        onBlur={onBlur}
-                        value={value}
-                        isInvalid={!!formErrors.password}
-                        errorMessage={formErrors.password?.message}
-                        autoComplete="off"
-                        label="Password"
-                      />
-                    )}
-                  />
-                  <div className="flex items-center justify-end pt-2 text-end text-sm">
-                    <Link as={NextLink} className="text-sm" href={queryString.stringifyUrl({ url: pathname, query: { dialogId: "reset-password" } })}>
-                      Forgot password?
-                    </Link>
-                  </div>
-                </div>
-                <Button color="primary" type="submit" isLoading={state.action == "submitting"}>
-                  Sign in
+                <Controller
+                  control={form.control}
+                  name="password"
+                  render={({ field: { onChange, onBlur, value, ref } }) => (
+                    <PasswordInput
+                      ref={ref}
+                      onChange={(e) => onChange(e.target.value)}
+                      onBlur={onBlur}
+                      value={value}
+                      isInvalid={!!formErrors.password}
+                      errorMessage={formErrors.password?.message}
+                      autoComplete="off"
+                      label="Password"
+                      className="col-span-12"
+                    />
+                  )}
+                />
+                <Button color="primary" className="col-span-12" type="submit" isLoading={state.action == "submitting"}>
+                  Sign up
                 </Button>
-                <div className="flex items-center justify-center text-center text-sm">
+                <div className="col-span-12 flex items-center justify-center text-center text-sm">
                   <Link as="button" className="text-sm" type="button" onPress={() => setMethod(null)}>
                     <ChevronLeftIcon className="h-4 w-4" /> Go back
                   </Link>
@@ -155,16 +193,16 @@ export const SignInModal: FC<SignInProps> = ({ opened, onClose }) => {
                 startContent={method != "google" && <GoogleIcon className="h-6 w-6" />}
                 isLoading={method == "google"}
                 spinner={<Spinner color="current" size="sm" />}
-                onPress={() => onSignInWith("google")}
+                onPress={() => onSignUpWith("google")}
               >
                 Continue with Google
               </Button>
             </div>
           </ModalBody>
           <ModalFooter className="flex items-center justify-center text-center text-sm">
-            Don&apos;t have an account?{" "}
-            <Link as={NextLink} className="text-sm" href={queryString.stringifyUrl({ url: pathname, query: { dialogId: "sign-up", method: method ?? undefined } })}>
-              Sign up <ChevronRightIcon className="h-4 w-4" />
+            Already have an account?{" "}
+            <Link as={NextLink} className="text-sm" href={queryString.stringifyUrl({ url: pathname, query: { dialogId: "sign-in", method: method ?? undefined } })}>
+              Sign In <ChevronRightIcon className="h-4 w-4" />
             </Link>
           </ModalFooter>
         </ModalContent>
