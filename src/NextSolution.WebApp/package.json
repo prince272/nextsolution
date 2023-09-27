@@ -12,6 +12,7 @@
     "format": "prettier --write ."
   },
   "dependencies": {
+    "@faker-js/faker": "^8.1.0",
     "@nextui-org/button": "2.0.15",
     "@nextui-org/code": "2.0.13",
     "@nextui-org/dropdown": "^2.1.9",
@@ -21,7 +22,9 @@
     "@nextui-org/listbox": "^2.1.9",
     "@nextui-org/modal": "^2.0.20",
     "@nextui-org/navbar": "2.0.16",
+    "@nextui-org/progress": "^2.0.21",
     "@nextui-org/select": "^2.1.10",
+    "@nextui-org/skeleton": "^2.0.19",
     "@nextui-org/snippet": "2.0.19",
     "@nextui-org/spinner": "^2.0.16",
     "@nextui-org/switch": "2.0.15",
@@ -40,6 +43,7 @@
     "axios-retry": "^3.7.0",
     "clsx": "^2.0.0",
     "crypto-es": "^2.0.4",
+    "dayjs": "^1.11.10",
     "eslint": "8.48.0",
     "eslint-config-next": "13.4.19",
     "filepond-plugin-image-preview": "^4.6.11",

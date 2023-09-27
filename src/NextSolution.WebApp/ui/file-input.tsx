@@ -1,11 +1,11 @@
 "use client";
 
-import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
+import { ElementRef, forwardRef, useRef } from "react";
 import FilePondPluginImagePreview from "filepond-plugin-image-preview";
 import { FilePond, FilePondProps, registerPlugin } from "react-filepond";
 
-import "filepond/dist/filepond.min.css";
 import "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css";
+import "filepond/dist/filepond.min.css";
 
 import { FilePondCallbackProps, FilePondFile, FilePondInitialFile, FilePondServerConfigProps, FilePondStyleProps } from "filepond";
 import toast from "react-hot-toast";
@@ -23,7 +23,7 @@ export interface FileInputProps extends Omit<FilePondProps, keyof FilePondCallba
   endpoint: string;
 }
 
-const FileInput = forwardRef<FilePond, FileInputProps>(({ value, onChange, endpoint, variant = "rectangle", ...props }, ref) => {
+const FileInput = forwardRef<ElementRef<typeof FilePond>, FileInputProps>(({ value, onChange, endpoint, variant = "rectangle", ...props }, ref) => {
   const api = useApi();
   const currentUser = useUser();
   const componentId = useRef(uuidv4()).current;

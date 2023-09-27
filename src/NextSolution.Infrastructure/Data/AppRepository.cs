@@ -1,8 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using NextSolution.Core.Shared;
+using NextSolution.Core.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Drawing.Printing;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
@@ -122,27 +124,49 @@ namespace NextSolution.Infrastructure.Data
             return await GetQueryable(null, orderBy, include, enableTracking: true, enableFilters: true).Select(selector).ToArrayAsync(cancellationToken);
         }
 
-        public virtual async Task<IPageable<TEntity>> GetManyAsync(int pageNumber, int pageSize,
+        public virtual async Task<IPageable<TEntity>> GetManyAsync(long offset, int limit,
             Expression<Func<TEntity, bool>>? predicate = null,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
             Expression<Func<TEntity, object>>[]? include = null,
             CancellationToken cancellationToken = default)
         {
-            return await GetQueryable(predicate, orderBy, include, enableTracking: false, enableFilters: true).PaginateAsync(pageNumber, pageSize, cancellationToken);
+            if (offset < 0)
+                throw new ArgumentException("Offset must be greater than or equal to 0.");
+
+            if (limit < 1)
+                throw new ArgumentException("Limit must be greater than or equal to 1.");
+
+            var query = GetQueryable(predicate, orderBy, include, enableTracking: false, enableFilters: true);
+
+            var totalItems = await query.LongCountAsync(cancellationToken);
+            var items = await query.LongSkip(offset).Take(limit).ToListAsync(cancellationToken);
+            var result = new Pageable<TEntity>(offset, limit, totalItems, items);
+            return result;
         }
 
-        public virtual async Task<IPageable<TResult>> GetManyAsync<TResult>(int pageNumber, int pageSize,
+        public virtual async Task<IPageable<TResult>> GetManyAsync<TResult>(long offset, int limit,
             Expression<Func<TEntity, TResult>> selector,
             Expression<Func<TEntity, bool>>? predicate = null,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
             Expression<Func<TEntity, object>>[]? include = null,
             CancellationToken cancellationToken = default)
         {
+            if (offset < 0)
+                throw new ArgumentException("Offset must be greater than or equal to 0.");
+
+            if (limit < 1)
+                throw new ArgumentException("Limit must be greater than or equal to 1.");
+
             if (selector == null) throw new ArgumentNullException(nameof(selector));
-            return await GetQueryable(predicate, orderBy, include, enableTracking: false, enableFilters: true).Select(selector).PaginateAsync(pageNumber, pageSize, cancellationToken);
+            var query = GetQueryable(predicate, orderBy, include, enableTracking: false, enableFilters: true);
+
+            var totalItems = await query.LongCountAsync(cancellationToken);
+            var items = await query.LongSkip(offset).Take(limit).Select(selector).ToListAsync(cancellationToken);
+            var result = new Pageable<TResult>(offset, limit, totalItems, items);
+            return result;
         }
 
-        protected IQueryable<TEntity> GetQueryable(
+        protected virtual IQueryable<TEntity> GetQueryable(
             Expression<Func<TEntity, bool>>? predicate = null,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
             Expression<Func<TEntity, object>>[]? include = null,

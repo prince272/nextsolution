@@ -19,6 +19,8 @@ namespace NextSolution.Core
     {
         public static IServiceCollection AddApplication(this IServiceCollection services, IEnumerable<Assembly> assemblies)
         {
+            services.AddScoped<IChatService, ChatService>();
+
             services.AddScoped<IUserService, UserService>();
             services.AddTransient<IModelBuilder, ModelBuilder>();
 
@@ -76,7 +78,6 @@ namespace NextSolution.Core
                 })
                 .ToArray(); // Audio - 80MB
             });
-
             services.AddScoped<IMediaService, MediaService>();
             return services;
         }

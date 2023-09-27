@@ -1,32 +1,32 @@
 "use client";
 
-import { ElementRef, FC, forwardRef, LegacyRef, useEffect, useRef, useState } from "react";
+import { ElementRef, forwardRef, useEffect, useRef, useState } from "react";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalProps, useDisclosure } from "@nextui-org/modal";
 import { ModalSlots, SlotsToClasses } from "@nextui-org/theme";
 
-import { useForwardRef, useResponsive } from "@/lib/hooks";
+import { useResponsive } from "@/lib/hooks";
 import { cn } from "@/lib/utils";
 
 export interface SheetProps extends Omit<ModalProps, "placement"> {
   placement?: "left" | "right";
-  isSticky?: boolean;
+  isStatic?: boolean;
 }
 
-const Sheet: FC<SheetProps> = forwardRef<ElementRef<typeof Modal>, SheetProps>(
-  ({ placement = "left", shouldBlockScroll, isOpen, isDismissable, isSticky = false, onOpenChange, classNames, ...props }, ref) => {
+const Sheet = forwardRef<ElementRef<typeof Modal>, SheetProps>(
+  ({ placement = "left", shouldBlockScroll, isOpen, isDismissable, isStatic = false, onOpenChange, classNames, ...props }, ref) => {
     const [mounted, setMounted] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
     const { md } = useResponsive();
-    isSticky = mounted && md && isSticky;
+    isStatic = mounted && md && isStatic;
 
     const extendedClassNames = {
-      backdrop: cn(isSticky && "hidden", classNames?.backdrop),
-      base: cn(isSticky && "w-screen", "!m-0 h-full !rounded-none", classNames?.base),
+      backdrop: cn(isStatic && "hidden", classNames?.backdrop),
+      base: cn(isStatic && "w-screen", "!m-0 h-full !rounded-none", classNames?.base),
       body: cn("px-4", classNames?.body),
       closeButton: cn(classNames?.closeButton),
       footer: cn("px-4", classNames?.footer),
       header: cn("px-4", classNames?.header),
-      wrapper: cn(isSticky && "w-auto relative", placement == "left" ? "!justify-start" : placement == "right" ? "justify-end" : "", classNames?.wrapper)
+      wrapper: cn(isStatic && "w-auto relative", placement == "left" ? "!justify-start" : placement == "right" ? "justify-end" : "", classNames?.wrapper)
     } as SlotsToClasses<ModalSlots>;
 
     const motionProps =
@@ -48,20 +48,15 @@ const Sheet: FC<SheetProps> = forwardRef<ElementRef<typeof Modal>, SheetProps>(
       setMounted(true);
     }, []);
 
-    useEffect(() => {
-      if (!md) onOpenChange?.(false);
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [md]);
-
     return (
       <>
-        <div ref={containerRef} className={cn(isSticky && "sticky top-0 h-screen")}></div>
+        <div ref={containerRef} className={cn(isStatic && "sticky top-0 h-screen")}></div>
         <Modal
-          shouldBlockScroll={!isSticky && shouldBlockScroll}
-          isOpen={mounted ? isSticky || isOpen : false}
+          isKeyboardDismissDisabled={true}
+          shouldBlockScroll={!isStatic && shouldBlockScroll}
+          isOpen={isOpen}
           onOpenChange={onOpenChange}
-          isDismissable={!isSticky && isDismissable}
-          hideCloseButton={isSticky}
+          isDismissable={!isStatic && isDismissable}
           classNames={extendedClassNames}
           motionProps={motionProps}
           portalContainer={containerRef.current!}

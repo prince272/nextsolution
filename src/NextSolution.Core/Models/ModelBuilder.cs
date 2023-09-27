@@ -7,6 +7,7 @@ using NextSolution.Core.Models.Medias;
 using NextSolution.Core.Models.Users;
 using NextSolution.Core.Repositories;
 using NextSolution.Core.Shared;
+using NextSolution.Core.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -89,10 +90,11 @@ namespace NextSolution.Core.Models
             if (users == null) throw new ArgumentNullException(nameof(users));
 
             var pageModel = await BuildAsync<UserPageModel>(users, cancellationToken);
-            pageModel.PageNumber = users.PageNumber;
-            pageModel.PageSize = users.PageSize;
-            pageModel.TotalPages = users.TotalPages;
-            pageModel.TotalItems = users.TotalItems;
+            pageModel.Offset = users.Offset;
+            pageModel.Limit = users.Limit;
+            pageModel.Length = users.Length;
+            pageModel.Previous = users.Previous;
+            pageModel.Next = users.Next;
             return pageModel;
         }
 
@@ -130,10 +132,11 @@ namespace NextSolution.Core.Models
             if (chats == null) throw new ArgumentNullException(nameof(chats));
 
             var pageModel = await BuildAsync<ChatPageModel>(chats, cancellationToken);
-            pageModel.PageNumber = chats.PageNumber;
-            pageModel.PageSize = chats.PageSize;
-            pageModel.TotalPages = chats.TotalPages;
-            pageModel.TotalItems = chats.TotalItems;
+            pageModel.Offset = chats.Offset;
+            pageModel.Limit = chats.Limit;
+            pageModel.Length = chats.Length; 
+            pageModel.Previous = chats.Previous;
+            pageModel.Next = chats.Next;
             return pageModel;
         }
 

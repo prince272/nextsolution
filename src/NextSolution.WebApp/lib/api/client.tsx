@@ -33,11 +33,12 @@ export const useUser = (): User | null | undefined => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [api.user]);
+  }, []);
+
   return user;
 };
 
-export const useAuthentication = (fn: () => void) => {
+export const useUnauthenticated = (fn: () => void) => {
   const currentUser = useUser();
   const authenticateCallback = useDebounceCallback(1000);
   authenticateCallback(() => {

@@ -140,12 +140,12 @@ namespace NextSolution.Core.Services
             return model;
         }
 
-        public async Task<ChatPageModel> GetManyAsync(ChatSearchParams searchParams, int pageNumber, int pageSize)
+        public async Task<ChatPageModel> GetManyAsync(ChatSearchParams searchParams, long offset, int limit)
         {
             if (searchParams == null) throw new ArgumentNullException(nameof(searchParams));
             var predicate = searchParams.Build();
 
-            var page = (await _chatRepository.GetManyAsync(pageNumber, pageSize, predicate: predicate, cancellationToken: cancellationToken));
+            var page = (await _chatRepository.GetManyAsync(offset, limit, predicate: predicate, cancellationToken: cancellationToken));
             var pageModel = await _modelBuilder.BuildAsync(page, cancellationToken);
             return pageModel;
         }
@@ -205,6 +205,6 @@ namespace NextSolution.Core.Services
 
         Task<ChatModel> GetAsync(GetChatForm form);
 
-        Task<ChatPageModel> GetManyAsync(ChatSearchParams searchParams, int pageNumber, int pageSize);
+        Task<ChatPageModel> GetManyAsync(ChatSearchParams searchParams, long offset, int limit);
     }
 }

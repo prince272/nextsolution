@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NextSolution.Core.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -58,13 +59,13 @@ namespace NextSolution.Core.Shared
             Expression<Func<TEntity, object>>[]? include = null,
             CancellationToken cancellationToken = default);
 
-        Task<IPageable<TEntity>> GetManyAsync(int pageNumber, int pageSize,
+        Task<IPageable<TEntity>> GetManyAsync(long offset, int limit,
             Expression<Func<TEntity, bool>>? predicate = null,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
             Expression<Func<TEntity, object>>[]? include = null,
             CancellationToken cancellationToken = default);
 
-        Task<IPageable<TResult>> GetManyAsync<TResult>(int pageNumber, int pageSize,
+        Task<IPageable<TResult>> GetManyAsync<TResult>(long offset, int limit,
             Expression<Func<TEntity, TResult>> selector,
             Expression<Func<TEntity, bool>>? predicate = null,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,

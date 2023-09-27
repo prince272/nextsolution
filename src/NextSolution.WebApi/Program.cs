@@ -138,6 +138,8 @@ try
 
     builder.Services.AddDistributedMemoryCache();
 
+    builder.Services.AddResponseCompression();
+
     builder.Services.AddSession(options =>
     {
         options.IdleTimeout = TimeSpan.FromSeconds(10);
@@ -197,6 +199,8 @@ try
     app.UseDbTransaction<AppDbContext>();
 
     app.UseSession();
+
+    app.UseResponseCompression();
 
     app.MapHub<SignalRHub>(SignalRHub.Endpoint);
 

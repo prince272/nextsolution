@@ -1,5 +1,6 @@
 "use client";
 
+import { FC } from "react";
 import NextLink from "next/link";
 import { usePathname } from "next/navigation";
 import { DiscordIcon, GithubIcon, HeartFilledIcon, Logo, SearchIcon, TwitterIcon } from "@/assets/icons";
@@ -15,7 +16,7 @@ import queryString from "query-string";
 import { appConfig } from "@/config/app";
 import { cn } from "@/lib/utils";
 
-export const PublicNavbar = () => {
+export const PublicNavbar: FC = () => {
   const pathname = usePathname();
 
   const searchInput = (

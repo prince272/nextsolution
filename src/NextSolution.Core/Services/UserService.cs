@@ -413,12 +413,12 @@ namespace NextSolution.Core.Services
             await _userRepository.ChangePasswordAsync(currentUser, form.CurrentPassword, form.NewPassword, cancellationToken);
         }
 
-        public async Task<UserPageModel> GetUsersAsync(UserSearchParams searchParams, int pageNumber, int pageSize)
+        public async Task<UserPageModel> GetUsersAsync(UserSearchParams searchParams, long offset, int limit)
         {
             if (searchParams == null) throw new ArgumentNullException(nameof(searchParams));
             var predicate = searchParams.Build();
 
-            var page = (await _userRepository.GetManyAsync(pageNumber, pageSize, predicate: predicate, cancellationToken: cancellationToken));
+            var page = (await _userRepository.GetManyAsync(offset, limit, predicate: predicate, cancellationToken: cancellationToken));
             var pageModel = await _modelBuilder.BuildAsync(page, cancellationToken);
             return pageModel;
         }
@@ -578,7 +578,7 @@ namespace NextSolution.Core.Services
         Task VerifyUsernameAsync(VerifyUsernameForm form);
 
         // User
-        Task<UserPageModel> GetUsersAsync(UserSearchParams searchParams, int pageNumber, int pageSize);
+        Task<UserPageModel> GetUsersAsync(UserSearchParams searchParams, long offset, int limit);
         Task<UserModel> GetCurrentUserAsync();
         Task EditCurrentUserAsync(EditUserForm form);
         Task UploadCurrentUserAvatarAsync(UploadMediaChunkForm form);

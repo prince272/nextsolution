@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NextSolution.Core.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,12 +9,14 @@ namespace NextSolution.Core.Models.Chats
 {
     public class ChatPageModel : ChatListModel
     {
-        public int PageNumber { get; set; }
+        public long Offset { get; set; }
 
-        public int PageSize { get; set; }
+        public int Limit { get; set; }
 
-        public long TotalItems { get; set; }
+        public long Length { get; set; }
 
-        public int TotalPages { get; set; }
+        public long? Previous { get; set; }
+
+        public long? Next { get; set; }
     }
 }

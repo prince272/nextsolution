@@ -53,16 +53,16 @@ export const DialogProvider: FC<{ children: ReactNode; components: { name: strin
       return queueRef.current.add(async () => {
         await updateDialog(id, {
           ...props,
-          opened: true,
-          mounted: true
+          mounted: true,
+          opened: true
         });
       });
     },
     close: async (id) => {
       return queueRef.current.add(async () => {
-        await updateDialog(id, { opened: false, mounted: true });
+        await updateDialog(id, { opened: false });
         await sleep();
-        await updateDialog(id, { opened: false, mounted: false });
+        await updateDialog(id, { mounted: false, opened: false });
       });
     }
   });
@@ -79,7 +79,7 @@ export const DialogProvider: FC<{ children: ReactNode; components: { name: strin
 
 export const DIALOG_QUERY_KEY = "dialogId";
 
-export const DialogRouter: FC<{ loading: boolean }> = ({ loading }) => {
+export const DialogRouter: FC = () => {
   const queueRef = useRef(new PQueue({ concurrency: 1 }));
 
   const dialog = useDialog();

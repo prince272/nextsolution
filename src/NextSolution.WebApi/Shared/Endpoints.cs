@@ -9,7 +9,7 @@ namespace NextSolution.WebApi.Shared
 
         public Endpoints(IEndpointRouteBuilder endpointRouteBuilder)
         {
-            _endpointRouteBuilder = endpointRouteBuilder ?? throw new Exception(nameof(endpointRouteBuilder));
+            _endpointRouteBuilder = endpointRouteBuilder ?? throw new ArgumentNullException(nameof(endpointRouteBuilder));
         }
 
         protected virtual RouteGroupBuilder MapGroup(string prefix)

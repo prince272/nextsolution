@@ -27,13 +27,15 @@ namespace NextSolution.WebApi.Endpoints
             return Results.Ok(await chatService.CreateAsync(form));
         }
 
-        public async Task<IResult> EditChatAsync([FromServices] IChatService chatService, [FromBody] EditChatForm form)
+        public async Task<IResult> EditChatAsync([FromServices] IChatService chatService, [FromRoute] long chatId, [FromBody] EditChatForm form)
         {
+            form.Id = chatId;
             return Results.Ok(await chatService.EditAsync(form));
         }
 
-        public async Task<IResult> DeleteChatAsync([FromServices] IChatService chatService, [FromBody] DeleteChatForm form)
+        public async Task<IResult> DeleteChatAsync([FromServices] IChatService chatService, [FromRoute] long chatId)
         {
+            var form = new DeleteChatForm() { Id = chatId };
             await chatService.DeleteAsync(form);
             return Results.Ok();
         }
@@ -44,9 +46,9 @@ namespace NextSolution.WebApi.Endpoints
             return Results.Ok(await chatService.GetAsync(form));
         }
 
-        public async Task<IResult> GetManyChatsAsync([FromServices] IChatService chatService, [AsParameters] ChatSearchParams searchParams, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 100)
+        public async Task<IResult> GetManyChatsAsync([FromServices] IChatService chatService, [AsParameters] ChatSearchParams searchParams, [FromQuery] long offset = 0, [FromQuery] int limit = 25)
         {
-            return Results.Ok(await chatService.GetManyAsync(searchParams, pageNumber, pageSize));
+            return Results.Ok(await chatService.GetManyAsync(searchParams, offset, limit));
         }
     }
 }

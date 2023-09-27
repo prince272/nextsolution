@@ -1,10 +1,10 @@
 "use client";
 
-import { ChangeEvent, FC, forwardRef, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, ElementRef, FC, forwardRef, useEffect, useMemo, useState } from "react";
 import { ChevronDownIcon } from "@/assets/icons";
 import { Button } from "@nextui-org/button";
 import { Input, InputProps } from "@nextui-org/input";
-import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalProps, useDisclosure } from "@nextui-org/modal";
+import { Modal, ModalBody, ModalContent, ModalHeader, ModalProps, useDisclosure } from "@nextui-org/modal";
 import { AsYouType } from "libphonenumber-js";
 import { CountryData, defaultCountries, FlagEmoji, parseCountry } from "react-international-phone";
 import { Virtuoso } from "react-virtuoso";
@@ -53,7 +53,7 @@ const CountrySelectorModal: FC<CountrySelectorModalProps> = ({ onSelect, countri
 
   return (
     <>
-      <Modal scrollBehavior="inside" {...props} onClose={() => setSearch("")}>
+      <Modal isKeyboardDismissDisabled={true} scrollBehavior="inside" {...props} onClose={() => setSearch("")}>
         <ModalContent className="h-4/5">
           {(onClose) => (
             <>
@@ -115,7 +115,7 @@ export interface PhoneInputProps extends InputProps {
   countryVisibility?: "auto" | true | false;
 }
 
-const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
+const PhoneInput = forwardRef<ElementRef<typeof Input>, PhoneInputProps>(
   ({ endContent, value: nativeValue, onChange: onNativeChange, countryVisibility = "toggle", countries = defaultCountries, ...props }, ref) => {
     const { onOpen: openCountrySelector, isOpen: isCountrySelectorOpen, onOpenChange: onCountrySelectorOpenChange } = useDisclosure();
 

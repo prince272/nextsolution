@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 
-import { ChatLayout as Layout } from "@/components/chatgpt/layout";
+import { ChatGPTLayout as Layout } from "@/components/chatgpt";
 
 export default function ChatGPTLayout({ children }: { children: ReactNode }) {
   return <Layout>{children}</Layout>;

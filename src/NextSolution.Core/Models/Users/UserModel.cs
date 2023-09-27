@@ -32,6 +32,8 @@ namespace NextSolution.Core.Models.Users
 
         public string? AvatarUrl { get; set; }
 
+        public string? Bio { get; set; }
+
         public bool Active { get; set; }
 
         public bool Online { get; set; }

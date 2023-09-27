@@ -2,7 +2,7 @@
 
 import { FC, useState } from "react";
 import NextLink from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { DarkThemeIcon, PersonArrowRightIcon, SettingsIcon } from "@/assets/icons";
 import { Button } from "@nextui-org/button";
 import { Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from "@nextui-org/dropdown";
@@ -51,7 +51,7 @@ export const UserButton: FC = () => {
             isReadOnly
             key="theme"
             className="relative cursor-default"
-            startContent={<DarkThemeIcon type="outlined" className="pointer-events-none h-6 w-6 flex-shrink-0 text-default-500" />}
+            startContent={<DarkThemeIcon type="outlined" className="pointer-events-none h-5 w-5 flex-shrink-0 text-default-500" />}
             endContent={
               <select
                 className="stretched-link z-10 w-16 rounded-md border-small border-default-300 bg-transparent py-0.5 text-tiny text-default-500 outline-none group-data-[hover=true]:border-default-500 dark:border-default-200"
@@ -72,15 +72,15 @@ export const UserButton: FC = () => {
             showDivider
             key="settings"
             className="relative"
-            startContent={<SettingsIcon type="outlined" className="pointer-events-none h-6 w-6 flex-shrink-0 text-default-500" />}
+            startContent={<SettingsIcon type="outlined" className="pointer-events-none h-5 w-5 flex-shrink-0 text-default-500" />}
           >
-            <NextLink href={queryString.stringifyUrl({ url: pathname, query: { dialogId: "settings" } })} className="stretched-link">
+            <NextLink href={queryString.stringifyUrl({ url: pathname, query: { dialogId: "account-settings" } })} className="stretched-link">
               Settings
             </NextLink>
           </DropdownItem>
           <DropdownItem
             key="sign-out"
-            startContent={<PersonArrowRightIcon type="outlined" className="pointer-events-none h-6 w-6 flex-shrink-0 text-default-500" />}
+            startContent={<PersonArrowRightIcon type="outlined" className="pointer-events-none h-5 w-5 flex-shrink-0 text-default-500" />}
             onPress={() => onSignOut()}
           >
             Sign out

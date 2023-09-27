@@ -13,6 +13,7 @@ export type User = {
   phoneNumberConfirmed: boolean;
   avatarId?: string;
   avatarUrl: string;
+  bio: string;
   active: boolean;
   activeAt: Date;
   tokenType: string;

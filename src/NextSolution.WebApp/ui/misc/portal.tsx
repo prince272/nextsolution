@@ -7,7 +7,7 @@ export interface PortalProps {
   children: ReactNode;
 }
 
-const Portal: FC<PortalProps> = ({ rootId, children }) => {
+export const Portal: FC<PortalProps> = ({ rootId, children }) => {
   const target = useRef<HTMLElement | null>(document.getElementById(rootId));
 
   useEffect(() => {
@@ -32,5 +32,3 @@ const Portal: FC<PortalProps> = ({ rootId, children }) => {
 
   return createPortal(children, target.current!);
 };
-
-export { Portal };

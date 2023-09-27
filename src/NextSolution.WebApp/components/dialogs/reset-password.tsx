@@ -1,17 +1,13 @@
 "use client";
 
 import { FC, useRef, useState } from "react";
-import NextLink from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
-import { ChevronLeftIcon, ChevronRightIcon, GoogleIcon, PersonIcon } from "@/assets/icons";
+import { usePathname } from "next/navigation";
 import { PasswordInput } from "@/ui/password-input";
 import { PhoneInput } from "@/ui/phone-input";
 import { Button } from "@nextui-org/button";
 import { Input } from "@nextui-org/input";
-import { Link } from "@nextui-org/link";
-import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/modal";
+import { Modal, ModalBody, ModalContent, ModalHeader } from "@nextui-org/modal";
 import { clone } from "lodash";
-import queryString from "query-string";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useTimer } from "react-timer-hook";
@@ -54,14 +50,13 @@ export const ResetPasswordModal: FC<ResetPasswordProps> = ({ opened, onClose }) 
     autoStart: false
   });
 
-  const [state, setState] = useState<{ action: "idle" | "loading" | "submitting" | "sending"; error?: any }>({
-    action: "idle",
-    error: null
+  const [status, setStatus] = useState<{ action: "idle" | "submitting" | "sending"; error?: any }>({
+    action: "idle"
   });
 
   const onResetPassword: SubmitHandler<ResetPasswordInputs> = async (inputs) => {
     try {
-      setState({ action: "submitting" });
+      setStatus({ action: "submitting" });
       await api.resetPassword(inputs);
 
       try {
@@ -69,9 +64,9 @@ export const ResetPasswordModal: FC<ResetPasswordProps> = ({ opened, onClose }) 
       } catch {}
 
       toast.success("Password reset successful!");
-      onClose();
+      onClose(false);
     } catch (error) {
-      setState({ action: "idle", error });
+      setStatus({ action: "idle", error });
 
       if (isApiError(error)) {
         if (error.response) {
@@ -88,13 +83,13 @@ export const ResetPasswordModal: FC<ResetPasswordProps> = ({ opened, onClose }) 
 
   const onSendCode: SubmitHandler<Exclude<ResetPasswordInputs, "password">> = async (inputs) => {
     try {
-      setState({ action: "sending" });
+      setStatus({ action: "sending" });
       await api.sendResetPasswordCode(inputs);
       resendCodeTimer.start();
       toast.success("Password reset code sent!");
-      setState({ action: "idle" });
+      setStatus({ action: "idle" });
     } catch (error) {
-      setState({ action: "idle", error });
+      setStatus({ action: "idle", error });
 
       if (isApiError(error)) {
         if (error.response) {
@@ -110,91 +105,81 @@ export const ResetPasswordModal: FC<ResetPasswordProps> = ({ opened, onClose }) 
   };
 
   return (
-    <>
-      <Modal isOpen={opened} onClose={onClose}>
-        <ModalContent>
-          <ModalHeader className="flex flex-col gap-1">Reset your password</ModalHeader>
-          <ModalBody>
-            <form onSubmit={form.handleSubmit(onResetPassword)}>
-              <div className={cn("grid gap-y-5 pb-2.5")}>
-                <Controller
-                  control={form.control}
-                  name="username"
-                  render={({ field: { onChange, onBlur, value, ref } }) => (
-                    <PhoneInput
-                      ref={ref}
-                      onChange={(e) => onChange(e.target.value)}
-                      onBlur={onBlur}
-                      value={value}
-                      isInvalid={!!formErrors.username}
-                      errorMessage={formErrors.username?.message}
-                      autoComplete="off"
-                      label="Email or phone number"
-                    />
-                  )}
+    <Modal isKeyboardDismissDisabled={true} isOpen={opened} onClose={() => onClose(false)} as={"form"} onSubmit={form.handleSubmit(onResetPassword)}>
+      <ModalContent>
+        <ModalHeader className="flex flex-col gap-1">Reset your password</ModalHeader>
+        <ModalBody>
+          <div className={cn("grid gap-y-5 pb-2.5")}>
+            <Controller
+              control={form.control}
+              name="username"
+              render={({ field: { onChange, onBlur, value, ref } }) => (
+                <PhoneInput
+                  ref={ref}
+                  onChange={(e) => onChange(e.target.value)}
+                  onBlur={onBlur}
+                  value={value}
+                  isInvalid={!!formErrors.username}
+                  errorMessage={formErrors.username?.message}
+                  autoComplete="off"
+                  label="Email or phone number"
                 />
-                <Controller
-                  control={form.control}
-                  name="code"
-                  render={({ field: { onChange, onBlur, value, ref } }) => (
-                    <Input
-                      ref={ref}
-                      onChange={(e) => onChange(e.target.value)}
-                      onBlur={onBlur}
-                      value={value}
-                      isInvalid={!!formErrors.code}
-                      errorMessage={formErrors.code?.message}
-                      autoComplete="off"
-                      label="Code"
-                      placeholder="Enter 6 digit code"
-                      endContent={
-                        <Button
-                          className="-mt-4 px-7"
-                          color="default"
-                          variant="faded"
-                          size="sm"
-                          type="button"
-                          isLoading={state.action == "sending"}
-                          spinnerPlacement="end"
-                          isDisabled={resendCodeTimer.isRunning}
-                          onPress={() => form.handleSubmit(onSendCode)()}
-                        >
-                          {state.action == "sending" ? "Sending code..." : resendCodeTimer.isRunning ? `Resend code in ${resendCodeTimer.seconds}s` : "Get code"}
-                        </Button>
-                      }
-                    />
-                  )}
+              )}
+            />
+            <Controller
+              control={form.control}
+              name="code"
+              render={({ field: { onChange, onBlur, value, ref } }) => (
+                <Input
+                  ref={ref}
+                  onChange={(e) => onChange(e.target.value)}
+                  onBlur={onBlur}
+                  value={value}
+                  isInvalid={!!formErrors.code}
+                  errorMessage={formErrors.code?.message}
+                  autoComplete="off"
+                  label="Code"
+                  placeholder="Enter 6 digit code"
+                  endContent={
+                    <Button
+                      className="-mt-4 px-7"
+                      color="default"
+                      variant="faded"
+                      size="sm"
+                      type="button"
+                      isLoading={status.action == "sending"}
+                      spinnerPlacement="end"
+                      isDisabled={resendCodeTimer.isRunning}
+                      onPress={() => form.handleSubmit(onSendCode)()}
+                    >
+                      {status.action == "sending" ? "Sending code..." : resendCodeTimer.isRunning ? `Resend code in ${resendCodeTimer.seconds}s` : "Get code"}
+                    </Button>
+                  }
                 />
-                <Controller
-                  control={form.control}
-                  name="password"
-                  render={({ field: { onChange, onBlur, value, ref } }) => (
-                    <PasswordInput
-                      ref={ref}
-                      onChange={(e) => onChange(e.target.value)}
-                      onBlur={onBlur}
-                      value={value}
-                      isInvalid={!!formErrors.password}
-                      errorMessage={formErrors.password?.message}
-                      autoComplete="off"
-                      label="New password"
-                    />
-                  )}
+              )}
+            />
+            <Controller
+              control={form.control}
+              name="password"
+              render={({ field: { onChange, onBlur, value, ref } }) => (
+                <PasswordInput
+                  ref={ref}
+                  onChange={(e) => onChange(e.target.value)}
+                  onBlur={onBlur}
+                  value={value}
+                  isInvalid={!!formErrors.password}
+                  errorMessage={formErrors.password?.message}
+                  autoComplete="off"
+                  label="New password"
                 />
-                <Button color="primary" type="submit" isLoading={state.action == "submitting"}>
-                  Continue
-                </Button>
-              </div>
-            </form>
-          </ModalBody>
-          <ModalFooter className="flex items-center justify-center text-center text-sm">
-            Don&apos;t have an account?{" "}
-            <Link as={NextLink} className="text-sm" href={queryString.stringifyUrl({ url: pathname, query: { dialogId: "sign-in" } })}>
-              Sign in <ChevronRightIcon className="h-4 w-4" />
-            </Link>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-    </>
+              )}
+            />
+            <Button color="primary" type="submit" isLoading={status.action == "submitting"}>
+              Continue
+            </Button>
+          </div>
+        </ModalBody>
+      </ModalContent>
+    </Modal>
   );
 };

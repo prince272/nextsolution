@@ -4,14 +4,14 @@ import { FC, ReactNode } from "react";
 import { Link } from "@nextui-org/link";
 
 import { Loader } from "../ui/loader";
+import { useAppStore } from "./provider";
 import { PublicNavbar } from "./public-navbar";
-import { useAppStore } from "./state";
 
 export const PublicLayout: FC<{ children: ReactNode }> = ({ children }) => {
-  const app = useAppStore();
+  const { loading } = useAppStore();
 
   return (
-    <Loader loading={app.loading} className="relative flex min-h-screen flex-col">
+    <Loader loading={loading} className="relative flex min-h-screen flex-col">
       <PublicNavbar />
       <main className="container mx-auto max-w-7xl flex-grow px-6 pt-16">{children}</main>
       <footer className="flex w-full items-center justify-center py-3">

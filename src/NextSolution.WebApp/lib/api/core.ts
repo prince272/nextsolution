@@ -1,14 +1,12 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse, CreateAxiosDefaults, HttpStatusCode, isAxiosError } from "axios";
-import CryptoES from "crypto-es";
 import { BehaviorSubject } from "rxjs";
 
 import { ExternalWindow } from "../external-window";
-import { parseJSON, stringifyJSON } from "../utils";
+import { decryptData, encryptData } from "../utils";
 import { ApiConfig, ApiStore, User } from "./types";
 
-const API_STORE_NAME = "API_STORE";
-
-const API_STORE_KEY = "Hn411*x,Y1vB,K}\u00A3'I<g<u\":&[9Uu7;Y\u00A3:ns|.Q2?e#:1!_8Db";
+const CURRENT_USER_STORE_NAME = "CURRENT_USER";
+const CURRENT_USER_STORE_KEY = "Hn411*x,Y1vB,K}\u00A3'I<g<u\":&[9Uu7;Y\u00A3:ns|.Q2?e#:1!_8Db";
 
 export class Api {
   private axiosInstance: AxiosInstance;
@@ -27,11 +25,10 @@ export class Api {
     this.axiosInstance = axios.create(axiosConfig);
     this.config = config;
     this.store = store;
-    this.user = new BehaviorSubject(parseJSON(CryptoES.AES.decrypt(store.get(API_STORE_NAME) || "", API_STORE_KEY).toString()) || null);
+    this.user = new BehaviorSubject(decryptData(store.get(CURRENT_USER_STORE_NAME), CURRENT_USER_STORE_KEY, false));
     this.user.subscribe((currentUser) => {
-      this.store.set(API_STORE_NAME, CryptoES.AES.encrypt(stringifyJSON(currentUser) || "", API_STORE_KEY));
+      this.store.set(CURRENT_USER_STORE_NAME, encryptData(currentUser, CURRENT_USER_STORE_KEY, false));
     });
-    
 
     this.refreshing = false;
     this.retryRequests = [];
@@ -61,7 +58,6 @@ export class Api {
       (response: AxiosResponse) => {
         // You can perform any preprocessing of the response here
         // For example, handling errors, transforming data, etc.
-        console.log("Response Interceptor:", response);
         return response;
       },
       (error: AxiosError | Error) => {
@@ -115,8 +111,8 @@ export class Api {
     );
   }
 
-  public async signUp<T extends User, R extends AxiosResponse<T>, D extends any>(
-    data: { firstName: string; lastName: string; username: string; password: string; [key: string]: any },
+  public async signUp<T extends User = User, R extends AxiosResponse<T> = AxiosResponse<T>, D = { username: string; password: string; [key: string]: any }>(
+    data: D,
     config?: AxiosRequestConfig<D>
   ): Promise<R> {
     config = {
@@ -124,14 +120,14 @@ export class Api {
       method: "POST",
       data,
       ...config
-    } as AxiosRequestConfig<D>;
+    };
     const response = await this.axiosInstance.request<T, R, D>(config);
     this.user.next(response.data);
     return response;
   }
 
-  public async signIn<T extends User, R extends AxiosResponse<T>, D extends any>(
-    data: { username: string; password: string; [key: string]: any },
+  public async signIn<T extends User = User, R extends AxiosResponse<T> = AxiosResponse<T>, D = { username: string; password: string; [key: string]: any }>(
+    data: D,
     config?: AxiosRequestConfig<D>
   ): Promise<R> {
     config = {
@@ -139,18 +135,18 @@ export class Api {
       method: "POST",
       data,
       ...config
-    } as AxiosRequestConfig<D>;
+    };
     const response = await this.axiosInstance.request<T, R, D>(config);
     this.user.next(response.data);
     return response;
   }
 
-  public async signInWith<T extends User, R extends AxiosResponse<T>, D extends any>(provider: string, config?: AxiosRequestConfig<D>): Promise<R> {
+  public async signInWith<T extends User = User, R extends AxiosResponse<T> = AxiosResponse<T>, D = any>(provider: string, config?: AxiosRequestConfig<D>): Promise<R> {
     config = {
       url: `/users/${provider}/session/generate`,
       method: "POST",
       ...config
-    } as AxiosRequestConfig<D>;
+    };
 
     try {
       const externalUrl = new URL(`${this.axiosInstance.defaults.baseURL}/users/${provider}/session/generate`);
@@ -164,16 +160,16 @@ export class Api {
     return response;
   }
 
-  public async refresh<T extends User, R extends AxiosResponse<T>, D extends any>(config?: AxiosRequestConfig<D>): Promise<R> {
+  public async refresh<T extends User = User, R extends AxiosResponse<T> = AxiosResponse<T>, D = any>(config?: AxiosRequestConfig<D>): Promise<R> {
     const currentUser = this.user.getValue();
-    const data = currentUser != null ? { userId: currentUser.id, refreshToken: currentUser.refreshToken } : {};
+    const data = (currentUser != null ? { userId: currentUser.id, refreshToken: currentUser.refreshToken } : {}) as D;
 
     config = {
       url: `/users/session/refresh`,
       method: "POST",
-      data: data,
+      data,
       ...config
-    } as AxiosRequestConfig<D>;
+    };
 
     try {
       const response = await this.axiosInstance.request<T, R, D>(config);
@@ -187,105 +183,96 @@ export class Api {
     }
   }
 
-  public async signOut<T extends any, R extends AxiosResponse<T>, D extends any>(config?: AxiosRequestConfig<D>): Promise<R> {
+  public async signOut<T = any, R = AxiosResponse<T>, D = any>(config?: AxiosRequestConfig<D>): Promise<R> {
+    const currentUser = this.user.getValue();
+    const data = (currentUser != null ? { userId: currentUser.id, refreshToken: currentUser.refreshToken } : {}) as D;
+
     config = {
       url: `/users/session/revoke`,
       method: "POST",
-      data: { refreshToken: this.user.getValue()?.refreshToken },
+      data,
       ...config
-    } as AxiosRequestConfig<D>;
+    };
     return this.axiosInstance.request<T, R, D>(config).finally(() => {
       this.user.next(null);
     });
   }
 
-  public async sendResetPasswordCode<T extends User, R extends AxiosResponse<T>, D extends any>(
-    data: { username: string; [key: string]: any },
-    config?: AxiosRequestConfig<D>
-  ): Promise<R> {
+  public async sendResetPasswordCode<T extends User = User, R extends AxiosResponse<T> = AxiosResponse<T>, D = any>(data: D, config?: AxiosRequestConfig<D>): Promise<R> {
     config = {
       url: `/users/password/reset/send-code`,
       method: "POST",
       data,
       ...config
-    } as AxiosRequestConfig<D>;
+    };
     const response = await this.axiosInstance.request<T, R, D>(config);
     return response;
   }
 
-  public async resetPassword<T extends User, R extends AxiosResponse<T>, D extends any>(
-    data: { username: string; code: string; password: string; [key: string]: any },
-    config?: AxiosRequestConfig<D>
-  ): Promise<R> {
+  public async resetPassword<T extends User = User, R extends AxiosResponse<T> = AxiosResponse<T>, D = any>(data: D, config?: AxiosRequestConfig<D>): Promise<R> {
     config = {
       url: `/users/password/reset`,
       method: "POST",
       data,
       ...config
-    } as AxiosRequestConfig<D>;
+    };
     const response = await this.axiosInstance.request<T, R, D>(config);
     this.user.next(response.data);
     return response;
   }
 
-  public async sendUsernameVerifyCode<T extends User, R extends AxiosResponse<T>, D extends any>(
-    data: { username: string; usernameType: string; [key: string]: any },
-    config?: AxiosRequestConfig<D>
-  ): Promise<R> {
+  public async sendUsernameVerifyCode<T extends User = User, R extends AxiosResponse<T> = AxiosResponse<T>, D = any>(data: D, config?: AxiosRequestConfig<D>): Promise<R> {
     config = {
       url: `/users/username/verify/send-code`,
       method: "POST",
       data,
       ...config
-    } as AxiosRequestConfig<D>;
+    };
     const response = await this.axiosInstance.request<T, R, D>(config);
     return response;
   }
 
-  public async verifyUsername<T extends User, R extends AxiosResponse<T>, D extends any>(
-    data: { username: string; usernameType: string; code: string; [key: string]: any },
-    config?: AxiosRequestConfig<D>
-  ): Promise<R> {
+  public async verifyUsername<T extends User = User, R extends AxiosResponse<T> = AxiosResponse<T>, D = any>(data: D, config?: AxiosRequestConfig<D>): Promise<R> {
     config = {
       url: `/users/username/verify`,
       method: "POST",
       data,
       ...config
-    } as AxiosRequestConfig<D>;
+    };
     const response = await this.axiosInstance.request<T, R, D>(config);
     this.user.next(response.data);
     return response;
   }
 
-  public request<T extends any, R extends AxiosResponse<T>, D extends any>(config: AxiosRequestConfig<D>): Promise<R> {
+  public request<T = any, R = AxiosResponse<T>, D = any>(config: AxiosRequestConfig<D>): Promise<R> {
     return this.axiosInstance.request<T, R, D>(config);
   }
 
-  public get<T extends any, R extends AxiosResponse<T>, D extends any>(url: string, config?: AxiosRequestConfig<D>): Promise<R> {
+  public get<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R> {
     return this.axiosInstance.get<T, R, D>(url, config);
   }
 
-  public delete<T extends any, R extends AxiosResponse<T>, D extends any>(url: string, config?: AxiosRequestConfig<D>): Promise<R> {
+  public delete<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R> {
     return this.axiosInstance.delete<T, R, D>(url, config);
   }
 
-  public head<T extends any, R extends AxiosResponse<T>, D extends any>(url: string, config?: AxiosRequestConfig<D>): Promise<R> {
+  public head<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R> {
     return this.axiosInstance.head<T, R, D>(url, config);
   }
 
-  public options<T extends any, R extends AxiosResponse<T>, D extends any>(url: string, config?: AxiosRequestConfig<D>): Promise<R> {
+  public options<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R> {
     return this.axiosInstance.options<T, R, D>(url, config);
   }
 
-  public post<T extends any, R extends AxiosResponse<T>, D extends any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R> {
+  public post<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R> {
     return this.axiosInstance.post<T, R, D>(url, data, config);
   }
 
-  public put<T extends any, R extends AxiosResponse<T>, D extends any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R> {
+  public put<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R> {
     return this.axiosInstance.put<T, R, D>(url, data, config);
   }
 
-  public patch<T extends any, R extends AxiosResponse<T>, D extends any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R> {
+  public patch<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R> {
     return this.axiosInstance.patch<T, R, D>(url, data, config);
   }
 }

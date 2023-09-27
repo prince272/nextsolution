@@ -1,19 +1,17 @@
 "use client";
 
-import { Component, createContext, FC, ReactNode, useContext, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { ReactNode, useEffect, useState } from "react";
 import { DialogProvider, DialogRouter } from "@/ui/dialog-provider";
 import { NextUIProvider } from "@nextui-org/system";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { Toaster, ToastOptions } from "react-hot-toast";
+import * as zustand from "zustand";
 
 import { useApi, useUser } from "@/lib/api/client";
 import { ExternalWindow } from "@/lib/external-window";
-import { useLocalStorage } from "@/lib/hooks";
 import { SignalRProvider } from "@/lib/signalr";
 
 import * as dialogs from "./dialogs";
-import { useAppStore } from "./state";
 
 export interface AppProviderProps {
   children: ReactNode;
@@ -21,14 +19,14 @@ export interface AppProviderProps {
 
 export function AppProvider({ children }: AppProviderProps) {
   const api = useApi();
-  const app = useAppStore();
+  const { finishLoading } = useAppStore();
   const currentUser = useUser();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
     setTimeout(() => {
-      app.completeLoading();
+      finishLoading();
       ExternalWindow.notify();
     }, 1500);
   }, []);
@@ -63,7 +61,7 @@ export function AppProvider({ children }: AppProviderProps) {
       <NextUIProvider>
         <NextThemesProvider {...{ attribute: "class", defaultTheme: "dark" }}>
           <DialogProvider components={Object.entries(dialogs).map(([name, Component]) => ({ name, Component }))}>
-            <DialogRouter loading={app.loading} />
+            <DialogRouter />
             {children}
           </DialogProvider>
         </NextThemesProvider>
@@ -72,3 +70,18 @@ export function AppProvider({ children }: AppProviderProps) {
     </SignalRProvider>
   );
 }
+
+export type AppState = {
+  loading: boolean;
+};
+
+export type AppActions = {
+  startLoading: () => void;
+  finishLoading: () => void;
+};
+
+export const useAppStore = zustand.create<AppState & AppActions>((set) => ({
+  loading: true,
+  startLoading: () => set((state) => ({ ...state, loading: true })),
+  finishLoading: () => set((state) => ({ ...state, loading: false }))
+}));

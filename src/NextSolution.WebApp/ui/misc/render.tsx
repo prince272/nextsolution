@@ -32,12 +32,20 @@ const Render = polly<ComponentType, RenderProps>(function Render({ as: Component
               if (condition(child.key)) {
                 cases.push(child);
               }
-            } else if (Array.isArray(condition)) {
-              condition.forEach((conditionKey) => {
-                if (conditionKey === child.key) cases.push(child);
-              });
-            } else if (condition === child.key) {
-              cases.push(child);
+            } else {
+              const conditionKeys = Array.isArray(condition)
+                ? condition
+                : condition
+                    ?.toString()
+                    .split("|")
+                    .map((key) => key as Key) || [];
+              const childKeys =
+                child.key
+                  ?.toString()
+                  .split("|")
+                  .map((key) => key as Key) || [];
+
+              if (conditionKeys.some((conditionKey) => childKeys.some((childKey) => childKey == conditionKey))) cases.push(child);
             }
             break;
           case "default":

@@ -1,5 +1,6 @@
 import { LegacyRef, MutableRefObject, RefCallback } from "react";
 import { clsx, type ClassValue } from "clsx";
+import CryptoES from "crypto-es";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
@@ -34,25 +35,27 @@ export function isAbsoluteUrl(url: string): boolean {
   }
 }
 
-export function parseJSON(text: string | any, defaultValue?: any): any {
-  if (typeof text === "string") {
-    try {
-      return JSON.parse(text);
-    } catch (error) {
-      console.warn(`Invalid JSON String: ${error}`);
-    }
-  }
-  return defaultValue;
-}
-
-export function stringifyJSON(value: any): string | null {
+export const encryptData = (value: any, key: string, throwIfError: boolean = true): string | null => {
   try {
-    return JSON.stringify(value);
+    const encryptedData = CryptoES.AES.encrypt(JSON.stringify(value), key).toString();
+    return encryptedData;
   } catch (error) {
-    console.warn(`Invalid JSON Value: ${error}`);
-    return null;
+    if (throwIfError) throw error;
+    else console.warn("Encryption failed: " + error);
   }
-}
+  return null;
+};
+
+export const decryptData = (text: string, key: string, throwIfError: boolean = true): any => {
+  try {
+    const decryptedData = CryptoES.AES.decrypt(text, key).toString(CryptoES.enc.Utf8);
+    return JSON.parse(decryptedData);
+  } catch (error) {
+    if (throwIfError) throw error;
+    else console.warn("Decryption failed: " + error);
+  }
+  return null;
+};
 
 export function cleanObject(obj: Record<string, any>): Record<string, any> {
   let newObj: Record<string, any> = {};

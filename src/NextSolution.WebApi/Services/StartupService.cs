@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Bogus;
+using Microsoft.Extensions.DependencyInjection;
 using NextSolution.Core.Constants;
 using NextSolution.Core.Entities;
 using NextSolution.Core.Repositories;
@@ -44,6 +45,27 @@ namespace NextSolution.WebApi.Services
                         await roleRepository.CreateAsync(new Role(roleName), cancellationToken);
                     }
                 }
+
+
+                //var chatRepository = services.GetRequiredService<IChatRepository>();
+
+                //if (!(await chatRepository.AnyAsync(cancellationToken)))
+                //{
+                //    var user = (await services.GetRequiredService<IUserRepository>().GetAsync(_ => true))!;
+
+                //    foreach (var _ in Enumerable.Range(1, 1000))
+                //    {
+                //        var recentDateTime = new Faker().Date.RecentOffset(10, DateTimeOffset.UtcNow.AddDays(1));
+                //        var chat = new Chat
+                //        {
+                //            Title = new Faker().Lorem.Sentence(5),
+                //            CreatedAt = recentDateTime,
+                //            UpdatedAt = recentDateTime,
+                //            UserId = user.Id
+                //        };
+                //        await chatRepository.CreateAsync(chat);
+                //    }
+                //}
 
                 logger.LogInformation("Finished seeding the database.");
             }
