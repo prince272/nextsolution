@@ -140,6 +140,24 @@ namespace NextSolution.Core.Utilities
                 return ContactType.PhoneNumber;
             }
         }
+
+        public static bool IsValidPath(string path)
+        {
+            var fileName = Path.GetFileName(path);
+
+            var invalidFileNameChars = fileName.Where(c => Path.GetInvalidPathChars().Concat(new[] { '/', '\\' }).Contains(c)).ToArray();
+            if (invalidFileNameChars.Length > 0) return false;
+
+            var directoryNames = Path.GetDirectoryName(path)?.Split(new char[] { '/', '\\' }) ?? Array.Empty<string>();
+
+            foreach (var directoryName in directoryNames)
+            {
+                var invalidDirectoryNameChars = directoryName.Where(c => Path.GetInvalidPathChars().Concat(new[] { '/', '\\' }).Contains(c)).ToArray();
+                if (invalidDirectoryNameChars.Length > 0) return false;
+            }
+
+            return true;
+        }
     }
 
     public enum ContactType

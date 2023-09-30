@@ -26,13 +26,6 @@ namespace NextSolution.Infrastructure.ViewRenderer.Razor
             return services;
         }
 
-        public static IServiceCollection AddRazorViewRenderer(this IServiceCollection services, IConfiguration configuration)
-        {
-            services.Configure<RazorViewRendererOptions>(configuration);
-            services.AddRazorViewRenderer();
-            return services;
-        }
-
         public static IServiceCollection AddRazorViewRenderer(this IServiceCollection services)
         {
 

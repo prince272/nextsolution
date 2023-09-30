@@ -14,7 +14,7 @@ import { useTimer } from "react-timer-hook";
 import { v4 as uuidv4 } from "uuid";
 
 import { useApi } from "@/lib/api/client";
-import { getApiErrorMessage, isApiError } from "@/lib/api/utils";
+import { getErrorMessage, isApiError } from "@/lib/api/utils";
 import { useConditionalState } from "@/lib/hooks";
 import { cn } from "@/lib/utils";
 
@@ -77,7 +77,7 @@ export const ResetPasswordModal: FC<ResetPasswordProps> = ({ opened, onClose }) 
         }
       }
 
-      toast.error(getApiErrorMessage(error), { id: componentId });
+      toast.error(getErrorMessage(error), { id: componentId });
     }
   };
 
@@ -100,7 +100,7 @@ export const ResetPasswordModal: FC<ResetPasswordProps> = ({ opened, onClose }) 
         }
       }
 
-      toast.error(getApiErrorMessage(error), { id: componentId });
+      toast.error(getErrorMessage(error), { id: componentId });
     }
   };
 
@@ -174,7 +174,7 @@ export const ResetPasswordModal: FC<ResetPasswordProps> = ({ opened, onClose }) 
                 />
               )}
             />
-            <Button color="primary" type="submit" isLoading={status.action == "submitting"}>
+            <Button color="primary" onPress={() => form.handleSubmit(onResetPassword)()} isLoading={status.action == "submitting"}>
               Continue
             </Button>
           </div>

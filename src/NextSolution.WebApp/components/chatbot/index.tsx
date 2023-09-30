@@ -1,6 +1,6 @@
 "use client";
 
-import { FC, ReactNode, useEffect } from "react";
+import { FC, ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { DockPanelLeftIcon } from "@/assets/icons";
 import { Button } from "@nextui-org/button";
@@ -14,13 +14,13 @@ import { cn } from "@/lib/utils";
 
 import { Loader } from "../../ui/loader";
 import { useAppStore } from "../provider";
-import { ChatGPTSidebar } from "./sidebar";
+import { ChatBotSidebar } from "./sidebar";
 
-export const ChatGPTLayout: FC<{ children: ReactNode }> = ({ children }) => {
+export const ChatBotLayout: FC<{ children: ReactNode }> = ({ children }) => {
   const router = useRouter();
   const api = useApi();
   const { loading } = useAppStore();
-  const { sidebarOpened, toggleSidebar, dispatchChats, setChatsStatus } = useChatGPTStore();
+  const { sidebarOpened, toggleSidebar, dispatchChats, setChatsStatus } = useChatBotStore();
 
   useUnauthenticated(() => {
     router.replace(queryString.stringifyUrl({ url: "/", query: { dialogId: "sign-in" } }));
@@ -28,26 +28,11 @@ export const ChatGPTLayout: FC<{ children: ReactNode }> = ({ children }) => {
 
   const currentUser = useUser();
 
-  const fetchData = async (offset: number) => {
-    try {
-      setChatsStatus({ action: "fetching" });
-      const response = await api.get("/chats", { params: { offset: offset, limit: 25 } });
-      dispatchChats("load", response.data);
-      setChatsStatus({ action: "idle" });
-    } catch (error) {
-      setChatsStatus({ action: "idle", error });
-    }
-  };
-
-  useEffect(() => {
-    fetchData(0);
-  }, []);
-
   return (
     <Loader loading={loading || !currentUser} className="relative flex min-h-screen flex-col">
       {currentUser && (
         <div className={cn("flex flex-1 items-start")}>
-          <ChatGPTSidebar />
+          <ChatBotSidebar />
           <main className="container mx-auto px-6 pt-16">
             <div className={cn("absolute left-2 top-4", sidebarOpened ? "hidden" : "md:inline-block")}>
               <Button className="h-11" variant="bordered" isIconOnly onPress={() => toggleSidebar()}>
@@ -70,50 +55,50 @@ export interface Chat {
   updatedAt: string;
 }
 
-export interface ChatGPTState {
+export interface ChatBotState {
   sidebarOpened: boolean;
   chats: {
     items: Chat[];
-    groupedItems: Dictionary<ChatGPTState["chats"]["items"]>;
+    groupedItems: Dictionary<ChatBotState["chats"]["items"]>;
     groupedKeys: string[];
     groupedCounts: number[];
-    offset: number;
+    offset: number | null;
     limit: number;
     length: number;
     previous: number | null;
     next: number | null;
   };
-  chatsStatus: { action: "idle" | "fetching"; error?: any };
+  chatsStatus: { action: "idle" | "loading"; error?: any };
 }
 
-export interface ChatGPTActions {
+export interface ChatBotActions {
   openSidebar: () => void;
   closeSidebar: () => void;
   toggleSidebar: () => void;
-  dispatchChats: (action: "add" | "update" | "remove" | "load", item: ChatGPTState["chats"] | Chat) => void;
-  setChatsStatus: (status: ChatGPTState["chatsStatus"]) => void;
+  dispatchChats: (action: "add" | "update" | "remove" | "load", item: ChatBotState["chats"] | Chat) => void;
+  setChatsStatus: (status: ChatBotState["chatsStatus"]) => void;
 }
 
-export const useChatGPTStore = zustand.create<ChatGPTState & ChatGPTActions>((set) => ({
+export const useChatBotStore = zustand.create<ChatBotState & ChatBotActions>((set) => ({
   sidebarOpened: true,
   chats: {
     items: [],
     groupedItems: {},
     groupedKeys: [],
     groupedCounts: [],
-    offset: 0,
+    offset: null,
     limit: 0,
     length: 0,
     previous: null,
     next: null
   },
-  chatsStatus: { action: "fetching" },
+  chatsStatus: { action: "loading" },
   openSidebar: () => set((state) => ({ ...state, sidebarOpened: true })),
   closeSidebar: () => set((state) => ({ ...state, sidebarOpened: false })),
   toggleSidebar: () => set((state) => ({ ...state, sidebarOpened: !state.sidebarOpened })),
-  dispatchChats: (action: "add" | "update" | "remove" | "load", item: ChatGPTState["chats"] | Chat) =>
+  dispatchChats: (action: "add" | "update" | "remove" | "load", item: ChatBotState["chats"] | Chat) =>
     set((state) => {
-      const chats = cloneDeep(action == "load" ? ({ ...item, items: [...state.chats.items, ...(item as ChatGPTState["chats"]).items] } as ChatGPTState["chats"]) : state.chats);
+      const chats = cloneDeep(action == "load" ? ({ ...item, items: [...state.chats.items, ...(item as ChatBotState["chats"]).items] } as ChatBotState["chats"]) : state.chats);
 
       chats.items = {
         add: [...chats.items, item as Chat],
@@ -145,5 +130,5 @@ export const useChatGPTStore = zustand.create<ChatGPTState & ChatGPTActions>((se
         chats: chats
       };
     }),
-  setChatsStatus: (status: ChatGPTState["chatsStatus"]) => set((state) => ({ ...state, chatsStatus: status }))
+  setChatsStatus: (status: ChatBotState["chatsStatus"]) => set((state) => ({ ...state, chatsStatus: status }))
 }));

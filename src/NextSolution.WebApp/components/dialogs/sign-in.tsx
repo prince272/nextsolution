@@ -17,7 +17,7 @@ import toast from "react-hot-toast";
 import { v4 as uuidv4 } from "uuid";
 
 import { useApi } from "@/lib/api/client";
-import { getApiErrorMessage, isApiError } from "@/lib/api/utils";
+import { getErrorMessage, isApiError } from "@/lib/api/utils";
 import { useConditionalState } from "@/lib/hooks";
 import { cn } from "@/lib/utils";
 
@@ -66,7 +66,7 @@ export const SignInModal: FC<SignInProps> = ({ opened, onClose }) => {
         }
       }
 
-      toast.error(getApiErrorMessage(error), { id: componentId });
+      toast.error(getErrorMessage(error), { id: componentId });
     }
   };
 
@@ -77,7 +77,7 @@ export const SignInModal: FC<SignInProps> = ({ opened, onClose }) => {
       onClose(false);
     } catch (error) {
       setMethod(null);
-      toast.error(getApiErrorMessage(error), { id: componentId });
+      toast.error(getErrorMessage(error), { id: componentId });
     }
   };
 
@@ -127,7 +127,7 @@ export const SignInModal: FC<SignInProps> = ({ opened, onClose }) => {
                 </Link>
               </div>
             </div>
-            <Button color="primary" type="submit" isLoading={status.action == "submitting"}>
+            <Button color="primary" type="button" isLoading={status.action == "submitting"} onPress={() => form.handleSubmit(onSignIn)()}>
               Sign in
             </Button>
             <div className="flex items-center justify-center text-center text-sm">

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
+using NextSolution.Core.Extensions.FileStorage;
 using NextSolution.Core.Services;
 using System;
 using System.Collections.Generic;
@@ -17,7 +18,7 @@ namespace NextSolution.Core.Models.Medias
 
     public class UploadMediaChunkFormValidator : UploadMediaContentFormValidator<UploadMediaChunkForm>
     {
-        public UploadMediaChunkFormValidator(IOptions<MediaServiceOptions> mediaServiceOptions) : base(mediaServiceOptions)
+        public UploadMediaChunkFormValidator(IOptions<FileRuleOptions> fileTypeOptions) : base(fileTypeOptions)
         {
         }
     }

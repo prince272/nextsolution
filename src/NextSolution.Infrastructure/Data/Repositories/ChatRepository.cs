@@ -15,14 +15,14 @@ namespace NextSolution.Infrastructure.Data.Repositories
         {
         }
 
-        protected override IQueryable<Chat> GetQueryable(
+        protected override IQueryable<Chat> GetQuery(
             Expression<Func<Chat, bool>>? predicate = null,
             Func<IQueryable<Chat>, IOrderedQueryable<Chat>>? orderBy = null,
             Expression<Func<Chat, object>>[]? include = null,
             bool enableTracking = true,
             bool enableFilters = false)
         {
-            var query = base.GetQueryable(predicate, orderBy, include, enableTracking, enableFilters);
+            var query = base.GetQuery(predicate, orderBy, include, enableTracking, enableFilters);
             query = query.OrderByDescending(_ => _.UpdatedAt);
             return query;
         }

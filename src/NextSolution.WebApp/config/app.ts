@@ -10,7 +10,7 @@ export const appConfig = {
     },
     {
       label: "ChatGPT",
-      href: "/chatgpt"
+      href: "/chatbot"
     },
     {
       label: "About",
@@ -19,36 +19,16 @@ export const appConfig = {
   ],
   navMenuItems: [
     {
-      label: "Profile",
-      href: "/profile"
+      label: "Home",
+      href: "/"
     },
     {
-      label: "Dashboard",
-      href: "/dashboard"
+      label: "ChatGPT",
+      href: "/chatbot"
     },
     {
-      label: "Projects",
-      href: "/projects"
-    },
-    {
-      label: "Team",
-      href: "/team"
-    },
-    {
-      label: "Calendar",
-      href: "/calendar"
-    },
-    {
-      label: "Settings",
-      href: "/settings"
-    },
-    {
-      label: "Help & Feedback",
-      href: "/help-feedback"
-    },
-    {
-      label: "Logout",
-      href: "/logout"
+      label: "About",
+      href: "/about"
     }
   ],
   links: {

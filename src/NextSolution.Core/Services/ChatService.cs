@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
-using NextSolution.Core.Constants;
 using NextSolution.Core.Entities;
 using NextSolution.Core.Exceptions;
 using NextSolution.Core.Extensions.Identity;
@@ -10,6 +9,7 @@ using NextSolution.Core.Models.Chats;
 using NextSolution.Core.Models.Users;
 using NextSolution.Core.Models.Users.Accounts;
 using NextSolution.Core.Repositories;
+using NextSolution.Core.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,24 +23,26 @@ namespace NextSolution.Core.Services
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly IChatRepository _chatRepository;
+        private readonly IChatMessageRepository _chatMessageRepository;
         private readonly IUserRepository _userRepository;
         private readonly IUserContext _userContext;
         private readonly IModelBuilder _modelBuilder;
 
-        public ChatService(IServiceProvider serviceProvider, IChatRepository chatRepository, IUserRepository userRepository, IUserContext userContext, IModelBuilder modelBuilder)
+        public ChatService(IServiceProvider serviceProvider, IChatRepository chatRepository, IChatMessageRepository chatMessageRepository, IUserRepository userRepository, IUserContext userContext, IModelBuilder modelBuilder)
         {
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
             _chatRepository = chatRepository ?? throw new ArgumentNullException(nameof(chatRepository));
+            _chatMessageRepository = chatMessageRepository ?? throw new ArgumentNullException(nameof(chatMessageRepository));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext));
             _modelBuilder = modelBuilder ?? throw new ArgumentNullException(nameof(modelBuilder));
         }
 
-        public async Task<ChatModel> CreateAsync(CreateChatForm form)
+        public async IAsyncEnumerable<ChatCompletionModel> CompleteChatAsync(ChatCompletionForm form)
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 
-            var formValidator = _serviceProvider.GetRequiredService<CreateChatFormValidator>();
+            var formValidator = _serviceProvider.GetRequiredService<ChatCompletionFormValidator>();
             var formValidationResult = await formValidator.ValidateAsync(form, cancellationToken);
 
             if (!formValidationResult.IsValid)
@@ -49,20 +51,50 @@ namespace NextSolution.Core.Services
             var currentUser = _userContext.UserId != null ? await _userRepository.GetByIdAsync(_userContext.UserId.Value, cancellationToken) : null;
             if (currentUser == null) throw new UnauthorizedException();
 
-            var chat = new Chat
+            var currentUserIsInAdmin = await _userRepository.IsInRoleAsync(currentUser, Role.Admin, cancellationToken);
+            var currentUserIsInMemeber = await _userRepository.IsInRoleAsync(currentUser, Role.Member, cancellationToken);
+            if (!currentUserIsInAdmin || !currentUserIsInMemeber) throw new ForbiddenException();
+
+            var chat = form.ChatId == null ? await _chatRepository.CreateAsync(new Chat
             {
                 CreatedAt = DateTimeOffset.UtcNow,
                 UpdatedAt = DateTimeOffset.UtcNow,
                 UserId = currentUser.Id,
-                Title = form.Title
+                Title = form.Prompt // Generate from AI
+            }) : (await _chatRepository.GetByIdAsync(form.ChatId.Value, cancellationToken)) ?? throw new BadRequestException(nameof(form.ChatId), $"Chat '{form.ChatId}' does not exist.");
+
+            if (currentUserIsInMemeber && chat.UserId != currentUser.Id) throw new ForbiddenException();
+
+            ChatMessage? previousMessage = null;
+
+            if (form.MessageId != null)
+            {
+                previousMessage = await _chatMessageRepository.GetByIdAsync(form.MessageId.Value, cancellationToken);
+                if (previousMessage == null) throw new BadRequestException(nameof(form.MessageId), $"Chat message  '{form.MessageId}' does not exist.");
+
+                if (previousMessage.ChatId != chat.Id || previousMessage.Role != ChatMessage.Roles.User)
+                    throw new ForbiddenException();
+            }
+
+            var currentMessage = new ChatMessage
+            {
+                PreviousId = previousMessage?.Id,
+                ChatId = chat.Id,
+                Role = ChatMessage.Roles.User,
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow,
+                Content = form.Prompt
             };
 
-            await _chatRepository.CreateAsync(chat, cancellationToken);
-            var chatModel = await _modelBuilder.BuildAsync(chat, cancellationToken);
-            return chatModel;
+            await _chatMessageRepository.CreateAsync(currentMessage, cancellationToken);
+
+
+
+
+            yield return new ChatCompletionModel();
         }
 
-        public async Task<ChatModel> EditAsync(EditChatForm form)
+        public async Task<ChatModel> EditChatAsync(EditChatForm form)
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 
@@ -75,13 +107,14 @@ namespace NextSolution.Core.Services
             var currentUser = _userContext.UserId != null ? await _userRepository.GetByIdAsync(_userContext.UserId.Value, cancellationToken) : null;
             if (currentUser == null) throw new UnauthorizedException();
 
-            var isCurrentUserAdmin = await _userRepository.IsInRoleAsync(currentUser, Roles.Admin);
+            var currentUserIsInAdmin = await _userRepository.IsInRoleAsync(currentUser, Role.Admin, cancellationToken);
+            var currentUserIsInMemeber = await _userRepository.IsInRoleAsync(currentUser, Role.Member, cancellationToken);
+            if (!currentUserIsInAdmin || !currentUserIsInMemeber) throw new ForbiddenException();
 
             var chat = await _chatRepository.GetByIdAsync(form.Id, cancellationToken);
-            if (chat == null) throw new NotFoundException();
+            if (chat == null) throw new BadRequestException(nameof(form.Id), $"Chat '{form.Id}' does not exist.");
 
-            if (!isCurrentUserAdmin && chat.UserId != currentUser.Id)
-                throw new ForbiddenException();
+            if (currentUserIsInMemeber && chat.UserId != currentUser.Id) throw new ForbiddenException();
 
             chat.Title = form.Title;
             chat.UpdatedAt = DateTimeOffset.UtcNow;
@@ -91,7 +124,7 @@ namespace NextSolution.Core.Services
             return chatModel;
         }
 
-        public async Task DeleteAsync(DeleteChatForm form)
+        public async Task DeleteChatAsync(DeleteChatForm form)
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 
@@ -104,18 +137,21 @@ namespace NextSolution.Core.Services
             var currentUser = _userContext.UserId != null ? await _userRepository.GetByIdAsync(_userContext.UserId.Value, cancellationToken) : null;
             if (currentUser == null) throw new UnauthorizedException();
 
-            var isCurrentUserAdmin = await _userRepository.IsInRoleAsync(currentUser, Roles.Admin);
+            var currentUserIsInAdmin = await _userRepository.IsInRoleAsync(currentUser, Role.Admin, cancellationToken);
+            var currentUserIsInMemeber = await _userRepository.IsInRoleAsync(currentUser, Role.Member, cancellationToken);
+            if (!currentUserIsInAdmin || !currentUserIsInMemeber) throw new ForbiddenException();
 
             var chat = await _chatRepository.GetByIdAsync(form.Id, cancellationToken);
-            if (chat == null) throw new NotFoundException();
+            if (chat == null) throw new BadRequestException(nameof(form.Id), $"Chat '{form.Id}' does not exist.");
 
-            if (!isCurrentUserAdmin && chat.UserId != currentUser.Id)
-                throw new ForbiddenException();
+            if (currentUserIsInMemeber && chat.UserId != currentUser.Id) throw new ForbiddenException();
 
+            // TODO: Wrap inside a transaction
+            await _chatMessageRepository.DeleteManyAsync(_ => _.ChatId == chat.Id);
             await _chatRepository.DeleteAsync(chat, cancellationToken);
         }
 
-        public async Task<ChatModel> GetAsync(GetChatForm form)
+        public async Task<ChatModel> GetChatAsync(GetChatForm form)
         {
             if (form == null) throw new ArgumentNullException(nameof(form));
 
@@ -128,22 +164,31 @@ namespace NextSolution.Core.Services
             var currentUser = _userContext.UserId != null ? await _userRepository.GetByIdAsync(_userContext.UserId.Value, cancellationToken) : null;
             if (currentUser == null) throw new UnauthorizedException();
 
-            var isCurrentUserAdmin = await _userRepository.IsInRoleAsync(currentUser, Roles.Admin);
+            var currentUserIsInAdmin = await _userRepository.IsInRoleAsync(currentUser, Role.Admin, cancellationToken);
+            var currentUserIsInMemeber = await _userRepository.IsInRoleAsync(currentUser, Role.Member, cancellationToken);
+            if (!currentUserIsInAdmin || !currentUserIsInMemeber) throw new ForbiddenException();
 
             var chat = await _chatRepository.GetByIdAsync(form.Id, cancellationToken);
-            if (chat == null) throw new NotFoundException();
+            if (chat == null) throw new BadRequestException(nameof(form.Id), $"Chat '{form.Id}' does not exist.");
 
-            if (!isCurrentUserAdmin && chat.UserId != currentUser.Id)
-                throw new ForbiddenException();
+            if (currentUserIsInMemeber && chat.UserId != currentUser.Id) throw new ForbiddenException();
 
             var model = await _modelBuilder.BuildAsync(chat, cancellationToken);
             return model;
         }
 
-        public async Task<ChatPageModel> GetManyAsync(ChatSearchParams searchParams, long offset, int limit)
+        public async Task<ChatPageModel> GetChatsAsync(ChatSearchCriteria searchCriteria, long offset, int limit)
         {
-            if (searchParams == null) throw new ArgumentNullException(nameof(searchParams));
-            var predicate = searchParams.Build();
+            var currentUser = _userContext.UserId != null ? await _userRepository.GetByIdAsync(_userContext.UserId.Value, cancellationToken) : null;
+            if (currentUser == null) throw new UnauthorizedException();
+
+            var currentUserIsInAdmin = await _userRepository.IsInRoleAsync(currentUser, Role.Admin, cancellationToken);
+            var currentUserIsInMemeber = await _userRepository.IsInRoleAsync(currentUser, Role.Member, cancellationToken);
+            if (!currentUserIsInAdmin || !currentUserIsInMemeber) throw new ForbiddenException();
+
+            if (searchCriteria == null) throw new ArgumentNullException(nameof(searchCriteria));
+            var predicate = searchCriteria.Build();
+            predicate = predicate.And(chat => !currentUserIsInMemeber || chat.UserId == currentUser.Id);
 
             var page = (await _chatRepository.GetManyAsync(offset, limit, predicate: predicate, cancellationToken: cancellationToken));
             var pageModel = await _modelBuilder.BuildAsync(page, cancellationToken);
@@ -151,6 +196,7 @@ namespace NextSolution.Core.Services
         }
 
 
+        // source: https://alistairevans.co.uk/2019/10/24/net-asynchronous-disposal-tips-for-implementing-iasyncdisposable-on-your-own-types/
         private readonly CancellationToken cancellationToken = default;
         private bool disposed = false;
 
@@ -168,8 +214,11 @@ namespace NextSolution.Core.Services
         {
             if (disposing)
             {
-                // myResource.Dispose();
                 cancellationToken.ThrowIfCancellationRequested();
+                //_disposableResource?.Dispose();
+                //(_asyncDisposableResource as IDisposable)?.Dispose();
+                //_disposableResource = null;
+                //_asyncDisposableResource = null;
             }
         }
 
@@ -187,8 +236,11 @@ namespace NextSolution.Core.Services
         {
             if (disposing)
             {
-                //  await myResource.DisposeAsync();
                 cancellationToken.ThrowIfCancellationRequested();
+                //await _disposableResource?.DisposeAsync();
+                //await (_asyncDisposableResource as IDisposable)?.DisposeAsync();
+                //_disposableResource = null;
+                //_asyncDisposableResource = null;
             }
 
             return ValueTask.CompletedTask;
@@ -197,14 +249,14 @@ namespace NextSolution.Core.Services
 
     public interface IChatService : IDisposable, IAsyncDisposable
     {
-        Task<ChatModel> CreateAsync(CreateChatForm form);
+        IAsyncEnumerable<ChatCompletionModel> CompleteChatAsync(ChatCompletionForm form);
 
-        Task<ChatModel> EditAsync(EditChatForm form);
+        Task<ChatModel> EditChatAsync(EditChatForm form);
 
-        Task DeleteAsync(DeleteChatForm form);
+        Task DeleteChatAsync(DeleteChatForm form);
 
-        Task<ChatModel> GetAsync(GetChatForm form);
+        Task<ChatModel> GetChatAsync(GetChatForm form);
 
-        Task<ChatPageModel> GetManyAsync(ChatSearchParams searchParams, long offset, int limit);
+        Task<ChatPageModel> GetChatsAsync(ChatSearchCriteria searchCriteria, long offset, int limit);
     }
 }

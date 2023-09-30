@@ -90,7 +90,7 @@ namespace NextSolution.Infrastructure.Identity
                         return;
                     }
 
-                    await userRepository.UpdateLastActiveAsync(user);
+                    await userRepository.UpdateAsync(user, lastActiveAt: DateTimeOffset.UtcNow);
                 },
                 OnMessageReceived = context =>
                 {

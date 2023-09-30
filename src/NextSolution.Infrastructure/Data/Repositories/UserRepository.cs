@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using NextSolution.Core.Constants;
 using System.Data;
 using System.Diagnostics.CodeAnalysis;
 using NextSolution.Core.Extensions.Identity;
@@ -31,35 +30,35 @@ namespace NextSolution.Infrastructure.Data.Repositories
             _userSessionStorage = userSessionStorage ?? throw new ArgumentNullException(nameof(userSessionStorage));
         }
 
-        public async Task CreateAsync(User user, string password, CancellationToken cancellationToken = default)
+        public async Task<User> CreateAsync(User user, string password, CancellationToken cancellationToken = default)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
             if (password == null) throw new ArgumentNullException(nameof(password));
 
             user.PhoneNumber = ValidationHelper.NormalizePhoneNumber(user.PhoneNumber);
             var result = await _userManager.CreateAsync(user, password);
-
             if (!result.Succeeded) throw new InvalidOperationException(result.Errors.GetMessage());
+            return user;
         }
 
-        public override async Task CreateAsync(User user, CancellationToken cancellationToken = default)
+        public override async Task<User> CreateAsync(User user, CancellationToken cancellationToken = default)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
 
             user.PhoneNumber = ValidationHelper.NormalizePhoneNumber(user.PhoneNumber);
             var result = await _userManager.CreateAsync(user);
-
             if (!result.Succeeded) throw new InvalidOperationException(result.Errors.GetMessage());
+            return user;
         }
 
-        public override async Task UpdateAsync(User user, CancellationToken cancellationToken = default)
+        public override async Task<User> UpdateAsync(User user, CancellationToken cancellationToken = default)
         {
             if (user == null) throw new ArgumentNullException(nameof(user));
 
             user.PhoneNumber = ValidationHelper.NormalizePhoneNumber(user.PhoneNumber);
             var result = await _userManager.UpdateAsync(user);
-
             if (!result.Succeeded) throw new InvalidOperationException(result.Errors.GetMessage());
+            return user;
         }
 
         public override async Task DeleteAsync(User user, CancellationToken cancellationToken = default)
@@ -71,17 +70,17 @@ namespace NextSolution.Infrastructure.Data.Repositories
             if (!result.Succeeded) throw new InvalidOperationException(result.Errors.GetMessage());
         }
 
-        public async Task UpdateLastActiveAsync(User user, CancellationToken cancellationToken = default)
+        public async Task<User> UpdateAsync(User user, DateTimeOffset lastActiveAt, CancellationToken cancellationToken = default)
         {
-            var currentTime = DateTimeOffset.UtcNow;
-
             // Update the LastActive of a user only if at least 1 minute has elapsed since the last update.
             var threshold = TimeSpan.FromMinutes(1);
-            if (user.Active && currentTime - user.LastActiveAt >= threshold)
+            if (user.Active && lastActiveAt - user.LastActiveAt >= threshold)
             {
-                user.LastActiveAt = currentTime;
+                user.LastActiveAt = lastActiveAt;
                 await _userManager.UpdateAsync(user);
             }
+
+            return user;
         }
 
         public Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)

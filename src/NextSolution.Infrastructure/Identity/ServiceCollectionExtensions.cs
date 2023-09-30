@@ -35,15 +35,6 @@ namespace NextSolution.Infrastructure.Identity
             return builder;
         }
 
-        public static AuthenticationBuilder AddBearer(this AuthenticationBuilder builder, IConfiguration configuration)
-        {
-            builder.Services.AddOptions<UserSessionOptions>().Configure<IHttpContextAccessor>((options, httpContextAccessor) => {
-                ConfigureBearer(() => configuration.Bind(options), options, httpContextAccessor);
-            });
-            builder.AddBearer();
-            return builder;
-        }
-
         private static void ConfigureBearer(Action configure, UserSessionOptions options, IHttpContextAccessor httpContextAccessor)
         {
             configure();

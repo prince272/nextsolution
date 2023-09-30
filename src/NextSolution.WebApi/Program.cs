@@ -101,19 +101,27 @@ try
         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
 
     })
-        .AddBearer(builder.Configuration.GetRequiredSection("BearerAuthOptions"))
+        .AddBearer(options =>
+        {
+            builder.Configuration.GetRequiredSection("BearerAuthOptions").Bind(options);
+        })
         .AddGoogle(GoogleDefaults.AuthenticationScheme, options =>
         {
             options.SignInScheme = IdentityConstants.ExternalScheme;
-            options.ClientId = builder.Configuration.GetValue<string>("GoogleAuthOptions:ClientId")!;
-            options.ClientSecret = builder.Configuration.GetValue<string>("GoogleAuthOptions:ClientSecret")!;
+            builder.Configuration.GetRequiredSection("GoogleAuthOptions").Bind(options);
         });
 
     builder.Services.AddAuthorization();
 
-    builder.Services.AddMailKitEmailSender(builder.Configuration.GetRequiredSection("Mailing:MailKit"));
+    builder.Services.AddMailKitEmailSender(options =>
+    {
+        builder.Configuration.GetRequiredSection("MailKitOptions").Bind(options);
+    });
+
     builder.Services.AddFakeSmsSender();
+
     builder.Services.AddRazorViewRenderer();
+
     builder.Services.AddLocalFileStorage(options =>
     {
         options.RootPath = Path.Combine(builder.Environment.WebRootPath, "uploads");
@@ -162,12 +170,12 @@ try
 });
 
     // Add application services.
-    builder.Services.AddApplication(assemblies);
+    builder.Services.AddApplication();
+
+    builder.Services.AddHostedService<StartupService>();
 
     // Add documentation services.
     builder.Services.AddDocumentations();
-
-    builder.Services.AddHostedService<StartupService>();
 
     // Build application.
     var app = builder.Build();

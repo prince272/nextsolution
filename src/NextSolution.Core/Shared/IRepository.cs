@@ -10,9 +10,9 @@ namespace NextSolution.Core.Shared
 {
     public interface IRepository<TEntity> where TEntity : class, IEntity
     {
-        Task CreateAsync(TEntity entity, CancellationToken cancellationToken = default);
+        Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken = default);
 
-        Task UpdateAsync(TEntity entity, CancellationToken cancellationToken = default);
+        Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default);
 
         Task DeleteAsync(TEntity entity, CancellationToken cancellationToken = default);
 
@@ -44,17 +44,6 @@ namespace NextSolution.Core.Shared
         Task<IEnumerable<TResult>> GetManyAsync<TResult>(
             Expression<Func<TEntity, TResult>> selector,
             Expression<Func<TEntity, bool>> predicate,
-            Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
-            Expression<Func<TEntity, object>>[]? include = null,
-            CancellationToken cancellationToken = default);
-
-        Task<IEnumerable<TEntity>> GetAllAsync(
-            Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
-            Expression<Func<TEntity, object>>[]? include = null,
-            CancellationToken cancellationToken = default);
-
-        Task<IEnumerable<TResult>> GetAllAsync<TResult>(
-            Expression<Func<TEntity, TResult>> selector,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
             Expression<Func<TEntity, object>>[]? include = null,
             CancellationToken cancellationToken = default);

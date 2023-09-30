@@ -12,7 +12,7 @@ import toast from "react-hot-toast";
 import { v4 as uuidv4 } from "uuid";
 
 import { useApi, useUser } from "@/lib/api/client";
-import { getApiErrorMessage } from "@/lib/api/utils";
+import { getErrorMessage } from "@/lib/api/utils";
 
 registerPlugin(FilePondPluginImagePreview);
 
@@ -64,7 +64,7 @@ const FileInput = forwardRef<ElementRef<typeof FilePond>, FileInputProps>(({ val
         }) as any,
         onerror: (response) => {
           const error = JSON.parse(response);
-          toast.error(getApiErrorMessage(error), { id: componentId });
+          toast.error(getErrorMessage(error), { id: componentId });
         }
       },
       patch: {
@@ -87,7 +87,7 @@ const FileInput = forwardRef<ElementRef<typeof FilePond>, FileInputProps>(({ val
         },
         onerror: (response: any) => {
           const error = JSON.parse(response);
-          toast.error(getApiErrorMessage(error), { id: componentId });
+          toast.error(getErrorMessage(error), { id: componentId });
         }
       },
       revert: (uniqueFieldId: any, load: () => void, error: (errorText: string) => void) => {

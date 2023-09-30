@@ -55,7 +55,7 @@ namespace NextSolution.Infrastructure.RealTime
 
                     if (user != null)
                     {
-                        await _userRepository.UpdateLastActiveAsync(user);
+                        await _userRepository.UpdateAsync(user, lastActiveAt: DateTimeOffset.UtcNow);
                         await _mediator.Publish(new UserConnected(user, connections, client));
                     }
                     else
@@ -93,7 +93,7 @@ namespace NextSolution.Infrastructure.RealTime
 
                     if (user != null)
                     {
-                        await _userRepository.UpdateLastActiveAsync(user);
+                        await _userRepository.UpdateAsync(user, lastActiveAt: DateTimeOffset.UtcNow);
                         await _mediator.Publish(new UserDisconnected(user, connections, client));
                     }
                     else

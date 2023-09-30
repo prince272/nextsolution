@@ -1,9 +1,9 @@
 "use client";
 
-import { ComponentProps, ComponentPropsWithoutRef, FC, forwardRef, Fragment } from "react";
+import { ComponentProps, ComponentPropsWithoutRef, FC, forwardRef, Fragment, useEffect } from "react";
 import NextLink from "next/link";
-import { usePathname } from "next/navigation";
-import { AddIcon, CommentIcon, DeleteIcon, DockPanelLeftIcon, EditIcon } from "@/assets/icons";
+import { useParams, usePathname } from "next/navigation";
+import { CommentIcon, DeleteIcon, EditIcon } from "@/assets/icons";
 import { Render } from "@/ui/misc/render";
 import { Button } from "@nextui-org/button";
 import { Spinner } from "@nextui-org/spinner";
@@ -11,75 +11,32 @@ import queryString from "query-string";
 import { GroupedVirtuoso } from "react-virtuoso";
 
 import { useApi } from "@/lib/api/client";
-import { getApiErrorMessage } from "@/lib/api/utils";
+import { getErrorMessage } from "@/lib/api/utils";
 import { cn } from "@/lib/utils";
 
-import { useChatGPTStore } from ".";
-import { Sheet, SheetBody, SheetContent, SheetFooter, SheetHeader } from "../../ui/sheet";
-import { UserButton } from "../user-button";
+import { useChatBotStore } from ".";
 
-export const ChatGPTSidebar: FC = () => {
-  const { sidebarOpened, openSidebar, closeSidebar } = useChatGPTStore();
-  const pathname = usePathname();
+export type ChatListProps = ComponentProps<typeof GroupedVirtuoso> & {};
 
-  return (
-    <Sheet
-      placement="left"
-      className="text-white dark"
-      classNames={{
-        base: "max-w-[280px]",
-        header: "px-2",
-        body: "px-2",
-        footer: "px-2"
-      }}
-      hideCloseButton
-      isStatic={true}
-      isOpen={sidebarOpened}
-      onOpenChange={(opened) => {
-        (opened ? openSidebar : closeSidebar)();
-      }}
-    >
-      <SheetContent>
-        <SheetHeader className="flex justify-between gap-2 pb-2">
-          <Button
-            as={NextLink}
-            href={queryString.stringifyUrl({ url: pathname, query: { dialogId: "new-chat" } })}
-            className="h-11 justify-start px-4 !text-sm"
-            variant="bordered"
-            fullWidth
-            startContent={<AddIcon className="h-4 w-4" />}
-          >
-            New Chat
-          </Button>
-          <Button className="h-11" variant="bordered" isIconOnly onPress={() => closeSidebar()}>
-            <DockPanelLeftIcon className="h-5 w-5" type="outlined" />
-          </Button>
-        </SheetHeader>
-        <SheetBody as={ChatListBox} className="p-0"></SheetBody>
-        <SheetFooter>
-          <UserButton />
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
-  );
-};
-
-type ChatListBoxProps = ComponentProps<typeof GroupedVirtuoso> & {};
-
-const ChatListBox: FC<ChatListBoxProps> = forwardRef((props, ref) => {
+export const ChatList: FC<ChatListProps> = forwardRef((props, ref) => {
+  const { chatId } = useParams() as { chatId: string[] };
   const pathname = usePathname();
   const api = useApi();
-  const { dispatchChats, chats, chatsStatus, setChatsStatus } = useChatGPTStore();
+  const { dispatchChats, chats, chatsStatus, setChatsStatus } = useChatBotStore();
   const fetchData = async (offset: number) => {
     try {
-      setChatsStatus({ action: "fetching" });
+      setChatsStatus({ action: "loading" });
       const response = await api.get("/chats", { params: { offset: offset, limit: 25 } });
-      dispatchChats("load", response.data as any);
+      dispatchChats("load", response.data);
       setChatsStatus({ action: "idle" });
     } catch (error) {
       setChatsStatus({ action: "idle", error });
     }
   };
+
+  useEffect(() => {
+    if (chats.offset == null) fetchData(0);
+  }, []);
 
   return (
     <GroupedVirtuoso
@@ -96,11 +53,11 @@ const ChatListBox: FC<ChatListBoxProps> = forwardRef((props, ref) => {
         return (
           <Button
             as="div"
-            variant="light"
-            className="group relative h-11 w-full justify-start px-2"
+            variant={item.id == chatId?.at(0) ? "flat" : "light"}
+            className={cn("group relative h-11 w-full justify-start px-2")}
             startContent={<CommentIcon className="pointer-events-none h-5 w-5 flex-shrink-0 text-xl" type="outlined" />}
             endContent={
-              <div className="ml-auto hidden items-center group-hover:flex">
+              <div className={cn("ml-auto items-center group-hover:flex", item.id == chatId?.at(0) ? "flex" : "hidden")}>
                 <Button
                   as={NextLink}
                   href={queryString.stringifyUrl({ url: pathname, query: { dialogId: "edit-chat", chatId: item.id } })}
@@ -124,26 +81,26 @@ const ChatListBox: FC<ChatListBoxProps> = forwardRef((props, ref) => {
               </div>
             }
           >
-            <NextLink href={`/chatgpt`} className="stretched-link"></NextLink>
+            <NextLink href={`/chatbot/${item.id}`} className="stretched-link"></NextLink>
             <div className="truncate">{item.title}</div>
           </Button>
         );
       }}
       components={{
-        ...ChatListBoxComponents,
+        ...ChatListComponents,
         Footer: () => {
           return (
-            <Render switch={chatsStatus.error ? "error" : chats.next ? "loading" : "blank"}>
+            <Render switch={chatsStatus.action == "loading" ? "loading" : chatsStatus.error ? "error" : "blank"}>
               <div key="error" className="flex h-24 flex-col items-center justify-center space-y-2 text-center">
-                <div className="text-sm text-foreground-500">{getApiErrorMessage(chatsStatus.error)}</div>
+                <div className="text-sm text-foreground-500">{getErrorMessage(chatsStatus.error)}</div>
                 <Button
                   variant="light"
                   color="primary"
                   onPress={() => {
-                    fetchData(chats.offset);
+                    fetchData(chats.next || 0);
                   }}
                 >
-                  Retry
+                  Reload
                 </Button>
               </div>
               <div key="loading" className="flex h-24 flex-col items-center justify-center space-y-2 text-center">
@@ -159,9 +116,9 @@ const ChatListBox: FC<ChatListBoxProps> = forwardRef((props, ref) => {
     />
   );
 });
-ChatListBox.displayName = "ChatListBox";
+ChatList.displayName = "ChatList";
 
-const ChatListBoxComponents = {
+export const ChatListComponents = {
   // eslint-disable-next-line react/display-name
   List: forwardRef<HTMLDivElement, ComponentPropsWithoutRef<"div">>(({ className, ...props }, ref) => {
     return <div className={cn("space-y-1", className)} {...props} ref={ref} />;

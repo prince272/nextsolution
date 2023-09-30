@@ -13,9 +13,9 @@ namespace NextSolution.Core.Repositories
 {
     public interface IUserRepository : IRepository<User>
     {
-        Task CreateAsync(User user, string password, CancellationToken cancellationToken = default);
+        Task<User> CreateAsync(User user, string password, CancellationToken cancellationToken = default);
 
-        Task UpdateLastActiveAsync(User user, CancellationToken cancellationToken = default);
+        Task<User> UpdateAsync(User user, DateTimeOffset lastActiveAt, CancellationToken cancellationToken = default);
 
         Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default);
 

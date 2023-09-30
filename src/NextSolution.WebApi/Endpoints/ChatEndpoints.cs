@@ -15,40 +15,40 @@ namespace NextSolution.WebApi.Endpoints
         {
             var endpoints = MapGroup("/chats");
 
-            endpoints.MapPost("/", CreateChatAsync);
+            endpoints.MapPost("/", CompleteChatAsync);
             endpoints.MapPut("/{chatId}", EditChatAsync);
             endpoints.MapDelete("/{chatId}", DeleteChatAsync);
             endpoints.MapGet("/{chatId}", GetChatAsync);
-            endpoints.MapGet("/", GetManyChatsAsync);
+            endpoints.MapGet("/", GetChatsAsync);
         }
 
-        public async Task<IResult> CreateChatAsync([FromServices] IChatService chatService, [FromBody] CreateChatForm form)
+        public IAsyncEnumerable<ChatCompletionModel> CompleteChatAsync([FromServices] IChatService chatService, [FromBody] ChatCompletionForm form)
         {
-            return Results.Ok(await chatService.CreateAsync(form));
+            return chatService.CompleteChatAsync(form);
         }
 
         public async Task<IResult> EditChatAsync([FromServices] IChatService chatService, [FromRoute] long chatId, [FromBody] EditChatForm form)
         {
             form.Id = chatId;
-            return Results.Ok(await chatService.EditAsync(form));
+            return Results.Ok(await chatService.EditChatAsync(form));
         }
 
         public async Task<IResult> DeleteChatAsync([FromServices] IChatService chatService, [FromRoute] long chatId)
         {
             var form = new DeleteChatForm() { Id = chatId };
-            await chatService.DeleteAsync(form);
+            await chatService.DeleteChatAsync(form);
             return Results.Ok();
         }
 
         public async Task<IResult> GetChatAsync([FromServices] IChatService chatService, [FromRoute] long chatId)
         {
             var form = new GetChatForm() { Id = chatId };
-            return Results.Ok(await chatService.GetAsync(form));
+            return Results.Ok(await chatService.GetChatAsync(form));
         }
 
-        public async Task<IResult> GetManyChatsAsync([FromServices] IChatService chatService, [AsParameters] ChatSearchParams searchParams, [FromQuery] long offset = 0, [FromQuery] int limit = 25)
+        public async Task<IResult> GetChatsAsync([FromServices] IChatService chatService, [AsParameters] ChatSearchCriteria searchCriteria, [FromQuery] long offset = 0, [FromQuery] int limit = 25)
         {
-            return Results.Ok(await chatService.GetManyAsync(searchParams, offset, limit));
+            return Results.Ok(await chatService.GetChatsAsync(searchCriteria, offset, limit));
         }
     }
 }

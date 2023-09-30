@@ -6,4 +6,4 @@ export { SignUpModal } from "./dialogs/sign-up";
 export { VerifyEmailModal, VerifyPhoneNumberModal } from "./dialogs/verify-username";
 
 // Chats
-export { DeleteChatModal, EditChatModal, NewChatModal } from "./chatgpt/dialogs/crud";
+export { DeleteChatModal, EditChatModal, NewChatModal } from "./chatbot/dialogs/crud";

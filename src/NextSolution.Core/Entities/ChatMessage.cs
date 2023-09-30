@@ -1,4 +1,5 @@
-﻿using NextSolution.Core.Shared;
+﻿using AutoMapper.Execution;
+using NextSolution.Core.Shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,5 +23,21 @@ namespace NextSolution.Core.Entities
         public DateTimeOffset CreatedAt { get; set; }
 
         public DateTimeOffset UpdatedAt { get; set; }
+
+        public virtual ChatMessage? Previous { get; set; }
+
+        public long? PreviousId { get; set; }
+
+        public class Roles
+        {
+
+            public const string User = nameof(User);
+
+            public const string Assistant = nameof(Assistant);
+
+            public const string System = nameof(System);
+
+            public static IEnumerable<string> All => new[] { User, Assistant, System };
+        }
     }
 }

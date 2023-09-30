@@ -22,13 +22,6 @@ namespace NextSolution.Infrastructure.EmailSender.MailKit
             return services;
         }
 
-        public static IServiceCollection AddMailKitEmailSender(this IServiceCollection services, IConfiguration configuration)
-        {
-            services.Configure<MailKitEmailOptions>(configuration);
-            services.AddMailKitEmailSender();
-            return services;
-        }
-
         public static IServiceCollection AddMailKitEmailSender(this IServiceCollection services)
         {
             services.AddTransient<IEmailSender, MailKitEmailSender>();

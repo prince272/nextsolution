@@ -20,22 +20,22 @@ namespace NextSolution.Infrastructure.Data.Repositories
             _roleManager = roleManager ?? throw new ArgumentNullException(nameof(roleManager));
         }
 
-        public override async Task CreateAsync(Role role, CancellationToken cancellationToken = default)
+        public override async Task<Role> CreateAsync(Role role, CancellationToken cancellationToken = default)
         {
             if (role == null) throw new ArgumentNullException(nameof(role));
 
             var result = await _roleManager.CreateAsync(role);
-
             if (!result.Succeeded) throw new InvalidOperationException(result.Errors.GetMessage());
+            return role;
         }
 
-        public override async Task UpdateAsync(Role role, CancellationToken cancellationToken = default)
+        public override async Task<Role> UpdateAsync(Role role, CancellationToken cancellationToken = default)
         {
             if (role == null) throw new ArgumentNullException(nameof(role));
 
             var result = await _roleManager.UpdateAsync(role);
-
             if (!result.Succeeded) throw new InvalidOperationException(result.Errors.GetMessage());
+            return role;
         }
 
         public override async Task DeleteAsync(Role role, CancellationToken cancellationToken = default)

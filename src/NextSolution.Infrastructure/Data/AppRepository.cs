@@ -21,20 +21,22 @@ namespace NextSolution.Infrastructure.Data
             _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
 
-        public virtual async Task CreateAsync(TEntity entity, CancellationToken cancellationToken = default)
+        public virtual async Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
             if (entity == null) throw new ArgumentNullException(nameof(entity));
 
             await _dbContext.AddAsync(entity, cancellationToken);
             await _dbContext.SaveChangesAsync(cancellationToken);
+            return entity;
         }
 
-        public virtual async Task UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
+        public virtual async Task<TEntity> UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
             if (entity == null) throw new ArgumentNullException(nameof(entity));
 
             _dbContext.Update(entity);
             await _dbContext.SaveChangesAsync(cancellationToken);
+            return entity;
         }
 
         public virtual async Task DeleteAsync(TEntity entity, CancellationToken cancellationToken = default)
@@ -69,7 +71,7 @@ namespace NextSolution.Infrastructure.Data
             CancellationToken cancellationToken = default)
         {
             if (predicate == null) throw new ArgumentNullException(nameof(predicate));
-            return GetQueryable(predicate, orderBy, include, enableTracking: true, enableFilters: true).FirstOrDefaultAsync(cancellationToken);
+            return GetQuery(predicate, orderBy, include, enableTracking: true, enableFilters: true).FirstOrDefaultAsync(cancellationToken);
         }
 
         public virtual Task<TResult?> GetAsync<TResult>(
@@ -81,7 +83,7 @@ namespace NextSolution.Infrastructure.Data
         {
             if (selector == null) throw new ArgumentNullException(nameof(selector));
             if (predicate == null) throw new ArgumentNullException(nameof(predicate));
-            return GetQueryable(predicate, orderBy, include, enableTracking: true, enableFilters: true).Select(selector).FirstOrDefaultAsync(cancellationToken);
+            return GetQuery(predicate, orderBy, include, enableTracking: true, enableFilters: true).Select(selector).FirstOrDefaultAsync(cancellationToken);
         }
 
         public virtual async Task<IEnumerable<TEntity>> GetManyAsync(
@@ -91,7 +93,7 @@ namespace NextSolution.Infrastructure.Data
             CancellationToken cancellationToken = default)
         {
             if (predicate == null) throw new ArgumentNullException(nameof(predicate));
-            return await GetQueryable(predicate, orderBy, include, enableTracking: true, enableFilters: true).ToArrayAsync(cancellationToken);
+            return await GetQuery(predicate, orderBy, include, enableTracking: true, enableFilters: true).ToArrayAsync(cancellationToken);
         }
 
         public virtual async Task<IEnumerable<TResult>> GetManyAsync<TResult>(
@@ -103,25 +105,7 @@ namespace NextSolution.Infrastructure.Data
         {
             if (selector == null) throw new ArgumentNullException(nameof(selector));
             if (predicate == null) throw new ArgumentNullException(nameof(predicate));
-            return await GetQueryable(predicate, orderBy, include, enableTracking: true, enableFilters: true).Select(selector).ToArrayAsync(cancellationToken);
-        }
-
-        public virtual async Task<IEnumerable<TEntity>> GetAllAsync(
-            Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
-            Expression<Func<TEntity, object>>[]? include = null,
-            CancellationToken cancellationToken = default)
-        {
-            return await GetQueryable(null, orderBy, include, enableTracking: true, enableFilters: true).ToArrayAsync(cancellationToken);
-        }
-
-        public virtual async Task<IEnumerable<TResult>> GetAllAsync<TResult>(
-            Expression<Func<TEntity, TResult>> selector,
-            Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
-            Expression<Func<TEntity, object>>[]? include = null,
-            CancellationToken cancellationToken = default)
-        {
-            if (selector == null) throw new ArgumentNullException(nameof(selector));
-            return await GetQueryable(null, orderBy, include, enableTracking: true, enableFilters: true).Select(selector).ToArrayAsync(cancellationToken);
+            return await GetQuery(predicate, orderBy, include, enableTracking: true, enableFilters: true).Select(selector).ToArrayAsync(cancellationToken);
         }
 
         public virtual async Task<IPageable<TEntity>> GetManyAsync(long offset, int limit,
@@ -136,7 +120,7 @@ namespace NextSolution.Infrastructure.Data
             if (limit < 1)
                 throw new ArgumentException("Limit must be greater than or equal to 1.");
 
-            var query = GetQueryable(predicate, orderBy, include, enableTracking: false, enableFilters: true);
+            var query = GetQuery(predicate, orderBy, include, enableTracking: false, enableFilters: true);
 
             var totalItems = await query.LongCountAsync(cancellationToken);
             var items = await query.LongSkip(offset).Take(limit).ToListAsync(cancellationToken);
@@ -158,7 +142,7 @@ namespace NextSolution.Infrastructure.Data
                 throw new ArgumentException("Limit must be greater than or equal to 1.");
 
             if (selector == null) throw new ArgumentNullException(nameof(selector));
-            var query = GetQueryable(predicate, orderBy, include, enableTracking: false, enableFilters: true);
+            var query = GetQuery(predicate, orderBy, include, enableTracking: false, enableFilters: true);
 
             var totalItems = await query.LongCountAsync(cancellationToken);
             var items = await query.LongSkip(offset).Take(limit).Select(selector).ToListAsync(cancellationToken);
@@ -166,7 +150,7 @@ namespace NextSolution.Infrastructure.Data
             return result;
         }
 
-        protected virtual IQueryable<TEntity> GetQueryable(
+        protected virtual IQueryable<TEntity> GetQuery(
             Expression<Func<TEntity, bool>>? predicate = null,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
             Expression<Func<TEntity, object>>[]? include = null,

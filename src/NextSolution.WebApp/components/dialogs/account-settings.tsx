@@ -23,7 +23,7 @@ import { v4 as uuidv4 } from "uuid";
 
 import { useApi, useUnauthenticated, useUser } from "@/lib/api/client";
 import { User } from "@/lib/api/types";
-import { getApiErrorMessage, isApiError } from "@/lib/api/utils";
+import { getErrorMessage, isApiError } from "@/lib/api/utils";
 import { useConditionalState, useResponsive } from "@/lib/hooks";
 import { cn } from "@/lib/utils";
 
@@ -183,7 +183,7 @@ export const EditProfileView: FC<{ footerId: string }> = ({ footerId }) => {
         }
       }
 
-      toast.error(getApiErrorMessage(error), { id: componentId });
+      toast.error(getErrorMessage(error), { id: componentId });
     }
   };
 
@@ -337,7 +337,7 @@ export const EditProfileView: FC<{ footerId: string }> = ({ footerId }) => {
         </div>
       </div>
       <Portal rootId={footerId}>
-        <Button type="submit" color="primary" onPress={() => form.handleSubmit(onEditProfile)()} isLoading={status.action == "submitting"}>
+        <Button color="primary" onPress={() => form.handleSubmit(onEditProfile)()} isLoading={status.action == "submitting"}>
           Save changes
         </Button>
       </Portal>
@@ -384,7 +384,7 @@ export const ChangePasswordView: FC<{ footerId: string }> = ({ footerId }) => {
         }
       }
 
-      toast.error(getApiErrorMessage(error), { id: componentId });
+      toast.error(getErrorMessage(error), { id: componentId });
     }
   };
 
@@ -451,7 +451,7 @@ export const ChangePasswordView: FC<{ footerId: string }> = ({ footerId }) => {
           />
         </div>
         <div className="col-span-4 flex flex-row justify-end">
-          <Button type="submit" color="primary" onPress={() => form.handleSubmit(onChangePassword)()} isLoading={status.action == "submitting"}>
+          <Button color="primary" onPress={() => form.handleSubmit(onChangePassword)()} isLoading={status.action == "submitting"}>
             Change password
           </Button>
         </div>

@@ -14,10 +14,10 @@ import toast from "react-hot-toast";
 import { v4 as uuidv4 } from "uuid";
 
 import { useApi, useUnauthenticated } from "@/lib/api/client";
-import { getApiErrorMessage, isApiError } from "@/lib/api/utils";
+import { getErrorMessage, isApiError } from "@/lib/api/utils";
 import { useConditionalState } from "@/lib/hooks";
 
-import { Chat, useChatGPTStore } from "..";
+import { Chat, useChatBotStore } from "..";
 
 export interface CrudProps {
   opened: boolean;
@@ -36,7 +36,7 @@ const createCrudModal = (crudType: CrudType) => {
     const searchParams = useSearchParams();
     const chatId = searchParams.get("chatId");
     const [chat, setChat] = useState<Chat | null>(null);
-    const { dispatchChats } = useChatGPTStore();
+    const { dispatchChats } = useChatBotStore();
 
     useUnauthenticated(() => {
       router.replace(queryString.stringifyUrl({ url: "/", query: { dialogId: "sign-in" } }));
@@ -52,7 +52,7 @@ const createCrudModal = (crudType: CrudType) => {
     const componentId = useRef(uuidv4()).current;
 
     const [status, setStatus] = useState<{ action: "idle" | "submitting" | "loading"; error?: any }>({
-      action: crudType == "edit" ? "loading" : "idle"
+      action: crudType != "new" ? "loading" : "idle"
     });
 
     const onSubmit: SubmitHandler<CrudInputs> = async (inputs) => {
@@ -97,7 +97,7 @@ const createCrudModal = (crudType: CrudType) => {
           }
         }
 
-        toast.error(getApiErrorMessage(error), { id: componentId });
+        toast.error(getErrorMessage(error), { id: componentId });
       }
     };
 
@@ -114,7 +114,7 @@ const createCrudModal = (crudType: CrudType) => {
     };
 
     useEffect(() => {
-      if (crudType == "edit") onLoad();
+      if (crudType != "new") onLoad();
     }, []);
 
     return (
@@ -122,7 +122,7 @@ const createCrudModal = (crudType: CrudType) => {
         <Modal isKeyboardDismissDisabled={true} isOpen={opened} onClose={() => onClose()} as={"form"} onSubmit={form.handleSubmit(onSubmit)}>
           <ModalContent>
             <ModalHeader className="flex flex-col gap-1">{startCase(crudType)} chat</ModalHeader>
-            <Render switch={status.error && crudType == "edit" && !chat ? "error" : crudType}>
+            <Render switch={crudType != "new" && !chat ? (status.error ? "error" : crudType) : crudType}>
               <Fragment key="new|edit">
                 <ModalBody>
                   <Skeleton className="rounded-xl" isLoaded={status.action != "loading"}>
@@ -145,25 +145,41 @@ const createCrudModal = (crudType: CrudType) => {
                   </Skeleton>
                 </ModalBody>
                 <ModalFooter>
-                  <Button onPress={() => onClose(false)}>Cancel</Button>
-                  <Button type="submit" color="primary" isDisabled={status.action == "loading"} isLoading={status.action == "submitting"}>
-                    Save
-                  </Button>
+                  <Skeleton className="rounded-xl" isLoaded={status.action != "loading"}>
+                    <Button isDisabled={status.action == "loading"} onPress={() => onClose()}>
+                      Cancel
+                    </Button>
+                  </Skeleton>
+                  <Skeleton className="rounded-xl" isLoaded={status.action != "loading"}>
+                    <Button onPress={() => form.handleSubmit(onSubmit)()} color="primary" isDisabled={status.action == "loading"} isLoading={status.action == "submitting"}>
+                      Save
+                    </Button>
+                  </Skeleton>
                 </ModalFooter>
               </Fragment>
               <Fragment key="delete">
-                <ModalBody>Are you sure you went to delete this chat?</ModalBody>
+                <ModalBody>
+                  <Skeleton className="rounded-xl" isLoaded={status.action != "loading"}>
+                    Are you sure you went to delete &quot;{chat?.title}&quot; chat?
+                  </Skeleton>
+                </ModalBody>
                 <ModalFooter>
-                  <Button onPress={() => onClose(false)}>Cancel</Button>
-                  <Button type="submit" color="danger" isLoading={status.action == "submitting"}>
-                    Delete
-                  </Button>
+                  <Skeleton className="rounded-xl" isLoaded={status.action != "loading"}>
+                    <Button isDisabled={status.action == "loading"} onPress={() => onClose()}>
+                      Cancel
+                    </Button>
+                  </Skeleton>
+                  <Skeleton className="rounded-xl" isLoaded={status.action != "loading"}>
+                    <Button isDisabled={status.action == "loading"} onPress={() => form.handleSubmit(onSubmit)()} color="danger" isLoading={status.action == "submitting"}>
+                      Delete
+                    </Button>
+                  </Skeleton>
                 </ModalFooter>
               </Fragment>
               <Fragment key="error">
-                <ModalBody className="pb-12">
+                <ModalBody className="pb-8 pt-4">
                   <div className="flex h-20 flex-col items-center justify-center space-y-2 text-center">
-                    <div className="mb-1 text-sm text-foreground-500">{getApiErrorMessage(status.error)}</div>
+                    <div className="mb-1 text-sm text-foreground-500">{getErrorMessage(status.error)}</div>
                     <Button
                       variant="light"
                       color="primary"
@@ -171,7 +187,7 @@ const createCrudModal = (crudType: CrudType) => {
                         onLoad();
                       }}
                     >
-                      Retry
+                      Reload
                     </Button>
                   </div>
                 </ModalBody>

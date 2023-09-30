@@ -3,7 +3,7 @@ import { isIdempotentRequestError, isNetworkError } from "axios-retry";
 
 export const isApiError = isAxiosError;
 
-export const getApiErrorMessage = (error: any) => {
+export const getErrorMessage = (error: any) => {
   let message = "";
 
   if (isAxiosError(error)) {

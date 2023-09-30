@@ -1,6 +1,5 @@
 ﻿using Bogus;
 using Microsoft.Extensions.DependencyInjection;
-using NextSolution.Core.Constants;
 using NextSolution.Core.Entities;
 using NextSolution.Core.Repositories;
 using NextSolution.Core.Services;
@@ -40,7 +39,7 @@ namespace NextSolution.WebApi.Services
 
                 if (!(await roleRepository.AnyAsync(cancellationToken)))
                 {
-                    foreach (var roleName in Roles.All)
+                    foreach (var roleName in Role.All)
                     {
                         await roleRepository.CreateAsync(new Role(roleName), cancellationToken);
                     }

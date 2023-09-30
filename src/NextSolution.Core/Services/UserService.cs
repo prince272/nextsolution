@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
-using NextSolution.Core.Constants;
 using NextSolution.Core.Entities;
 using NextSolution.Core.Exceptions;
 using NextSolution.Core.Utilities;
@@ -41,14 +40,14 @@ namespace NextSolution.Core.Services
         private readonly IEmailSender _emailSender;
         private readonly ISmsSender _smsSender;
         private readonly IUserContext _userContext;
-        private readonly IOptions<MediaServiceOptions> _mediaServiceOptions;
+        private readonly IOptions<FileRuleOptions> _fileTypeOptions;
         private readonly IMediaRepository _mediaRepository;
         private readonly IUserRepository _userRepository;
         private readonly IRoleRepository _roleRepository;
 
         public UserService(IServiceProvider serviceProvider, IFileStorage fileStorage, IMapper mapper, IModelBuilder modelBuilder,
                            IMediator mediator, IViewRenderer viewRenderer, IEmailSender emailSender,
-                           ISmsSender smsSender, IUserContext userContext, IOptions<MediaServiceOptions> mediaServiceOptions, IMediaRepository mediaRepository, IUserRepository userRepository,
+                           ISmsSender smsSender, IUserContext userContext, IOptions<FileRuleOptions> fileTypeOptions, IMediaRepository mediaRepository, IUserRepository userRepository,
                            IRoleRepository roleRepository)
         {
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
@@ -60,7 +59,7 @@ namespace NextSolution.Core.Services
             _emailSender = emailSender ?? throw new ArgumentNullException(nameof(emailSender));
             _smsSender = smsSender ?? throw new ArgumentNullException(nameof(smsSender));
             _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext));
-            _mediaServiceOptions = mediaServiceOptions ?? throw new ArgumentNullException(nameof(mediaServiceOptions));
+            _fileTypeOptions = fileTypeOptions ?? throw new ArgumentNullException(nameof(fileTypeOptions));
             _mediaRepository = mediaRepository ?? throw new ArgumentNullException(nameof(mediaRepository));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _roleRepository = roleRepository ?? throw new ArgumentNullException(nameof(roleRepository));
@@ -82,7 +81,7 @@ namespace NextSolution.Core.Services
                 ContactType.Email => await _userRepository.GetByEmailAsync(form.Username, cancellationToken),
                 ContactType.PhoneNumber => await _userRepository.GetByPhoneNumberAsync(form.Username, cancellationToken),
                 _ => null
-            } != null) throw new BadRequestException(nameof(form.Username), $"'{form.UsernameType.Humanize(LetterCasing.Title)}' is already taken.");
+            } != null) throw new BadRequestException(nameof(form.Username), $"'{form.UsernameType.Humanize(LetterCasing.Sentence)}' is already taken.");
 
             var user = new User();
             user.FirstName = form.FirstName;
@@ -96,7 +95,7 @@ namespace NextSolution.Core.Services
             await _userRepository.GenerateUserNameAsync(user, cancellationToken);
             await _userRepository.CreateAsync(user, form.Password, cancellationToken);
 
-            foreach (var roleName in Roles.All)
+            foreach (var roleName in Role.All)
             {
                 if (await _roleRepository.GetByNameAsync(roleName, cancellationToken) == null)
                     await _roleRepository.CreateAsync(new Role(roleName), cancellationToken);
@@ -107,7 +106,7 @@ namespace NextSolution.Core.Services
             // Assign roles to the specified user based on the total user count.
             // If there is only one user, grant both Admin and Member roles.
             // Otherwise, assign only the Member role.
-            await _userRepository.AddToRolesAsync(user, (totalUsers == 1) ? new[] { Roles.Admin, Roles.Member } : new[] { Roles.Member }, cancellationToken);
+            await _userRepository.AddToRolesAsync(user, (totalUsers == 1) ? new[] { Role.Admin, Role.Member } : new[] { Role.Member }, cancellationToken);
 
             await _mediator.Publish(new UserSignedUp(user), cancellationToken);
         }
@@ -130,10 +129,10 @@ namespace NextSolution.Core.Services
             };
 
             if (user == null)
-                throw new BadRequestException(nameof(form.Username), $"'{form.UsernameType.Humanize(LetterCasing.Title)}' does not exist.");
+                throw new BadRequestException(nameof(form.Username), $"'{form.UsernameType.Humanize(LetterCasing.Sentence)}' does not exist.");
 
             if (!await _userRepository.CheckPasswordAsync(user, form.Password, cancellationToken))
-                throw new BadRequestException(nameof(form.Password), $"'{nameof(form.Password).Humanize(LetterCasing.Title)}' is not correct.");
+                throw new BadRequestException(nameof(form.Password), $"'{nameof(form.Password).Humanize(LetterCasing.Sentence)}' is not correct.");
 
             var session = await _userRepository.GenerateSessionAsync(user, cancellationToken);
             await _userRepository.AddSessionAsync(user, session, cancellationToken);
@@ -176,7 +175,7 @@ namespace NextSolution.Core.Services
                 await _userRepository.GenerateUserNameAsync(user, cancellationToken);
                 await _userRepository.CreateAsync(user, cancellationToken);
 
-                foreach (var roleName in Roles.All)
+                foreach (var roleName in Role.All)
                 {
                     if (await _roleRepository.GetByNameAsync(roleName, cancellationToken) == null)
                         await _roleRepository.CreateAsync(new Role(roleName), cancellationToken);
@@ -187,7 +186,7 @@ namespace NextSolution.Core.Services
                 // Assign roles to the specified user based on the total user count.
                 // If there is only one user, grant both Admin and Member roles.
                 // Otherwise, assign only the Member role.
-                await _userRepository.AddToRolesAsync(user, (totalUsers == 1) ? new[] { Roles.Admin, Roles.Member } : new[] { Roles.Member }, cancellationToken);
+                await _userRepository.AddToRolesAsync(user, (totalUsers == 1) ? new[] { Role.Admin, Role.Member } : new[] { Role.Member }, cancellationToken);
             }
 
             await _userRepository.RemoveLoginAsync(user, form.ProviderName, form.ProviderKey, cancellationToken);
@@ -214,7 +213,7 @@ namespace NextSolution.Core.Services
 
             var user = await _userRepository.GetByRefreshTokenAsync(form.RefreshToken, cancellationToken);
 
-            if (user == null) throw new BadRequestException(nameof(form.RefreshToken), $"'{nameof(form.RefreshToken).Humanize(LetterCasing.Title)}' is not valid.");
+            if (user == null) throw new BadRequestException(nameof(form.RefreshToken), $"'{nameof(form.RefreshToken).Humanize(LetterCasing.Sentence)}' is not valid.");
 
             await _userRepository.RemoveSessionAsync(user, form.RefreshToken, cancellationToken);
 
@@ -233,7 +232,7 @@ namespace NextSolution.Core.Services
 
             var user = await _userRepository.GetByRefreshTokenAsync(form.RefreshToken, cancellationToken);
 
-            if (user == null) throw new BadRequestException(nameof(form.RefreshToken), $"'{nameof(form.RefreshToken).Humanize(LetterCasing.Title)}' is not valid.");
+            if (user == null) throw new BadRequestException(nameof(form.RefreshToken), $"'{nameof(form.RefreshToken).Humanize(LetterCasing.Sentence)}' is not valid.");
 
             await _userRepository.RemoveSessionAsync(user, form.RefreshToken, cancellationToken);
 
@@ -261,7 +260,7 @@ namespace NextSolution.Core.Services
                 _ => null
             };
 
-            if (user == null) throw new BadRequestException(nameof(form.Username), $"'{form.UsernameType.Humanize(LetterCasing.Title)}' does not exist.");
+            if (user == null) throw new BadRequestException(nameof(form.Username), $"'{form.UsernameType.Humanize(LetterCasing.Sentence)}' does not exist.");
 
 
             if (form.UsernameType == ContactType.Email)
@@ -271,7 +270,7 @@ namespace NextSolution.Core.Services
                 var message = new EmailMessage()
                 {
                     Recipients = new[] { form.Username },
-                    Subject = $"Verify Your {form.UsernameType.Humanize(LetterCasing.Title)}",
+                    Subject = $"Verify Your {form.UsernameType.Humanize(LetterCasing.Sentence)}",
                     Body = await _viewRenderer.RenderAsync("/Email/VerifyUsername", (user, new VerifyUsernameForm { Username = form.Username, Code = code }), cancellationToken)
                 };
 
@@ -320,7 +319,7 @@ namespace NextSolution.Core.Services
             }
             catch (InvalidOperationException ex)
             {
-                throw new BadRequestException(nameof(form.Code), $"'{nameof(form.Code).Humanize(LetterCasing.Title)}' is not valid.", innerException: ex);
+                throw new BadRequestException(nameof(form.Code), $"'{nameof(form.Code).Humanize(LetterCasing.Sentence)}' is not valid.", innerException: ex);
             }
         }
 
@@ -341,7 +340,7 @@ namespace NextSolution.Core.Services
                 _ => null
             };
 
-            if (user == null) throw new BadRequestException(nameof(form.Username), $"'{form.UsernameType.Humanize(LetterCasing.Title)}' does not exist.");
+            if (user == null) throw new BadRequestException(nameof(form.Username), $"'{form.UsernameType.Humanize(LetterCasing.Sentence)}' does not exist.");
 
             if (form.UsernameType == ContactType.Email)
             {
@@ -385,7 +384,7 @@ namespace NextSolution.Core.Services
                 _ => null
             };
 
-            if (user == null) throw new BadRequestException(nameof(form.Username), $"'{form.UsernameType.Humanize(LetterCasing.Title)}' does not exist.");
+            if (user == null) throw new BadRequestException(nameof(form.Username), $"'{form.UsernameType.Humanize(LetterCasing.Sentence)}' does not exist.");
 
             try
             {
@@ -393,7 +392,7 @@ namespace NextSolution.Core.Services
             }
             catch (InvalidOperationException ex)
             {
-                throw new BadRequestException(nameof(form.Code), $"'{nameof(form.Code).Humanize(LetterCasing.Title)}' is not valid.", innerException: ex);
+                throw new BadRequestException(nameof(form.Code), $"'{nameof(form.Code).Humanize(LetterCasing.Sentence)}' is not valid.", innerException: ex);
             }
         }
 
@@ -413,10 +412,10 @@ namespace NextSolution.Core.Services
             await _userRepository.ChangePasswordAsync(currentUser, form.CurrentPassword, form.NewPassword, cancellationToken);
         }
 
-        public async Task<UserPageModel> GetUsersAsync(UserSearchParams searchParams, long offset, int limit)
+        public async Task<UserPageModel> GetUsersAsync(UserSearchCriteria searchCriteria, long offset, int limit)
         {
-            if (searchParams == null) throw new ArgumentNullException(nameof(searchParams));
-            var predicate = searchParams.Build();
+            if (searchCriteria == null) throw new ArgumentNullException(nameof(searchCriteria));
+            var predicate = searchCriteria.Build();
 
             var page = (await _userRepository.GetManyAsync(offset, limit, predicate: predicate, cancellationToken: cancellationToken));
             var pageModel = await _modelBuilder.BuildAsync(page, cancellationToken);
@@ -445,13 +444,13 @@ namespace NextSolution.Core.Services
             if (currentUser == null) throw new UnauthorizedException();
 
             if (await _userRepository.IsUserNameTakenAsync(currentUser, form.UserName, cancellationToken))
-                throw new BadRequestException(nameof(form.UserName), $"'{(nameof(form.UserName).ToLower()).Humanize(LetterCasing.Title)}' is already taken.");
+                throw new BadRequestException(nameof(form.UserName), $"'{(nameof(form.UserName).ToLower()).Humanize(LetterCasing.Sentence)}' is already taken.");
 
             if (string.IsNullOrWhiteSpace(form.Email) && currentUser.EmailRequired)
-                throw new BadRequestException(nameof(form.Email), $"'{(nameof(form.Email).ToLower()).Humanize(LetterCasing.Title)}' must not be empty.");
+                throw new BadRequestException(nameof(form.Email), $"'{(nameof(form.Email).ToLower()).Humanize(LetterCasing.Sentence)}' must not be empty.");
 
             if (string.IsNullOrWhiteSpace(form.PhoneNumber) && currentUser.PhoneNumberRequired)
-                throw new BadRequestException(nameof(form.PhoneNumber), $"'{(nameof(form.PhoneNumber).ToLower()).Humanize(LetterCasing.Title)}' must not be empty.");
+                throw new BadRequestException(nameof(form.PhoneNumber), $"'{(nameof(form.PhoneNumber).ToLower()).Humanize(LetterCasing.Sentence)}' must not be empty.");
 
             await _userRepository.SetEmailAsync(currentUser, form.Email);
             await _userRepository.SetPhoneNumberAsync(currentUser, form.PhoneNumber);
@@ -470,7 +469,7 @@ namespace NextSolution.Core.Services
 
             if (!formValidationResult.IsValid)
                 throw new BadRequestException(formValidationResult.ToDictionary());
-            
+
             var status = await _fileStorage.WriteAsync(form.Path, form.Content, form.Size, form.Offset, cancellationToken);
 
             if (status == FileChunkStatus.Started)
@@ -479,8 +478,8 @@ namespace NextSolution.Core.Services
                 {
                     CreatedAt = DateTimeOffset.UtcNow,
                     UpdatedAt = DateTimeOffset.UtcNow,
-                    Type = form.Type ?? _mediaServiceOptions.Value.GetMediaType(form.Path),
-                    ContentType = form.ContentType ?? _mediaServiceOptions.Value.GetContentType(form.Path),
+                    Type = form.Type ?? _fileTypeOptions.Value.GetMediaType(form.Path),
+                    ContentType = form.ContentType ?? _fileTypeOptions.Value.GetContentType(form.Path),
                     Path = form.Path,
                     Name = form.Name,
                     Size = form.Size
@@ -519,6 +518,7 @@ namespace NextSolution.Core.Services
         }
 
 
+        // source: https://alistairevans.co.uk/2019/10/24/net-asynchronous-disposal-tips-for-implementing-iasyncdisposable-on-your-own-types/
         private readonly CancellationToken cancellationToken = default;
         private bool disposed = false;
 
@@ -536,8 +536,11 @@ namespace NextSolution.Core.Services
         {
             if (disposing)
             {
-                // myResource.Dispose();
                 cancellationToken.ThrowIfCancellationRequested();
+                //_disposableResource?.Dispose();
+                //(_asyncDisposableResource as IDisposable)?.Dispose();
+                //_disposableResource = null;
+                //_asyncDisposableResource = null;
             }
         }
 
@@ -555,8 +558,11 @@ namespace NextSolution.Core.Services
         {
             if (disposing)
             {
-                //  await myResource.DisposeAsync();
                 cancellationToken.ThrowIfCancellationRequested();
+                //await _disposableResource?.DisposeAsync();
+                //await (_asyncDisposableResource as IDisposable)?.DisposeAsync();
+                //_disposableResource = null;
+                //_asyncDisposableResource = null;
             }
 
             return ValueTask.CompletedTask;
@@ -578,7 +584,7 @@ namespace NextSolution.Core.Services
         Task VerifyUsernameAsync(VerifyUsernameForm form);
 
         // User
-        Task<UserPageModel> GetUsersAsync(UserSearchParams searchParams, long offset, int limit);
+        Task<UserPageModel> GetUsersAsync(UserSearchCriteria searchCriteria, long offset, int limit);
         Task<UserModel> GetCurrentUserAsync();
         Task EditCurrentUserAsync(EditUserForm form);
         Task UploadCurrentUserAvatarAsync(UploadMediaChunkForm form);
