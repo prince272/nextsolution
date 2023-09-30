@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using NextSolution.Core.Utilities;
-using NextSolution.Core.Services;
 using NextSolution.Core.Shared;
 using System;
 using System.Collections.Generic;
@@ -12,18 +11,27 @@ using System.Threading.Tasks;
 using NextSolution.Core.Entities;
 using FluentValidation;
 using NextSolution.Core.Models;
+using Humanizer;
 
-namespace NextSolution.Core
+namespace NextSolution.Core.Services
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddApplication(this IServiceCollection services)
+        public static IServiceCollection AddChatService(this IServiceCollection services)
         {
             services.AddScoped<IChatService, ChatService>();
+            return services;
+        }
 
+        public static IServiceCollection AddUserService(this IServiceCollection services)
+        {
             services.AddScoped<IUserService, UserService>();
-            services.AddTransient<IModelBuilder, ModelBuilder>();
+            return services;
+        }
 
+        public static IServiceCollection AddModelBuilder(this IServiceCollection services)
+        {
+            services.AddTransient<IModelBuilder, ModelBuilder>();
             return services;
         }
 

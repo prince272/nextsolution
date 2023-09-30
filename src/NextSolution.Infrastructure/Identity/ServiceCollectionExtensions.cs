@@ -28,7 +28,8 @@ namespace NextSolution.Infrastructure.Identity
     {
         public static AuthenticationBuilder AddBearer(this AuthenticationBuilder builder, Action<UserSessionOptions> options)
         {
-            builder.Services.AddOptions<UserSessionOptions>().Configure<IHttpContextAccessor>((optionsInstance, httpContextAccessor) => {
+            builder.Services.AddOptions<UserSessionOptions>().Configure<IHttpContextAccessor>((optionsInstance, httpContextAccessor) =>
+            {
                 ConfigureBearer(() => options(optionsInstance), optionsInstance, httpContextAccessor);
             });
             builder.AddBearer();
@@ -56,11 +57,14 @@ namespace NextSolution.Infrastructure.Identity
         {
             builder.Services.AddScoped<IUserClaimsPrincipalFactory<User>, UserClaimsPrincipalFactory>();
             builder.Services.AddScoped<IUserSessionFactory, UserSessionFactory>();
-            builder.Services.AddScoped<IUserSessionStorage, UserSessionStorage>();
-            builder.Services.AddScoped<IUserContext, UserContext>();
 
             builder.Services.ConfigureOptions<ConfigureJwtBearerOptions>();
             return builder.AddJwtBearer();
+        }
+
+        public static IServiceCollection AddClientContext(this IServiceCollection services)
+        {
+            return services.AddScoped<IClientContext, ClientContext>();
         }
     }
 }

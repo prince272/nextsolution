@@ -10,13 +10,13 @@ namespace NextSolution.Core.Extensions.FileStorage
 {
     public class FileRuleOptions
     {
-        public IEnumerable<FileRule> Documents { get; set; } = new List<FileRule>();
+        public IList<FileRule> Documents { get; set; } = new List<FileRule>();
 
-        public IEnumerable<FileRule> Images { get; set; } = new List<FileRule>();
+        public IList<FileRule> Images { get; set; } = new List<FileRule>();
 
-        public IEnumerable<FileRule> Videos { get; set; } = new List<FileRule>();
+        public IList<FileRule> Videos { get; set; } = new List<FileRule>();
 
-        public IEnumerable<FileRule> Audios { get; set; } = new List<FileRule>();
+        public IList<FileRule> Audios { get; set; } = new List<FileRule>();
 
         public IEnumerable<FileRule> All => new[] { Documents, Images, Videos, Audios }.SelectMany(_ => _).ToArray();
 

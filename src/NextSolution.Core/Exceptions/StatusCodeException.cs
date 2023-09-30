@@ -1,12 +1,9 @@
-﻿using NextSolution.Core.Utilities;
+﻿using Humanizer;
+using NextSolution.Core.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace NextSolution.Core.Exceptions
 {

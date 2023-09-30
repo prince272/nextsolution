@@ -35,8 +35,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\NextSolution.Core.Services\NextSolution.Core.Services.csproj" />
     <ProjectReference Include="..\NextSolution.Core.Templates\NextSolution.Core.Templates.csproj" />
     <ProjectReference Include="..\NextSolution.Core\NextSolution.Core.csproj" />
+    <ProjectReference Include="..\NextSolution.Infrastructure.Data\NextSolution.Infrastructure.Data.csproj" />
     <ProjectReference Include="..\NextSolution.Infrastructure\NextSolution.Infrastructure.csproj" />
   </ItemGroup>
 

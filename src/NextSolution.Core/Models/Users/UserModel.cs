@@ -40,7 +40,7 @@ namespace NextSolution.Core.Models.Users
 
         public DateTimeOffset LastActiveAt { get; set; }
 
-        public IEnumerable<string> Roles { get; set; } = Array.Empty<string>();
+        public IList<string> Roles { get; set; } = new List<string>();
     }
 
     public class UserModelProfile : AbstractProfile

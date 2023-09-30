@@ -15,7 +15,6 @@ using Microsoft.IdentityModel.Tokens;
 using NextSolution.Core.Entities;
 using NextSolution.Core.Extensions.Identity;
 using NextSolution.Core.Utilities;
-using NextSolution.Infrastructure.Data;
 
 namespace NextSolution.Infrastructure.Identity
 {
@@ -23,22 +22,19 @@ namespace NextSolution.Infrastructure.Identity
     {
         private readonly JwtBearerOptions _jwtBearerOptions;
         private readonly IOptions<UserSessionOptions> _userSessionOptions;
-        private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly IUserContext _userContext;
+        private readonly IClientContext _clientContext;
         private readonly IUserClaimsPrincipalFactory<User> _userClaimsPrincipalFactory;
         private readonly ILogger<UserSessionFactory> _logger;
 
         public UserSessionFactory(
             IOptionsSnapshot<JwtBearerOptions> jwtBearerOptions,
             IOptions<UserSessionOptions> userSessionOptions,
-            IHttpContextAccessor httpContextAccessor,
-            IUserContext userSessionContext,
+            IClientContext clientContext,
             IUserClaimsPrincipalFactory<User> userClaimsPrincipalFactory, ILogger<UserSessionFactory> logger)
         {
             _jwtBearerOptions = jwtBearerOptions.Get(JwtBearerDefaults.AuthenticationScheme) ?? throw new ArgumentNullException(nameof(jwtBearerOptions));
             _userSessionOptions = userSessionOptions ?? throw new ArgumentNullException(nameof(userSessionOptions));
-            _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
-            _userContext = userSessionContext ?? throw new ArgumentNullException(nameof(userSessionContext));
+            _clientContext = clientContext ?? throw new ArgumentNullException(nameof(clientContext));
             _userClaimsPrincipalFactory = userClaimsPrincipalFactory ?? throw new ArgumentNullException(nameof(userClaimsPrincipalFactory));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -71,8 +67,8 @@ namespace NextSolution.Infrastructure.Identity
         {
             if (claims == null) throw new ArgumentNullException(nameof(claims));
 
-            var issuer = GetIssuer();
-            var audience = GetAudience();
+            var issuer = _clientContext.Issuer ?? throw new InvalidOperationException("Unable to determine the issuer.");
+            var audience = _clientContext.Audience ?? _userSessionOptions.Value.GetAudiences().First();
 
             claims = claims.Concat(new Claim[] {
                 new(JwtRegisteredClaimNames.Jti, AlgorithmHelper.GenerateStamp(), ClaimValueTypes.String, issuer),
@@ -80,8 +76,8 @@ namespace NextSolution.Infrastructure.Identity
                 new(JwtRegisteredClaimNames.Iat, currentTime.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture), ClaimValueTypes.Integer64, issuer),
             });
 
-            if (_userContext.DeviceId != null)
-                claims = claims.Append(new(ClaimTypes.System, _userContext.DeviceId, ClaimValueTypes.String, issuer));
+            if (_clientContext.DeviceId != null)
+                claims = claims.Append(new(ClaimTypes.System, _clientContext.DeviceId, ClaimValueTypes.String, issuer));
 
             var expiresAt = currentTime.Add(expiresIn);
 
@@ -94,8 +90,8 @@ namespace NextSolution.Infrastructure.Identity
 
         private (string RefreshToken, DateTimeOffset RefreshTokenExpiresAt) GenerateRefreshToken(DateTimeOffset currentTime, TimeSpan expiresIn)
         {
-            var issuer = GetIssuer();
-            var audience = GetAudience();
+            var issuer = _clientContext.Issuer ?? throw new InvalidOperationException("Unable to determine the issuer.");
+            var audience = _clientContext.Audience ?? _userSessionOptions.Value.GetAudiences().First();
 
             var claims = new Claim[]
             {
@@ -105,8 +101,8 @@ namespace NextSolution.Infrastructure.Identity
             };
 
 
-            if (_userContext.DeviceId != null)
-                claims = claims.Append(new(ClaimTypes.System, _userContext.DeviceId, ClaimValueTypes.String, issuer)).ToArray();
+            if (_clientContext.DeviceId != null)
+                claims = claims.Append(new(ClaimTypes.System, _clientContext.DeviceId, ClaimValueTypes.String, issuer)).ToArray();
 
             var expiresAt = currentTime.Add(expiresIn);
 
@@ -117,88 +113,66 @@ namespace NextSolution.Infrastructure.Identity
             return (tokenValue, expiresAt);
         }
 
-        private string GetIssuer()
+        private string? GetDeviceId(ClaimsPrincipal principal)
         {
-            HttpContext? context = _httpContextAccessor.HttpContext;
-            Uri? issuer = context != null ? new Uri(string.Concat(context.Request.Scheme, "://", context.Request.Host.ToUriComponent()), UriKind.Absolute) : null;
-            return issuer?.GetLeftPart(UriPartial.Authority) ?? throw new InvalidOperationException("Unable to determine the issuer.");
-        }
-
-        private string GetAudience()
-        {
-            HttpContext? context = _httpContextAccessor.HttpContext;
-            Uri? audience = null;
-            audience ??= context?.Request?.Headers?.Origin is StringValues origin && !StringValues.IsNullOrEmpty(origin) ? new Uri(origin.ToString(), UriKind.Absolute) : null;
-            audience ??= context?.Request?.Headers?.Referer is StringValues referer && !StringValues.IsNullOrEmpty(referer) ? new Uri(referer.ToString(), UriKind.Absolute) : null;
-            return audience?.GetLeftPart(UriPartial.Authority) ?? _userSessionOptions.Value.GetAudiences().First();
-        }
-
-        private string? GetDeviceId(ClaimsIdentity identity)
-        {
-            if (identity == null) throw new ArgumentNullException(nameof(identity));
-            return identity.FindFirst(ClaimTypes.System) is Claim claim ? claim.Value : null;
+            if (principal == null) throw new ArgumentNullException(nameof(principal));
+            return principal.FindFirst(ClaimTypes.System) is Claim claim ? claim.Value : null;
         }
 
         private bool VerifyDevice(string deviceId)
         {
             if (deviceId == null) throw new ArgumentNullException(nameof(deviceId));
 
-            return string.Equals(deviceId, _userContext.DeviceId ?? "Unknown", StringComparison.Ordinal);
+            return string.Equals(deviceId, _clientContext.DeviceId ?? "Unknown", StringComparison.Ordinal);
         }
 
-        public async Task<bool> ValidateAccessTokenAsync(string accessToken, CancellationToken cancellationToken = default)
+        public Task<bool> ValidateAccessTokenAsync(string accessToken, CancellationToken cancellationToken = default)
         {
-            if (string.IsNullOrWhiteSpace(accessToken)) return false;
+            if (string.IsNullOrWhiteSpace(accessToken)) return Task.FromResult(false);
 
             try
             {
                 var parameters = _jwtBearerOptions.TokenValidationParameters.Clone();
-                var result = await new JwtSecurityTokenHandler().ValidateTokenAsync(accessToken, parameters);
+                var claimsPrincipal = new JwtSecurityTokenHandler().ValidateToken(accessToken, parameters, out var validatedToken);
 
-                if (!result.IsValid)
-                    return false;
+                if (claimsPrincipal?.Claims == null || !claimsPrincipal.Claims.Any())
+                    return Task.FromResult(false);
 
-                var claimsIdentity = result.ClaimsIdentity;
-                if (claimsIdentity?.Claims == null || !claimsIdentity.Claims.Any())
-                    return false;
+                var deviceId = GetDeviceId(claimsPrincipal);
+                if (deviceId == null || !VerifyDevice(deviceId)) return Task.FromResult(false);
 
-                var deviceId = GetDeviceId(claimsIdentity);
-                if (deviceId == null || !VerifyDevice(deviceId)) return false;
-
-                return true;
+                return Task.FromResult(true);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Failed to validate {nameof(accessToken)}: `{accessToken}`.");
 
-                return false;
+                return Task.FromResult(false);
             }
         }
 
-        public async Task<bool> ValidateRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default)
+        public Task<bool> ValidateRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default)
         {
-            if (string.IsNullOrWhiteSpace(refreshToken)) return false;
+            if (string.IsNullOrWhiteSpace(refreshToken)) return Task.FromResult(false);
 
             try
             {
                 var parameters = _jwtBearerOptions.TokenValidationParameters.Clone();
-                var result = await new JwtSecurityTokenHandler().ValidateTokenAsync(refreshToken, parameters);
+                var claimsPrincipal = new JwtSecurityTokenHandler().ValidateToken(refreshToken, parameters, out var validatedToken);
 
-                if (!result.IsValid) return false;
+                if (claimsPrincipal?.Claims == null || !claimsPrincipal.Claims.Any())
+                    return Task.FromResult(false);
 
-                var claimsIdentity = result.ClaimsIdentity;
-                if (claimsIdentity?.Claims == null || !claimsIdentity.Claims.Any()) return false;
+                var deviceId = GetDeviceId(claimsPrincipal);
+                if (deviceId == null || !VerifyDevice(deviceId)) return Task.FromResult(false);
 
-                var deviceId = GetDeviceId(claimsIdentity);
-                if (deviceId == null || !VerifyDevice(deviceId)) return false;
-
-                return true;
+                return Task.FromResult(true);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Failed to validate {nameof(refreshToken)}: `{refreshToken}`.");
 
-                return false;
+                return Task.FromResult(false);
             }
         }
     }

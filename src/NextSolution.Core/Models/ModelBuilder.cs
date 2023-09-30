@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Humanizer;
 using NextSolution.Core.Entities;
 using NextSolution.Core.Extensions.FileStorage;
 using NextSolution.Core.Extensions.Identity;
@@ -60,7 +61,7 @@ namespace NextSolution.Core.Models
 
             var model = _mapper.Map(session, _mapper.Map<UserWithSessionModel>(user));
             model.Online = await _clientRepository.AnyAsync(_ => _.Active && _.UserId == user.Id, cancellationToken);
-            model.Roles = (await _userRepository.GetRolesAsync(user, cancellationToken)).Select(_ => _.Camelize()).ToArray();
+            model.Roles = (await _userRepository.GetRolesAsync(user, cancellationToken)).Select(_ => _.Camelize()).ToList();
             if ((user.Avatar = user.AvatarId != null ? await _mediaRepository.GetByIdAsync(user.AvatarId.Value) : null) != null)
             {
                 model.AvatarUrl = await _fileStorage.GetPublicUrlAsync(user.Avatar.Path, cancellationToken);
@@ -75,7 +76,7 @@ namespace NextSolution.Core.Models
             var model = _mapper.Map<UserModel>(user);
 
             model.Online = await _clientRepository.AnyAsync(_ => _.Active && _.UserId == user.Id, cancellationToken);
-            model.Roles = (await _userRepository.GetRolesAsync(user, cancellationToken)).Select(_ => _.Camelize()).ToArray();
+            model.Roles = (await _userRepository.GetRolesAsync(user, cancellationToken)).Select(_ => _.Camelize()).ToList();
 
             if ((user.Avatar = user.AvatarId != null ? await _mediaRepository.GetByIdAsync(user.AvatarId.Value) : null) != null)
             {

@@ -13,22 +13,23 @@ using System.Diagnostics.CodeAnalysis;
 using NextSolution.Core.Extensions.Identity;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
-using NextSolution.Infrastructure.Data.Extensions;
 
 namespace NextSolution.Infrastructure.Data.Repositories
 {
+
+
     public class UserRepository : AppRepository<User>, IUserRepository
     {
         private readonly UserManager<User> _userManager;
-        private readonly IUserSessionFactory _userSessionFactory;
-        private readonly IUserSessionStorage _userSessionStorage;
+        private readonly IOptions<UserSessionOptions> _userSessionOptions;
 
-        public UserRepository(UserManager<User> userManager, AppDbContext dbContext, IUserSessionFactory userSessionFactory, IUserSessionStorage userSessionStorage) : base(dbContext)
+        public UserRepository(UserManager<User> userManager, AppDbContext dbContext, IOptions<UserSessionOptions> userSessionOptions) : base(dbContext)
         {
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
-            _userSessionFactory = userSessionFactory ?? throw new ArgumentNullException(nameof(userSessionFactory));
-            _userSessionStorage = userSessionStorage ?? throw new ArgumentNullException(nameof(userSessionStorage));
+            _userSessionOptions = userSessionOptions ?? throw new ArgumentNullException(nameof(userSessionOptions));
         }
+
+        #region UserManager
 
         public async Task<User> CreateAsync(User user, string password, CancellationToken cancellationToken = default)
         {
@@ -296,26 +297,6 @@ namespace NextSolution.Infrastructure.Data.Repositories
             if (!result.Succeeded) throw new InvalidOperationException(result.Errors.GetMessage());
         }
 
-        public Task<UserSessionInfo> GenerateSessionAsync(User user, CancellationToken cancellationToken = default)
-        {
-            if (user == null) throw new ArgumentNullException(nameof(user));
-            return _userSessionFactory.GenerateAsync(user, cancellationToken);
-        }
-
-        public Task AddSessionAsync(User user, UserSessionInfo session, CancellationToken cancellationToken = default)
-        {
-            if (user == null) throw new ArgumentNullException(nameof(user));
-
-            return _userSessionStorage.AddSessionAsync(user, session, cancellationToken);
-        }
-
-        public Task RemoveSessionAsync(User user, string token, CancellationToken cancellationToken = default)
-        {
-            if (user == null) throw new ArgumentNullException(nameof(user));
-
-            return _userSessionStorage.RemoveSessionAsync(user, token, cancellationToken);
-        }
-
         public Task AddLoginAsync(User user, UserLoginInfo login, CancellationToken cancellationToken = default)
         {
             return _userManager.AddLoginAsync(user, login);
@@ -324,33 +305,6 @@ namespace NextSolution.Infrastructure.Data.Repositories
         public Task RemoveLoginAsync(User user, string providerName, string providerKey, CancellationToken cancellationToken = default)
         {
             return _userManager.RemoveLoginAsync(user, providerName, providerKey);
-        }
-
-
-        public Task<User?> GetByAccessTokenAsync(string accessToken, CancellationToken cancellationToken = default)
-        {
-            if (accessToken == null) throw new ArgumentNullException(nameof(accessToken));
-
-            return _userSessionStorage.GetUserByAccessTokenAsync(accessToken, cancellationToken);
-        }
-
-        public Task<User?> GetByRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default)
-        {
-            if (refreshToken == null) throw new ArgumentNullException(nameof(refreshToken));
-
-            return _userSessionStorage.GetUserByRefreshTokenAsync(refreshToken, cancellationToken);
-        }
-
-        public Task<bool> ValidateAccessTokenAsync(string accessToken, CancellationToken cancellationToken = default)
-        {
-            if (accessToken == null) throw new ArgumentNullException(nameof(accessToken));
-            return _userSessionFactory.ValidateAccessTokenAsync(accessToken, cancellationToken);
-        }
-
-        public Task<bool> ValidateRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default)
-        {
-            if (refreshToken == null) throw new ArgumentNullException(nameof(refreshToken));
-            return _userSessionFactory.ValidateRefreshTokenAsync(refreshToken, cancellationToken);
         }
 
         public string? GetUserName(ClaimsPrincipal principal)
@@ -399,7 +353,6 @@ namespace NextSolution.Infrastructure.Data.Repositories
             return result;
         }
 
-
         public async Task<bool> IsEmailTakenAsync(User existingUser, string newEmail, CancellationToken cancellationToken = default)
         {
             if (existingUser == null) throw new ArgumentNullException(nameof(existingUser));
@@ -419,5 +372,79 @@ namespace NextSolution.Infrastructure.Data.Repositories
             var result = await _userManager.Users.AnyAsync(_ => _.Id != existingUser.Id && _.PhoneNumber == normalizedNewPhoneNumber, cancellationToken);
             return result;
         }
+
+        #endregion
+
+        #region UserSession
+
+        public async Task AddSessionAsync(User user, UserSessionInfo session, CancellationToken cancellationToken = default)
+        {
+            if (user == null) throw new ArgumentNullException(nameof(user));
+            if (session == null) throw new ArgumentNullException(nameof(session));
+
+            if (!_userSessionOptions.Value.AllowMultipleSessions)
+            {
+                await _dbContext.Set<UserSession>().Where(_ => _.UserId == user.Id).ForEachAsync(session => _dbContext.Remove(session), cancellationToken);
+            }
+
+            await _dbContext.AddAsync(new UserSession
+            {
+                UserId = user.Id,
+
+                AccessTokenHash = AlgorithmHelper.GenerateSHA256Hash(session.AccessToken),
+                RefreshTokenHash = AlgorithmHelper.GenerateSHA256Hash(session.RefreshToken),
+
+                AccessTokenExpiresAt = session.RefreshTokenExpiresAt,
+                RefreshTokenExpiresAt = session.RefreshTokenExpiresAt
+            }, cancellationToken);
+            await _dbContext.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task RemoveSessionAsync(User user, string token, CancellationToken cancellationToken = default)
+        {
+            if (!_userSessionOptions.Value.AllowMultipleSessions)
+            {
+                await _dbContext.Set<UserSession>().Where(_ => _.UserId == user.Id).ForEachAsync(session => _dbContext.Remove(session), cancellationToken);
+            }
+            else
+            {
+                var tokenHash = AlgorithmHelper.GenerateSHA256Hash(token);
+                var currentTime = DateTimeOffset.UtcNow;
+
+                await _dbContext.Set<UserSession>()
+                    .Where(_ => _.UserId == user.Id)
+                    .Where(_ => _.AccessTokenHash == tokenHash || _.RefreshTokenHash == tokenHash)
+                    .Where(_ => _.AccessTokenExpiresAt < currentTime)
+                    .ForEachAsync(session => _dbContext.Remove(session), cancellationToken);
+            }
+
+            await _dbContext.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<User?> GetByAccessTokenAsync(string accessToken, CancellationToken cancellationToken = default)
+        {
+            if (accessToken == null) throw new ArgumentNullException(nameof(accessToken));
+
+            var accessTokenHash = AlgorithmHelper.GenerateSHA256Hash(accessToken);
+
+            var session = await _dbContext.Set<UserSession>().FirstOrDefaultAsync(_ => _.RefreshTokenHash == accessTokenHash, cancellationToken);
+
+            if (session == null || session.AccessTokenExpiresAt < DateTimeOffset.UtcNow) return null;
+            return await _dbContext.FindAsync<User>(keyValues: new object[] { session.UserId }, cancellationToken);
+        }
+
+        public async Task<User?> GetByRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default)
+        {
+            if (refreshToken == null) throw new ArgumentNullException(nameof(refreshToken));
+
+            var refreshTokenHash = AlgorithmHelper.GenerateSHA256Hash(refreshToken);
+
+            var session = await _dbContext.Set<UserSession>().FirstOrDefaultAsync(_ => _.RefreshTokenHash == refreshTokenHash, cancellationToken);
+
+            if (session == null || session.RefreshTokenExpiresAt < DateTimeOffset.UtcNow) return null;
+            return await _dbContext.FindAsync<User>(keyValues: new object[] { session.UserId }, cancellationToken);
+        }
+
+        #endregion
     }
 }

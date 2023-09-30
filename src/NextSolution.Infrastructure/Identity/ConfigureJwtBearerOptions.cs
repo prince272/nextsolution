@@ -8,7 +8,6 @@ using Microsoft.IdentityModel.Tokens;
 using NextSolution.Core.Extensions.Identity;
 using NextSolution.Core.Repositories;
 using NextSolution.Core.Utilities;
-using NextSolution.Infrastructure.RealTime;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -53,7 +52,8 @@ namespace NextSolution.Infrastructure.Identity
                 OnTokenValidated = async context =>
                 {
                     var userRepository = context.HttpContext.RequestServices.GetRequiredService<IUserRepository>();
-                    var userContext = context.HttpContext.RequestServices.GetRequiredService<IUserContext>();
+                    var userSessionFactory = context.HttpContext.RequestServices.GetRequiredService<IUserSessionFactory>();
+                    var clientContext = context.HttpContext.RequestServices.GetRequiredService<IClientContext>();
 
                     var claimsPrincipal = context.Principal;
 
@@ -64,7 +64,7 @@ namespace NextSolution.Infrastructure.Identity
                     }
 
                     var deviceId = userRepository.GetDeviceId(claimsPrincipal);
-                    if (deviceId == null || !string.Equals(deviceId, userContext.DeviceId, StringComparison.Ordinal))
+                    if (deviceId == null || !string.Equals(deviceId, clientContext.DeviceId, StringComparison.Ordinal))
                     {
                         context.Fail("Detected usage of an old token from an unknown device! Please login again!");
                         return;
@@ -84,7 +84,7 @@ namespace NextSolution.Infrastructure.Identity
 
 
                     if (context.SecurityToken is not JwtSecurityToken accessToken || string.IsNullOrWhiteSpace(accessToken.RawData) ||
-                        !await userRepository.ValidateAccessTokenAsync(accessToken.RawData))
+                        !await userSessionFactory.ValidateAccessTokenAsync(accessToken.RawData))
                     {
                         context.Fail("This token is not in our database.");
                         return;
@@ -97,7 +97,7 @@ namespace NextSolution.Infrastructure.Identity
                     var accessToken = context.Request.Query["access_token"];
                     var path = context.HttpContext.Request.Path;
 
-                    if (!string.IsNullOrEmpty(accessToken) && (path.StartsWithSegments(SignalRHub.Endpoint)))
+                    if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/signalr"))
                     {
                         context.Token = accessToken;
                     }

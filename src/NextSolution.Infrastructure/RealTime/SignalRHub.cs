@@ -8,8 +8,6 @@ using NextSolution.Core.Events.Users;
 using NextSolution.Core.Exceptions;
 using NextSolution.Core.Extensions.Identity;
 using NextSolution.Core.Repositories;
-using NextSolution.Core.Services;
-using NextSolution.Infrastructure.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,15 +21,15 @@ namespace NextSolution.Infrastructure.RealTime
     {
         private readonly ILogger<SignalRHub> _logger;
         private readonly IMediator _mediator;
-        private readonly IUserContext _userContext;
+        private readonly IClientContext _clientContext;
         private readonly IUserRepository _userRepository;
         private readonly IClientRepository _clientRepository;
 
-        public SignalRHub(ILogger<SignalRHub> logger, IMediator mediator, IUserContext userContext, IUserRepository userRepository, IClientRepository clientRepository)
+        public SignalRHub(ILogger<SignalRHub> logger, IMediator mediator, IClientContext clientContext, IUserRepository userRepository, IClientRepository clientRepository)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
-            _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext));
+            _clientContext = clientContext ?? throw new ArgumentNullException(nameof(clientContext));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _clientRepository = clientRepository ?? throw new ArgumentNullException(nameof(clientRepository));
         }
@@ -121,13 +119,11 @@ namespace NextSolution.Infrastructure.RealTime
                 ConnectionId = connectionId,
                 ConnectionTime = DateTimeOffset.UtcNow,
                 Active = true,
-                IpAddress = _userContext.IpAddress,
-                DeviceId = _userContext.DeviceId,
-                UserId = _userContext.UserId,
-                UserAgent = _userContext.UserAgent
+                IpAddress = _clientContext.IpAddress,
+                DeviceId = _clientContext.DeviceId,
+                UserId = _clientContext.UserId,
+                UserAgent = _clientContext.UserAgent
             };
         }
-
-        public const string Endpoint = "/signalr";
     }
 }

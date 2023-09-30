@@ -13,6 +13,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NextSolution.Infrastructure
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NextSolution.Core.Templates", "src\NextSolution.Core.Templates\NextSolution.Core.Templates.csproj", "{1A906860-84D6-42AC-8DB8-D2BBD6A17FAB}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NextSolution.Infrastructure.Data", "src\NextSolution.Infrastructure.Data\NextSolution.Infrastructure.Data.csproj", "{0EE359BD-7372-4CB2-A712-7BF1646179C4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NextSolution.Core.Services", "src\NextSolution.Core.Services\NextSolution.Core.Services.csproj", "{27E875A7-D90A-4133-9090-63DA31DF6053}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,6 +39,14 @@ Global
 		{1A906860-84D6-42AC-8DB8-D2BBD6A17FAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1A906860-84D6-42AC-8DB8-D2BBD6A17FAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1A906860-84D6-42AC-8DB8-D2BBD6A17FAB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0EE359BD-7372-4CB2-A712-7BF1646179C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0EE359BD-7372-4CB2-A712-7BF1646179C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0EE359BD-7372-4CB2-A712-7BF1646179C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0EE359BD-7372-4CB2-A712-7BF1646179C4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{27E875A7-D90A-4133-9090-63DA31DF6053}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{27E875A7-D90A-4133-9090-63DA31DF6053}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{27E875A7-D90A-4133-9090-63DA31DF6053}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{27E875A7-D90A-4133-9090-63DA31DF6053}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -44,6 +56,8 @@ Global
 		{FFD19764-F9BE-45F6-884F-B33AE08D13D6} = {12542E7A-B90D-484F-90CC-D513C802AC63}
 		{A0E8D460-798A-432E-8927-985F152955EB} = {12542E7A-B90D-484F-90CC-D513C802AC63}
 		{1A906860-84D6-42AC-8DB8-D2BBD6A17FAB} = {12542E7A-B90D-484F-90CC-D513C802AC63}
+		{0EE359BD-7372-4CB2-A712-7BF1646179C4} = {12542E7A-B90D-484F-90CC-D513C802AC63}
+		{27E875A7-D90A-4133-9090-63DA31DF6053} = {12542E7A-B90D-484F-90CC-D513C802AC63}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {082E08C4-8A91-4E55-A295-7E7FE3B8976D}

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NextSolution.Infrastructure.Data.Extensions
+namespace NextSolution.Infrastructure.Data
 {
     public static class IdentityExtensions
     {

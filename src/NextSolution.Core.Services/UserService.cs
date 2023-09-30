@@ -26,6 +26,7 @@ using Microsoft.Extensions.Options;
 using NextSolution.Core.Extensions.Identity;
 using System.Reflection;
 using NextSolution.Core.Models;
+using Humanizer;
 
 namespace NextSolution.Core.Services
 {
@@ -39,15 +40,16 @@ namespace NextSolution.Core.Services
         private readonly IViewRenderer _viewRenderer;
         private readonly IEmailSender _emailSender;
         private readonly ISmsSender _smsSender;
-        private readonly IUserContext _userContext;
+        private readonly IClientContext _clientContext;
         private readonly IOptions<FileRuleOptions> _fileTypeOptions;
         private readonly IMediaRepository _mediaRepository;
         private readonly IUserRepository _userRepository;
+        private readonly IUserSessionFactory _userSessionFactory;
         private readonly IRoleRepository _roleRepository;
 
         public UserService(IServiceProvider serviceProvider, IFileStorage fileStorage, IMapper mapper, IModelBuilder modelBuilder,
                            IMediator mediator, IViewRenderer viewRenderer, IEmailSender emailSender,
-                           ISmsSender smsSender, IUserContext userContext, IOptions<FileRuleOptions> fileTypeOptions, IMediaRepository mediaRepository, IUserRepository userRepository,
+                           ISmsSender smsSender, IClientContext clientContext, IOptions<FileRuleOptions> fileTypeOptions, IMediaRepository mediaRepository, IUserRepository userRepository, IUserSessionFactory userSessionFactory,
                            IRoleRepository roleRepository)
         {
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
@@ -58,10 +60,11 @@ namespace NextSolution.Core.Services
             _viewRenderer = viewRenderer ?? throw new ArgumentNullException(nameof(viewRenderer));
             _emailSender = emailSender ?? throw new ArgumentNullException(nameof(emailSender));
             _smsSender = smsSender ?? throw new ArgumentNullException(nameof(smsSender));
-            _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext));
+            _clientContext = clientContext ?? throw new ArgumentNullException(nameof(clientContext));
             _fileTypeOptions = fileTypeOptions ?? throw new ArgumentNullException(nameof(fileTypeOptions));
             _mediaRepository = mediaRepository ?? throw new ArgumentNullException(nameof(mediaRepository));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+            _userSessionFactory = userSessionFactory ?? throw new ArgumentNullException(nameof(userSessionFactory));
             _roleRepository = roleRepository ?? throw new ArgumentNullException(nameof(roleRepository));
         }
 
@@ -134,7 +137,7 @@ namespace NextSolution.Core.Services
             if (!await _userRepository.CheckPasswordAsync(user, form.Password, cancellationToken))
                 throw new BadRequestException(nameof(form.Password), $"'{nameof(form.Password).Humanize(LetterCasing.Sentence)}' is not correct.");
 
-            var session = await _userRepository.GenerateSessionAsync(user, cancellationToken);
+            var session = await _userSessionFactory.GenerateAsync(user, cancellationToken);
             await _userRepository.AddSessionAsync(user, session, cancellationToken);
 
             var model = await _modelBuilder.BuildAsync(user, session);
@@ -192,7 +195,7 @@ namespace NextSolution.Core.Services
             await _userRepository.RemoveLoginAsync(user, form.ProviderName, form.ProviderKey, cancellationToken);
             await _userRepository.AddLoginAsync(user, new UserLoginInfo(form.ProviderName, form.ProviderKey, form.ProviderDisplayName), cancellationToken);
 
-            var session = await _userRepository.GenerateSessionAsync(user, cancellationToken);
+            var session = await _userSessionFactory.GenerateAsync(user, cancellationToken);
             await _userRepository.AddSessionAsync(user, session, cancellationToken);
 
             var model = await _modelBuilder.BuildAsync(user, session);
@@ -236,7 +239,7 @@ namespace NextSolution.Core.Services
 
             await _userRepository.RemoveSessionAsync(user, form.RefreshToken, cancellationToken);
 
-            var session = await _userRepository.GenerateSessionAsync(user, cancellationToken);
+            var session = await _userSessionFactory.GenerateAsync(user, cancellationToken);
             await _userRepository.AddSessionAsync(user, session, cancellationToken);
 
             var model = await _modelBuilder.BuildAsync(user, session);
@@ -406,7 +409,7 @@ namespace NextSolution.Core.Services
             if (!formValidationResult.IsValid)
                 throw new BadRequestException(formValidationResult.ToDictionary());
 
-            var currentUser = _userContext.UserId != null ? await _userRepository.GetByIdAsync(_userContext.UserId.Value, cancellationToken) : null;
+            var currentUser = _clientContext.UserId != null ? await _userRepository.GetByIdAsync(_clientContext.UserId.Value, cancellationToken) : null;
             if (currentUser == null) throw new UnauthorizedException();
 
             await _userRepository.ChangePasswordAsync(currentUser, form.CurrentPassword, form.NewPassword, cancellationToken);
@@ -424,7 +427,7 @@ namespace NextSolution.Core.Services
 
         public async Task<UserModel> GetCurrentUserAsync()
         {
-            var currentUser = _userContext.UserId != null ? await _userRepository.GetByIdAsync(_userContext.UserId.Value, cancellationToken) : null;
+            var currentUser = _clientContext.UserId != null ? await _userRepository.GetByIdAsync(_clientContext.UserId.Value, cancellationToken) : null;
             if (currentUser == null) throw new UnauthorizedException();
             var currentUserModel = await _modelBuilder.BuildAsync(currentUser, cancellationToken);
             return currentUserModel;
@@ -440,7 +443,7 @@ namespace NextSolution.Core.Services
             if (!formValidationResult.IsValid)
                 throw new BadRequestException(formValidationResult.ToDictionary());
 
-            var currentUser = _userContext.UserId != null ? await _userRepository.GetByIdAsync(_userContext.UserId.Value, cancellationToken) : null;
+            var currentUser = _clientContext.UserId != null ? await _userRepository.GetByIdAsync(_clientContext.UserId.Value, cancellationToken) : null;
             if (currentUser == null) throw new UnauthorizedException();
 
             if (await _userRepository.IsUserNameTakenAsync(currentUser, form.UserName, cancellationToken))
@@ -502,7 +505,7 @@ namespace NextSolution.Core.Services
 
         public async Task<MediaModel> GetCurrentUserAvatarAsync()
         {
-            var currentUser = _userContext.UserId != null ? await _userRepository.GetByIdAsync(_userContext.UserId.Value, cancellationToken) : null;
+            var currentUser = _clientContext.UserId != null ? await _userRepository.GetByIdAsync(_clientContext.UserId.Value, cancellationToken) : null;
             if (currentUser == null) throw new UnauthorizedException();
 
             var avatar = currentUser.AvatarId != null ? await _mediaRepository.GetByIdAsync(currentUser.AvatarId.Value, cancellationToken) : null;

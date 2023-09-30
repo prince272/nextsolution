@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NextSolution.Infrastructure.Identity
+namespace NextSolution.Core.Extensions.Identity
 {
     public class UserSessionOptions
     {

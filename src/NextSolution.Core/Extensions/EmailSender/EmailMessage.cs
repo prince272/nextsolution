@@ -12,9 +12,9 @@ namespace NextSolution.Core.Extensions.EmailSender
 
         public string Body { get; set; } = default!;
 
-        public IEnumerable<EmailAttachment> Attachments { get; set; } = Array.Empty<EmailAttachment>();
+        public IList<EmailAttachment> Attachments { get; set; } = new List<EmailAttachment>();
 
-        public IEnumerable<string> Recipients { get; set; } = Array.Empty<string>();
+        public IList<string> Recipients { get; set; } = new List<string>();
     }
 
 }

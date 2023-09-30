@@ -1,11 +1,9 @@
 using Microsoft.EntityFrameworkCore;
-using NextSolution.Core;
 using NextSolution.WebApi.Shared;
 using Serilog;
 using Serilog.Settings.Configuration;
 using System.Text.Json.Serialization;
 using System.Text.Json;
-using NextSolution.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using NextSolution.Core.Entities;
 using System.Security.Claims;
@@ -20,8 +18,11 @@ using NextSolution.Infrastructure.FileStorage.Local;
 using NextSolution.Infrastructure.SmsSender.Fake;
 using NextSolution.WebApi.Services;
 using NextSolution.Infrastructure.RealTime;
-using NextSolution.Infrastructure.Data.Middlewares;
 using NextSolution.Infrastructure.Data;
+using NextSolution.WebApi.Middlewares;
+using NextSolution.Core.Extensions.Identity;
+using NextSolution.Infrastructure.Identity;
+using NextSolution.Core.Services;
 
 try
 {
@@ -37,7 +38,6 @@ try
 
     var assemblies = AssemblyHelper.GetAssemblies().ToArray();
 
-    // Add database services.
     builder.Services.AddDbContext<AppDbContext>(options =>
     {
         var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -55,7 +55,6 @@ try
 
     builder.Services.AddValidators(assemblies);
 
-    // Add identity services.
     builder.Services.AddIdentity<User, Role>(options =>
     {
         // Password settings. (Will be using fluent validation)
@@ -93,6 +92,8 @@ try
     })
         .AddEntityFrameworkStores<AppDbContext>()
         .AddDefaultTokenProviders();
+
+    builder.Services.AddClientContext();
 
     builder.Services.AddAuthentication(options =>
     {
@@ -157,6 +158,8 @@ try
 
     builder.Services.AddSignalR();
 
+    builder.Services.AddModelBuilder();
+
     // Configure serialization services.
     builder.Services.ConfigureHttpJsonOptions(options =>
 {
@@ -170,8 +173,8 @@ try
 });
 
     // Add application services.
-    builder.Services.AddApplication();
-
+    builder.Services.AddUserService();
+    builder.Services.AddChatService();
     builder.Services.AddHostedService<StartupService>();
 
     // Add documentation services.
@@ -210,7 +213,7 @@ try
 
     app.UseResponseCompression();
 
-    app.MapHub<SignalRHub>(SignalRHub.Endpoint);
+    app.MapHub<SignalRHub>("/signalr");
 
     app.MapEndpoints();
 

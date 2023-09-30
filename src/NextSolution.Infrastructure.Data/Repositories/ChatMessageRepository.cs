@@ -1,4 +1,5 @@
-﻿using NextSolution.Core.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using NextSolution.Core.Entities;
 using NextSolution.Core.Repositories;
 using System;
 using System.Collections.Generic;
@@ -28,12 +29,26 @@ namespace NextSolution.Infrastructure.Data.Repositories
         //    return siblings;
         //}
 
+        public async Task<IEnumerable<ChatMessage>> GetAncestorsAsync(ChatMessage message)
+        {
+            var ancestors = new List<ChatMessage>();
+
+            while (message?.PreviousId != null)
+            {
+                message = (await _dbContext.Set<ChatMessage>().FindAsync(message.PreviousId))!;
+                if (message != null) ancestors.Add(message);
+            }
+
+            return ancestors;
+        }
+
+
         protected override IQueryable<ChatMessage> GetQuery(
-            Expression<Func<ChatMessage, bool>>? predicate = null,
-            Func<IQueryable<ChatMessage>, IOrderedQueryable<ChatMessage>>? orderBy = null,
-            Expression<Func<ChatMessage, object>>[]? include = null,
-            bool enableTracking = true,
-            bool enableFilters = false)
+                Expression<Func<ChatMessage, bool>>? predicate = null,
+                Func<IQueryable<ChatMessage>, IOrderedQueryable<ChatMessage>>? orderBy = null,
+                Expression<Func<ChatMessage, object>>[]? include = null,
+                bool enableTracking = true,
+                bool enableFilters = false)
         {
             var query = base.GetQuery(predicate, orderBy, include, enableTracking, enableFilters);
             query = query.OrderByDescending(_ => _.UpdatedAt);

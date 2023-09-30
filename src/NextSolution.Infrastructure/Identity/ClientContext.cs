@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Primitives;
 using NextSolution.Core.Entities;
 using NextSolution.Core.Extensions.Identity;
 using NextSolution.Core.Repositories;
@@ -14,12 +15,12 @@ using System.Threading.Tasks;
 
 namespace NextSolution.Infrastructure.Identity
 {
-    public class UserContext : IUserContext
+    public class ClientContext : IClientContext
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly UserManager<User> _userManager;
 
-        public UserContext(IHttpContextAccessor httpContextAccessor, UserManager<User> userManager)
+        public ClientContext(IHttpContextAccessor httpContextAccessor, UserManager<User> userManager)
         {
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
@@ -74,8 +75,30 @@ namespace NextSolution.Infrastructure.Identity
         {
             get
             {
-                return _httpContextAccessor.HttpContext?.Connection?.RemoteIpAddress is IPAddress remoteIp ? 
+                return _httpContextAccessor.HttpContext?.Connection?.RemoteIpAddress is IPAddress remoteIp ?
                     remoteIp.Equals(IPAddress.IPv6Loopback) ? IPAddress.Loopback.ToString() : remoteIp.MapToIPv4().ToString() : null;
+            }
+        }
+
+        public string? Issuer
+        {
+            get
+            {
+                HttpContext? context = _httpContextAccessor.HttpContext;
+                Uri? issuer = context != null ? new Uri(string.Concat(context.Request.Scheme, "://", context.Request.Host.ToUriComponent()), UriKind.Absolute) : null;
+                return issuer?.GetLeftPart(UriPartial.Authority) ?? throw new InvalidOperationException("Unable to determine the issuer.");
+            }
+        }
+
+        public string? Audience
+        {
+            get
+            {
+                HttpContext? context = _httpContextAccessor.HttpContext;
+                Uri? audience = null;
+                audience ??= context?.Request?.Headers?.Origin is StringValues origin && !StringValues.IsNullOrEmpty(origin) ? new Uri(origin.ToString(), UriKind.Absolute) : null;
+                audience ??= context?.Request?.Headers?.Referer is StringValues referer && !StringValues.IsNullOrEmpty(referer) ? new Uri(referer.ToString(), UriKind.Absolute) : null;
+                return audience?.GetLeftPart(UriPartial.Authority);
             }
         }
     }

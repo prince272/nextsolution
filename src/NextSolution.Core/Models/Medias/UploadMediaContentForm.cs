@@ -1,8 +1,8 @@
 ﻿using FluentValidation;
+using Humanizer;
 using Microsoft.Extensions.Options;
 using NextSolution.Core.Entities;
 using NextSolution.Core.Extensions.FileStorage;
-using NextSolution.Core.Services;
 using NextSolution.Core.Utilities;
 using System;
 using System.Collections.Generic;

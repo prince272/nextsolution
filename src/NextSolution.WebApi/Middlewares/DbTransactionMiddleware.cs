@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NextSolution.Infrastructure.Data.Middlewares
+namespace NextSolution.WebApi.Middlewares
 {
     // ASP.NET Core Web API - How to hide DbContext transaction in the middleware pipeline?
     // source: https://stackoverflow.com/questions/58225119/asp-net-core-web-api-how-to-hide-dbcontext-transaction-in-the-middleware-pipel/62587685#62587685

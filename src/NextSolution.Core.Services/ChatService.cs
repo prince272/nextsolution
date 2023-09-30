@@ -25,16 +25,16 @@ namespace NextSolution.Core.Services
         private readonly IChatRepository _chatRepository;
         private readonly IChatMessageRepository _chatMessageRepository;
         private readonly IUserRepository _userRepository;
-        private readonly IUserContext _userContext;
+        private readonly IClientContext _clientContext;
         private readonly IModelBuilder _modelBuilder;
 
-        public ChatService(IServiceProvider serviceProvider, IChatRepository chatRepository, IChatMessageRepository chatMessageRepository, IUserRepository userRepository, IUserContext userContext, IModelBuilder modelBuilder)
+        public ChatService(IServiceProvider serviceProvider, IChatRepository chatRepository, IChatMessageRepository chatMessageRepository, IUserRepository userRepository, IClientContext clientContext, IModelBuilder modelBuilder)
         {
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
             _chatRepository = chatRepository ?? throw new ArgumentNullException(nameof(chatRepository));
             _chatMessageRepository = chatMessageRepository ?? throw new ArgumentNullException(nameof(chatMessageRepository));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-            _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext));
+            _clientContext = clientContext ?? throw new ArgumentNullException(nameof(clientContext));
             _modelBuilder = modelBuilder ?? throw new ArgumentNullException(nameof(modelBuilder));
         }
 
@@ -48,7 +48,7 @@ namespace NextSolution.Core.Services
             if (!formValidationResult.IsValid)
                 throw new BadRequestException(formValidationResult.ToDictionary());
 
-            var currentUser = _userContext.UserId != null ? await _userRepository.GetByIdAsync(_userContext.UserId.Value, cancellationToken) : null;
+            var currentUser = _clientContext.UserId != null ? await _userRepository.GetByIdAsync(_clientContext.UserId.Value, cancellationToken) : null;
             if (currentUser == null) throw new UnauthorizedException();
 
             var currentUserIsInAdmin = await _userRepository.IsInRoleAsync(currentUser, Role.Admin, cancellationToken);
@@ -70,13 +70,13 @@ namespace NextSolution.Core.Services
             if (form.MessageId != null)
             {
                 previousMessage = await _chatMessageRepository.GetByIdAsync(form.MessageId.Value, cancellationToken);
-                if (previousMessage == null) throw new BadRequestException(nameof(form.MessageId), $"Chat message  '{form.MessageId}' does not exist.");
+                if (previousMessage == null) throw new BadRequestException(nameof(form.MessageId), $"Chat message '{form.MessageId}' does not exist.");
 
                 if (previousMessage.ChatId != chat.Id || previousMessage.Role != ChatMessage.Roles.User)
                     throw new ForbiddenException();
             }
 
-            var currentMessage = new ChatMessage
+            var currentMessage = await _chatMessageRepository.CreateAsync(new ChatMessage
             {
                 PreviousId = previousMessage?.Id,
                 ChatId = chat.Id,
@@ -84,11 +84,9 @@ namespace NextSolution.Core.Services
                 CreatedAt = DateTimeOffset.UtcNow,
                 UpdatedAt = DateTimeOffset.UtcNow,
                 Content = form.Prompt
-            };
+            });
 
-            await _chatMessageRepository.CreateAsync(currentMessage, cancellationToken);
-
-
+            var messages = (await _chatMessageRepository.GetAncestorsAsync(currentMessage)).Append(currentMessage).ToArray();
 
 
             yield return new ChatCompletionModel();
@@ -104,7 +102,7 @@ namespace NextSolution.Core.Services
             if (!formValidationResult.IsValid)
                 throw new BadRequestException(formValidationResult.ToDictionary());
 
-            var currentUser = _userContext.UserId != null ? await _userRepository.GetByIdAsync(_userContext.UserId.Value, cancellationToken) : null;
+            var currentUser = _clientContext.UserId != null ? await _userRepository.GetByIdAsync(_clientContext.UserId.Value, cancellationToken) : null;
             if (currentUser == null) throw new UnauthorizedException();
 
             var currentUserIsInAdmin = await _userRepository.IsInRoleAsync(currentUser, Role.Admin, cancellationToken);
@@ -134,7 +132,7 @@ namespace NextSolution.Core.Services
             if (!formValidationResult.IsValid)
                 throw new BadRequestException(formValidationResult.ToDictionary());
 
-            var currentUser = _userContext.UserId != null ? await _userRepository.GetByIdAsync(_userContext.UserId.Value, cancellationToken) : null;
+            var currentUser = _clientContext.UserId != null ? await _userRepository.GetByIdAsync(_clientContext.UserId.Value, cancellationToken) : null;
             if (currentUser == null) throw new UnauthorizedException();
 
             var currentUserIsInAdmin = await _userRepository.IsInRoleAsync(currentUser, Role.Admin, cancellationToken);
@@ -161,7 +159,7 @@ namespace NextSolution.Core.Services
             if (!formValidationResult.IsValid)
                 throw new BadRequestException(formValidationResult.ToDictionary());
 
-            var currentUser = _userContext.UserId != null ? await _userRepository.GetByIdAsync(_userContext.UserId.Value, cancellationToken) : null;
+            var currentUser = _clientContext.UserId != null ? await _userRepository.GetByIdAsync(_clientContext.UserId.Value, cancellationToken) : null;
             if (currentUser == null) throw new UnauthorizedException();
 
             var currentUserIsInAdmin = await _userRepository.IsInRoleAsync(currentUser, Role.Admin, cancellationToken);
@@ -179,7 +177,7 @@ namespace NextSolution.Core.Services
 
         public async Task<ChatPageModel> GetChatsAsync(ChatSearchCriteria searchCriteria, long offset, int limit)
         {
-            var currentUser = _userContext.UserId != null ? await _userRepository.GetByIdAsync(_userContext.UserId.Value, cancellationToken) : null;
+            var currentUser = _clientContext.UserId != null ? await _userRepository.GetByIdAsync(_clientContext.UserId.Value, cancellationToken) : null;
             if (currentUser == null) throw new UnauthorizedException();
 
             var currentUserIsInAdmin = await _userRepository.IsInRoleAsync(currentUser, Role.Admin, cancellationToken);

@@ -11,7 +11,6 @@ using NextSolution.Core.Models.Users;
 using NextSolution.Core.Models.Users.Accounts;
 using NextSolution.Core.Services;
 using NextSolution.Core.Utilities;
-using NextSolution.Infrastructure.Identity;
 using System.Security.Claims;
 using System.Security.Policy;
 
