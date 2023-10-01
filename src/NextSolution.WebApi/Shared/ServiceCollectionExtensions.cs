@@ -1,8 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.OpenApi.Models;
-using NextSolution.Core.Services;
-using NextSolution.Core.Utilities;
-using NextSolution.Infrastructure.Data;
 using System.Reflection;
 
 namespace NextSolution.WebApi.Shared

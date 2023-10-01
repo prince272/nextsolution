@@ -1,20 +1,9 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http.Json;
-using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using NextSolution.Core.Exceptions;
-using NextSolution.Core.Services;
-using NextSolution.WebApi.Shared;
-using System;
 using System.Collections;
-using System.Diagnostics;
 using System.Net;
-using System.Text.Json;
 
 namespace NextSolution.WebApi.Endpoints
 {
@@ -32,7 +21,7 @@ namespace NextSolution.WebApi.Endpoints
             var group = base.MapGroup(prefix)
                 .AllowAnonymous()
                 .CacheOutput(_ => _.NoCache());
-                            
+
             return group;
         }
 

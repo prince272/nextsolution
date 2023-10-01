@@ -1,9 +1,4 @@
 ﻿using NextSolution.Core.Shared;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NextSolution.Core.Entities
 {
@@ -13,11 +8,11 @@ namespace NextSolution.Core.Entities
         {
         }
 
-        public long Id { get; set; } 
+        public long Id { get; set; }
 
         public string ConnectionId { get; set; } = default!;
 
-        public DateTimeOffset ConnectionTime { get; set; }  
+        public DateTimeOffset ConnectionTime { get; set; }
 
         public string? IpAddress { get; set; }
 

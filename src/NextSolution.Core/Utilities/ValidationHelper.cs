@@ -1,15 +1,7 @@
-﻿using FluentValidation.Results;
-using PhoneNumbers;
-using System;
-using System.Collections.Generic;
+﻿using PhoneNumbers;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Net.Mail;
-using System.Security;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using UAParser;
 
 namespace NextSolution.Core.Utilities
 {

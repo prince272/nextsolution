@@ -1,17 +1,11 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using NextSolution.Core.Entities;
-using NextSolution.Core.Utilities;
-using NextSolution.Core.Repositories;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Data;
-using System.Diagnostics.CodeAnalysis;
-using NextSolution.Core.Extensions.Identity;
 using Microsoft.Extensions.Options;
+using NextSolution.Core.Entities;
+using NextSolution.Core.Extensions.Identity;
+using NextSolution.Core.Repositories;
+using NextSolution.Core.Utilities;
+using System.Data;
 using System.Security.Claims;
 
 namespace NextSolution.Infrastructure.Data.Repositories

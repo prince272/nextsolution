@@ -1,10 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using NextSolution.Core.Shared;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NextSolution.Core.Entities
 {
@@ -41,7 +36,7 @@ namespace NextSolution.Core.Entities
         public virtual ICollection<Client> Clients { get; set; } = new List<Client>();
     }
 
-    public class  UserRole : IdentityUserRole<long>, IEntity
+    public class UserRole : IdentityUserRole<long>, IEntity
     {
         public virtual User User { get; set; } = default!;
 

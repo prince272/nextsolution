@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-
-namespace NextSolution.Core.Utilities
+﻿namespace NextSolution.Core.Utilities
 {
     // 5 useful extensions for Task<T> in .NET
     // source: https://steven-giesel.com/blogPost/d38e70b4-6f36-41ff-8011-b0b0d1f54f6e

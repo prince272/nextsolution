@@ -1,9 +1,6 @@
 ﻿using Humanizer;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Builder.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using NextSolution.Core.Entities;
 using NextSolution.Core.Exceptions;
 using NextSolution.Core.Models.Medias;
@@ -12,7 +9,6 @@ using NextSolution.Core.Models.Users.Accounts;
 using NextSolution.Core.Services;
 using NextSolution.Core.Utilities;
 using System.Security.Claims;
-using System.Security.Policy;
 
 namespace NextSolution.WebApi.Endpoints
 {
@@ -195,7 +191,7 @@ namespace NextSolution.WebApi.Endpoints
             HttpContext httpContext)
         {
             string? avatarId = HttpMethods.IsPost(httpContext.Request.Method) ? null :
-                               HttpMethods.IsPatch(httpContext.Request.Method) ? httpContext.GetRouteValue(nameof(avatarId))?.ToString() 
+                               HttpMethods.IsPatch(httpContext.Request.Method) ? httpContext.GetRouteValue(nameof(avatarId))?.ToString()
                                ?? throw new InvalidOperationException($"'{nameof(avatarId)}' not found in route values.") : null;
 
             using var content = await httpContext.Request.Body.ToMemoryStreamAsync();

@@ -3,15 +3,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Primitives;
 using NextSolution.Core.Entities;
 using NextSolution.Core.Extensions.Identity;
-using NextSolution.Core.Repositories;
 using NextSolution.Core.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NextSolution.Infrastructure.Identity
 {

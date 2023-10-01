@@ -1,19 +1,11 @@
-﻿using AutoMapper;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using NextSolution.Core.Entities;
 using NextSolution.Core.Events.Clients;
 using NextSolution.Core.Events.Users;
-using NextSolution.Core.Exceptions;
 using NextSolution.Core.Extensions.Identity;
 using NextSolution.Core.Repositories;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace NextSolution.Infrastructure.RealTime
 {

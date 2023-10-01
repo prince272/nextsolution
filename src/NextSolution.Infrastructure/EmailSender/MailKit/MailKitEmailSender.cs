@@ -3,10 +3,6 @@ using MailKit.Security;
 using Microsoft.Extensions.Options;
 using MimeKit;
 using NextSolution.Core.Extensions.EmailSender;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
 
 namespace NextSolution.Infrastructure.EmailSender.MailKit
 {
@@ -67,7 +63,7 @@ namespace NextSolution.Infrastructure.EmailSender.MailKit
             if (message == null) throw new ArgumentNullException(nameof(message));
 
 
-           if (!_emailOptions.Value.Accounts.TryGetValue(account, out var accountObject))
+            if (!_emailOptions.Value.Accounts.TryGetValue(account, out var accountObject))
                 throw new ArgumentException($"The specified account '{account}' was not found in the email options.", nameof(account));
 
             return SendAsync(accountObject, message, cancellationToken);

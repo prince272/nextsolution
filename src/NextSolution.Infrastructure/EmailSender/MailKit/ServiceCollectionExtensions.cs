@@ -1,15 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using NextSolution.Core.Utilities;
-using NextSolution.Core.Shared;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using NextSolution.Core.Extensions.EmailSender;
-using Microsoft.Extensions.Configuration;
 
 namespace NextSolution.Infrastructure.EmailSender.MailKit
 {

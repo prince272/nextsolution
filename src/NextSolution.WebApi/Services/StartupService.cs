@@ -1,10 +1,6 @@
-﻿using Bogus;
-using Microsoft.Extensions.DependencyInjection;
-using NextSolution.Core.Entities;
+﻿using NextSolution.Core.Entities;
 using NextSolution.Core.Repositories;
-using NextSolution.Core.Services;
 using NextSolution.Infrastructure.Data;
-using System;
 
 namespace NextSolution.WebApi.Services
 {

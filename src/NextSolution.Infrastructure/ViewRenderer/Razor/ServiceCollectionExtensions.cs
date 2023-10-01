@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.FileProviders;
@@ -9,11 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
 using NextSolution.Core.Extensions.ViewRenderer;
 using NextSolution.Core.Utilities;
-using NextSolution.Infrastructure.EmailSender.MailKit;
-using System;
 using System.Diagnostics;
-using System.Linq;
-using System.Reflection;
 
 namespace NextSolution.Infrastructure.ViewRenderer.Razor
 {

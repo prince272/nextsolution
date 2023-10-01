@@ -1,11 +1,5 @@
-﻿using AbstractProfile = AutoMapper.Profile;
-using NextSolution.Core.Entities;
-using NextSolution.Core.Models.Users;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using NextSolution.Core.Entities;
+using AbstractProfile = AutoMapper.Profile;
 
 namespace NextSolution.Core.Models.Medias
 {

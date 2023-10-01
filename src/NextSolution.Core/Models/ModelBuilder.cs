@@ -4,17 +4,9 @@ using NextSolution.Core.Entities;
 using NextSolution.Core.Extensions.FileStorage;
 using NextSolution.Core.Extensions.Identity;
 using NextSolution.Core.Models.Chats;
-using NextSolution.Core.Models.Medias;
 using NextSolution.Core.Models.Users;
 using NextSolution.Core.Repositories;
-using NextSolution.Core.Shared;
 using NextSolution.Core.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace NextSolution.Core.Models
 {
@@ -135,7 +127,7 @@ namespace NextSolution.Core.Models
             var pageModel = await BuildAsync<ChatPageModel>(chats, cancellationToken);
             pageModel.Offset = chats.Offset;
             pageModel.Limit = chats.Limit;
-            pageModel.Length = chats.Length; 
+            pageModel.Length = chats.Length;
             pageModel.Previous = chats.Previous;
             pageModel.Next = chats.Next;
             return pageModel;

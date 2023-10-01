@@ -1,12 +1,4 @@
-﻿using NextSolution.Core.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace NextSolution.Core.Extensions.Identity
+﻿namespace NextSolution.Core.Extensions.Identity
 {
     public class UserSessionOptions
     {

@@ -1,10 +1,4 @@
 ﻿using NextSolution.Core.Extensions.EmailSender;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NextSolution.Infrastructure.EmailSender.MailKit
 {
@@ -19,7 +13,7 @@ namespace NextSolution.Infrastructure.EmailSender.MailKit
         private IDictionary<string, EmailAccount> accounts = new Dictionary<string, EmailAccount>();
         public IDictionary<string, EmailAccount> Accounts
         {
-            get => new Dictionary<string, EmailAccount>(accounts, StringComparer.OrdinalIgnoreCase); 
+            get => new Dictionary<string, EmailAccount>(accounts, StringComparer.OrdinalIgnoreCase);
             set => accounts = value;
         }
     }

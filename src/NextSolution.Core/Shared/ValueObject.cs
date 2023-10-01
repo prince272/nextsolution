@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace NextSolution.Core.Shared
+﻿namespace NextSolution.Core.Shared
 {
     /// <summary>
     /// See: https://enterprisecraftsmanship.com/posts/value-object-better-implementation/

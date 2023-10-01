@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Routing;
-
-namespace NextSolution.WebApi.Shared
+﻿namespace NextSolution.WebApi.Shared
 {
     public abstract class Endpoints
     {

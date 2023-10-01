@@ -1,28 +1,26 @@
+using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using NextSolution.Core.Entities;
+using NextSolution.Core.Models;
+using NextSolution.Core.Services;
+using NextSolution.Core.Utilities;
+using NextSolution.Infrastructure.Data;
+using NextSolution.Infrastructure.EmailSender.MailKit;
+using NextSolution.Infrastructure.FileStorage.Local;
+using NextSolution.Infrastructure.Identity;
+using NextSolution.Infrastructure.RealTime;
+using NextSolution.Infrastructure.SmsSender.Fake;
+using NextSolution.Infrastructure.ViewRenderer.Razor;
+using NextSolution.WebApi.Middlewares;
+using NextSolution.WebApi.Services;
 using NextSolution.WebApi.Shared;
 using Serilog;
 using Serilog.Settings.Configuration;
-using System.Text.Json.Serialization;
-using System.Text.Json;
-using Microsoft.AspNetCore.Identity;
-using NextSolution.Core.Entities;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using NextSolution.Core.Utilities;
-using NextSolution.Infrastructure.EmailSender.MailKit;
-using NextSolution.Infrastructure.ViewRenderer.Razor;
-using Microsoft.AspNetCore.Authentication.Google;
-using Microsoft.Extensions.Configuration;
-using Humanizer.Configuration;
-using NextSolution.Infrastructure.FileStorage.Local;
-using NextSolution.Infrastructure.SmsSender.Fake;
-using NextSolution.WebApi.Services;
-using NextSolution.Infrastructure.RealTime;
-using NextSolution.Infrastructure.Data;
-using NextSolution.WebApi.Middlewares;
-using NextSolution.Core.Extensions.Identity;
-using NextSolution.Infrastructure.Identity;
-using NextSolution.Core.Services;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 try
 {
@@ -30,7 +28,7 @@ try
 
     var builder = WebApplication.CreateBuilder(args);
 
-    Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration, 
+    Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration,
         new ConfigurationReaderOptions { SectionName = "SerilogOptions" }).Enrich.FromLogContext().CreateLogger();
 
     builder.Logging.ClearProviders();

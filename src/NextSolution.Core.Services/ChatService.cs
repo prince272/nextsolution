@@ -1,21 +1,11 @@
-﻿using AutoMapper;
-using FluentValidation;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using NextSolution.Core.Entities;
 using NextSolution.Core.Exceptions;
 using NextSolution.Core.Extensions.Identity;
 using NextSolution.Core.Models;
 using NextSolution.Core.Models.Chats;
-using NextSolution.Core.Models.Users;
-using NextSolution.Core.Models.Users.Accounts;
 using NextSolution.Core.Repositories;
 using NextSolution.Core.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace NextSolution.Core.Services
 {
