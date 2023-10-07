@@ -110,13 +110,13 @@ namespace NextSolution.Infrastructure.Data
             if (offset < 0)
                 throw new ArgumentException("Offset must be greater than or equal to 0.");
 
-            if (limit < 1)
-                throw new ArgumentException("Limit must be greater than or equal to 1.");
+            if (limit < -1)
+                throw new ArgumentException("Limit must be greater than or equal to -1.");
 
             var query = GetQuery(predicate, orderBy, include, enableTracking: false, enableFilters: true);
 
             var totalItems = await query.LongCountAsync(cancellationToken);
-            var items = await query.LongSkip(offset).Take(limit).ToListAsync(cancellationToken);
+            var items = await (limit == -1 ? query.LongSkip(offset) : query.LongSkip(offset).Take(limit)).ToListAsync(cancellationToken);
             var result = new Pageable<TEntity>(offset, limit, totalItems, items);
             return result;
         }
@@ -131,14 +131,14 @@ namespace NextSolution.Infrastructure.Data
             if (offset < 0)
                 throw new ArgumentException("Offset must be greater than or equal to 0.");
 
-            if (limit < 1)
-                throw new ArgumentException("Limit must be greater than or equal to 1.");
+            if (limit < -1)
+                throw new ArgumentException("Limit must be greater than or equal to -1.");
 
             if (selector == null) throw new ArgumentNullException(nameof(selector));
             var query = GetQuery(predicate, orderBy, include, enableTracking: false, enableFilters: true);
 
             var totalItems = await query.LongCountAsync(cancellationToken);
-            var items = await query.LongSkip(offset).Take(limit).Select(selector).ToListAsync(cancellationToken);
+            var items = await (limit == -1 ? query.LongSkip(offset) : query.LongSkip(offset).Take(limit)).Select(selector).ToListAsync(cancellationToken);
             var result = new Pageable<TResult>(offset, limit, totalItems, items);
             return result;
         }

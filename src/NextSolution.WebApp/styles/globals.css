@@ -12,3 +12,8 @@ input::-ms-reveal,
 input::-ms-clear {
   display: none;
 }
+
+/* Fix: Ensure skeleton is transparent when loaded */
+.data-\[loaded\=true\]\:bg-transparent[data-loaded="true"] {
+  background-color: transparent !important;
+}

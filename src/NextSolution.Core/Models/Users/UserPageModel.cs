@@ -1,6 +1,6 @@
 ﻿namespace NextSolution.Core.Models.Users
 {
-    public class UserPageModel : UserListModel
+    public class UserPageModel 
     {
         public long Offset { get; set; }
 
@@ -11,5 +11,7 @@
         public long? Previous { get; set; }
 
         public long? Next { get; set; }
+
+        public IList<UserModel> Items { get; set; } = new List<UserModel>();
     }
 }

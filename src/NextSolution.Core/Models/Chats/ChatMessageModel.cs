@@ -1,16 +1,13 @@
-﻿using NextSolution.Core.Shared;
+﻿using NextSolution.Core.Entities;
+using AbstractProfile = AutoMapper.Profile;
 
-namespace NextSolution.Core.Entities
+namespace NextSolution.Core.Models.Chats
 {
-    public class ChatMessage : IEntity
+    public class ChatMessageModel
     {
-        public virtual Chat Chat { get; set; } = default!;
-
         public long ChatId { get; set; }
 
         public long? ParentId { get; set; }
-
-        public ChatMessage? Parent { get; set; } = default!;
 
         public long Id { get; set; }
 
@@ -23,10 +20,11 @@ namespace NextSolution.Core.Entities
         public DateTimeOffset UpdatedAt { get; set; }
     }
 
-    public enum ChatMessageRole
+    public class ChatMessageModelProfile : AbstractProfile
     {
-        User,
-        Assistant,
-        System
+        public ChatMessageModelProfile()
+        {
+            CreateMap<ChatMessage, ChatMessageModel>();
+        }
     }
 }

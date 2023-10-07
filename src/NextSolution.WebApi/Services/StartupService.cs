@@ -48,12 +48,12 @@ namespace NextSolution.WebApi.Services
                 //{
                 //    var user = (await services.GetRequiredService<IUserRepository>().GetAsync(_ => true))!;
 
-                //    foreach (var _ in Enumerable.Range(1, 1000))
+                //    foreach (var _ in Enumerable.Range(1, 100))
                 //    {
-                //        var recentDateTime = new Faker().Date.RecentOffset(10, DateTimeOffset.UtcNow.AddDays(1));
+                //        var recentDateTime = new Bogus.Faker().Date.RecentOffset(10);
                 //        var chat = new Chat
                 //        {
-                //            Title = new Faker().Lorem.Sentence(5),
+                //            Title = new Bogus.Faker().Lorem.Sentence(2),
                 //            CreatedAt = recentDateTime,
                 //            UpdatedAt = recentDateTime,
                 //            UserId = user.Id

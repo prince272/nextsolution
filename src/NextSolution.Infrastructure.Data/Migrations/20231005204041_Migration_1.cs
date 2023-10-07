@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -16,11 +17,11 @@ namespace NextSolution.Infrastructure.Data.Migrations
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    FileId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    FileName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    FileSize = table.Column<long>(type: "bigint", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Size = table.Column<long>(type: "bigint", nullable: false),
+                    Path = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ContentType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    MediaType = table.Column<int>(type: "int", nullable: false),
+                    Type = table.Column<int>(type: "int", nullable: false),
                     Width = table.Column<int>(type: "int", nullable: true),
                     Height = table.Column<int>(type: "int", nullable: true),
                     CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
@@ -52,8 +53,12 @@ namespace NextSolution.Infrastructure.Data.Migrations
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    EmailRequired = table.Column<bool>(type: "bit", nullable: false),
+                    PhoneNumberRequired = table.Column<bool>(type: "bit", nullable: false),
                     FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Bio = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    AvatarId = table.Column<long>(type: "bigint", nullable: true),
                     Active = table.Column<bool>(type: "bit", nullable: false),
                     LastActiveAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -74,6 +79,11 @@ namespace NextSolution.Infrastructure.Data.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_User", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_User_Media_AvatarId",
+                        column: x => x.AvatarId,
+                        principalTable: "Media",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -98,6 +108,28 @@ namespace NextSolution.Infrastructure.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Chat",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<long>(type: "bigint", nullable: false),
+                    Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Chat", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Chat_User_UserId",
+                        column: x => x.UserId,
+                        principalTable: "User",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Client",
                 columns: table => new
                 {
@@ -108,7 +140,8 @@ namespace NextSolution.Infrastructure.Data.Migrations
                     IpAddress = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     DeviceId = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserId = table.Column<long>(type: "bigint", nullable: true),
-                    UserAgent = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    UserAgent = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Active = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -228,15 +261,59 @@ namespace NextSolution.Infrastructure.Data.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "ChatMessage",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ChatId = table.Column<long>(type: "bigint", nullable: false),
+                    ParentId = table.Column<long>(type: "bigint", nullable: true),
+                    Role = table.Column<int>(type: "int", nullable: false),
+                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ChatMessage", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ChatMessage_ChatMessage_ParentId",
+                        column: x => x.ParentId,
+                        principalTable: "ChatMessage",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_ChatMessage_Chat_ChatId",
+                        column: x => x.ChatId,
+                        principalTable: "Chat",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Chat_UserId",
+                table: "Chat",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ChatMessage_ChatId",
+                table: "ChatMessage",
+                column: "ChatId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ChatMessage_ParentId",
+                table: "ChatMessage",
+                column: "ParentId");
+
             migrationBuilder.CreateIndex(
                 name: "IX_Client_UserId",
                 table: "Client",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Media_FileId",
+                name: "IX_Media_Path",
                 table: "Media",
-                column: "FileId",
+                column: "Path",
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -255,6 +332,11 @@ namespace NextSolution.Infrastructure.Data.Migrations
                 name: "EmailIndex",
                 table: "User",
                 column: "NormalizedEmail");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_User_AvatarId",
+                table: "User",
+                column: "AvatarId");
 
             migrationBuilder.CreateIndex(
                 name: "UserNameIndex",
@@ -288,10 +370,10 @@ namespace NextSolution.Infrastructure.Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Client");
+                name: "ChatMessage");
 
             migrationBuilder.DropTable(
-                name: "Media");
+                name: "Client");
 
             migrationBuilder.DropTable(
                 name: "RoleClaim");
@@ -312,10 +394,16 @@ namespace NextSolution.Infrastructure.Data.Migrations
                 name: "UserToken");
 
             migrationBuilder.DropTable(
+                name: "Chat");
+
+            migrationBuilder.DropTable(
                 name: "Role");
 
             migrationBuilder.DropTable(
                 name: "User");
+
+            migrationBuilder.DropTable(
+                name: "Media");
         }
     }
 }

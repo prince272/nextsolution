@@ -53,7 +53,7 @@ export const SignInModal: FC<SignInProps> = ({ opened, onClose }) => {
     try {
       setStatus({ action: "submitting" });
       await api.signIn(inputs);
-      onClose(false);
+      onClose();
     } catch (error) {
       setStatus({ action: "idle", error });
 
@@ -74,7 +74,7 @@ export const SignInModal: FC<SignInProps> = ({ opened, onClose }) => {
     try {
       setMethod(provider);
       await api.signInWith(provider);
-      onClose(false);
+      onClose();
     } catch (error) {
       setMethod(null);
       toast.error(getErrorMessage(error), { id: componentId });

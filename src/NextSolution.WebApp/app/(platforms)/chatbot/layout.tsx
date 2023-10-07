@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 
-import { ChatBotLayout as Layout } from "@/components/chatbot";
+import { ChatLayout } from "@/components/chatbot/chat-layout";
 
-export default function ChatBotLayout({ children }: { children: ReactNode }) {
-  return <Layout>{children}</Layout>;
+export default function Layout({ children }: { children: ReactNode }) {
+  return <ChatLayout>{children}</ChatLayout>;
 }

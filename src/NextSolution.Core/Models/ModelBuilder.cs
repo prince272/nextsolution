@@ -19,14 +19,14 @@ namespace NextSolution.Core.Models
 
         Task<UserPageModel> BuildAsync(IPageable<User> users, CancellationToken cancellationToken = default);
 
-        Task<UserListModel> BuildAsync(IEnumerable<User> users, CancellationToken cancellationToken = default);
-
         // Chat
         Task<ChatModel> BuildAsync(Chat chat, CancellationToken cancellationToken = default);
 
         Task<ChatPageModel> BuildAsync(IPageable<Chat> chats, CancellationToken cancellationToken = default);
 
-        Task<ChatListModel> BuildAsync(IEnumerable<Chat> chats, CancellationToken cancellationToken = default);
+        Task<ChatMessageModel> BuildAsync(ChatMessage message, CancellationToken cancellationToken = default);
+
+        Task<ChatMessagePageModel> BuildAsync(IPageable<ChatMessage> messages, CancellationToken cancellationToken = default);
     }
 
     public class ModelBuilder : IModelBuilder
@@ -82,35 +82,22 @@ namespace NextSolution.Core.Models
         {
             if (users == null) throw new ArgumentNullException(nameof(users));
 
-            var pageModel = await BuildAsync<UserPageModel>(users, cancellationToken);
-            pageModel.Offset = users.Offset;
-            pageModel.Limit = users.Limit;
-            pageModel.Length = users.Length;
-            pageModel.Previous = users.Previous;
-            pageModel.Next = users.Next;
-            return pageModel;
-        }
-
-        public Task<UserListModel> BuildAsync(IEnumerable<User> users, CancellationToken cancellationToken = default)
-        {
-            return BuildAsync<UserListModel>(users, cancellationToken);
-        }
-
-        public async Task<TListModel> BuildAsync<TListModel>(IEnumerable<User> users, CancellationToken cancellationToken = default)
-            where TListModel : UserListModel
-        {
-            if (users == null) throw new ArgumentNullException(nameof(users));
-
             var items = new List<UserModel>();
 
             foreach (var user in users)
             {
-                var userModel = await BuildAsync(user, cancellationToken);
-                items.Add(userModel);
+                items.Add(await BuildAsync(user, cancellationToken));
             }
 
-            var listModel = Activator.CreateInstance<TListModel>();
-            listModel.Items = items;
+            var listModel = new UserPageModel
+            {
+                Items = items,
+                Offset = users.Offset,
+                Limit = users.Limit,
+                Length = users.Length,
+                Previous = users.Previous,
+                Next = users.Next
+            };
             return listModel;
         }
 
@@ -124,25 +111,6 @@ namespace NextSolution.Core.Models
         {
             if (chats == null) throw new ArgumentNullException(nameof(chats));
 
-            var pageModel = await BuildAsync<ChatPageModel>(chats, cancellationToken);
-            pageModel.Offset = chats.Offset;
-            pageModel.Limit = chats.Limit;
-            pageModel.Length = chats.Length;
-            pageModel.Previous = chats.Previous;
-            pageModel.Next = chats.Next;
-            return pageModel;
-        }
-
-        public Task<ChatListModel> BuildAsync(IEnumerable<Chat> chats, CancellationToken cancellationToken = default)
-        {
-            return BuildAsync<ChatListModel>(chats, cancellationToken);
-        }
-
-        public async Task<TListModel> BuildAsync<TListModel>(IEnumerable<Chat> chats, CancellationToken cancellationToken = default)
-            where TListModel : ChatListModel
-        {
-            if (chats == null) throw new ArgumentNullException(nameof(chats));
-
             var items = new List<ChatModel>();
 
             foreach (var chat in chats)
@@ -151,8 +119,42 @@ namespace NextSolution.Core.Models
                 items.Add(chatModel);
             }
 
-            var listModel = Activator.CreateInstance<TListModel>();
+            var listModel = new ChatPageModel();
             listModel.Items = items;
+            listModel.Offset = chats.Offset;
+            listModel.Limit = chats.Limit;
+            listModel.Length = chats.Length;
+            listModel.Previous = chats.Previous;
+            listModel.Next = chats.Next;
+            return listModel;
+        }
+
+        public Task<ChatMessageModel> BuildAsync(ChatMessage message, CancellationToken cancellationToken = default)
+        {
+            if (message == null) throw new ArgumentNullException(nameof(message));
+            var model = _mapper.Map<ChatMessageModel>(message);
+            return Task.FromResult(model);
+        }
+
+        public async Task<ChatMessagePageModel> BuildAsync(IPageable<ChatMessage> messages, CancellationToken cancellationToken = default)
+        {
+            if (messages == null) throw new ArgumentNullException(nameof(messages));
+
+            var items = new List<ChatMessageModel>();
+
+            foreach (var message in messages)
+            {
+                var messageModel = await BuildAsync(message, cancellationToken);
+                items.Add(messageModel);
+            }
+
+            var listModel = new ChatMessagePageModel();
+            listModel.Items = items;
+            listModel.Offset = messages.Offset;
+            listModel.Limit = messages.Limit;
+            listModel.Length = messages.Length;
+            listModel.Previous = messages.Previous;
+            listModel.Next = messages.Next;
             return listModel;
         }
     }

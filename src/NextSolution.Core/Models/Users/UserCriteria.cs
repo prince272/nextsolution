@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 
 namespace NextSolution.Core.Models.Users
 {
-    public class UserSearchCriteria
+    public class UserCriteria
     {
         public long[]? Id { get; set; }
 

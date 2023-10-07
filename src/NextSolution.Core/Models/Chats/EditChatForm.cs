@@ -5,9 +5,6 @@ namespace NextSolution.Core.Models.Chats
 {
     public class EditChatForm
     {
-        [JsonIgnore]
-        public long Id { get; set; }
-
         public string Title { get; set; } = default!;
     }
 

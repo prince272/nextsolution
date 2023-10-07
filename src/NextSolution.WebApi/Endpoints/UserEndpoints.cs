@@ -165,9 +165,9 @@ namespace NextSolution.WebApi.Endpoints
             return Results.Ok();
         }
 
-        public async Task<IResult> GetUsersAsync([FromServices] IUserService userService, [AsParameters] UserSearchCriteria searchCriteria, [FromQuery] long offset = 0, [FromQuery] int limit = 25)
+        public async Task<IResult> GetUsersAsync([FromServices] IUserService userService, [AsParameters] UserCriteria criteria, [FromQuery] long offset = 0, [FromQuery] int limit = 25)
         {
-            return Results.Ok(await userService.GetUsersAsync(searchCriteria, offset, limit));
+            return Results.Ok(await userService.GetUsersAsync(criteria, offset, limit));
         }
 
         public async Task<IResult> GetCurrentUserAsync([FromServices] IUserService userService)

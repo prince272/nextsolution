@@ -28,7 +28,7 @@ export type CrudInputs = {
   title: string;
 };
 
-export type CrudType = "new" | "edit" | "delete";
+export type CrudType = "new" | "edit" | "delete" | "deleteAll";
 
 const createCrudModal = (crudType: CrudType) => {
   const CrudModal: FC<CrudProps> = ({ opened, onClose }) => {
@@ -52,7 +52,7 @@ const createCrudModal = (crudType: CrudType) => {
     const componentId = useRef(uuidv4()).current;
 
     const [status, setStatus] = useState<{ action: "idle" | "submitting" | "loading"; error?: any }>({
-      action: crudType != "new" ? "loading" : "idle"
+      action: crudType == "edit" || crudType == "delete" ? "loading" : "idle"
     });
 
     const onSubmit: SubmitHandler<CrudInputs> = async (inputs) => {
@@ -78,6 +78,12 @@ const createCrudModal = (crudType: CrudType) => {
             await api.delete(`/chats/${chatId}`);
             dispatchChats("remove", { id: chatId } as Chat);
             toast.success(`Chat deleted.`, { id: componentId });
+            break;
+
+          case "deleteAll":
+            await api.delete(`/chats`);
+            dispatchChats("removeAll");
+            toast.success(`All chats deleted.`, { id: componentId });
             break;
 
           default:
@@ -114,15 +120,19 @@ const createCrudModal = (crudType: CrudType) => {
     };
 
     useEffect(() => {
-      if (crudType != "new") onLoad();
+      if (crudType == "edit" || crudType == "delete") {
+        onLoad();
+      }
     }, []);
 
     return (
       <>
         <Modal isKeyboardDismissDisabled={true} isOpen={opened} onClose={() => onClose()} as={"form"} onSubmit={form.handleSubmit(onSubmit)}>
           <ModalContent>
-            <ModalHeader className="flex flex-col gap-1">{startCase(crudType)} chat</ModalHeader>
-            <Render switch={crudType != "new" && !chat ? (status.error ? "error" : crudType) : crudType}>
+            <ModalHeader className="flex flex-col gap-1">
+              {startCase(crudType)} {crudType == "deleteAll" ? "Chats" : "Chat"}
+            </ModalHeader>
+            <Render switch={(crudType == "edit" || crudType == "delete") && !chat ? (status.error ? "error" : crudType) : crudType}>
               <Fragment key="new|edit">
                 <ModalBody>
                   <Skeleton className="rounded-xl" isLoaded={status.action != "loading"}>
@@ -176,10 +186,29 @@ const createCrudModal = (crudType: CrudType) => {
                   </Skeleton>
                 </ModalFooter>
               </Fragment>
+              <Fragment key="deleteAll">
+                <ModalBody>
+                  <Skeleton className="rounded-xl" isLoaded={status.action != "loading"}>
+                    Are you sure you went to delete all chats?
+                  </Skeleton>
+                </ModalBody>
+                <ModalFooter>
+                  <Skeleton className="rounded-xl" isLoaded={status.action != "loading"}>
+                    <Button isDisabled={status.action == "loading"} onPress={() => onClose()}>
+                      Cancel
+                    </Button>
+                  </Skeleton>
+                  <Skeleton className="rounded-xl" isLoaded={status.action != "loading"}>
+                    <Button isDisabled={status.action == "loading"} onPress={() => form.handleSubmit(onSubmit)()} color="danger" isLoading={status.action == "submitting"}>
+                      Delete All
+                    </Button>
+                  </Skeleton>
+                </ModalFooter>
+              </Fragment>
               <Fragment key="error">
                 <ModalBody className="pb-8 pt-4">
                   <div className="flex h-20 flex-col items-center justify-center space-y-2 text-center">
-                    <div className="mb-1 text-sm text-foreground-500">{getErrorMessage(status.error)}</div>
+                    <div className="p-2 text-sm text-foreground-500">{getErrorMessage(status.error)}</div>
                     <Button
                       variant="light"
                       color="primary"
@@ -211,4 +240,7 @@ EditChatModal.displayName = "EditChatModal";
 const DeleteChatModal = createCrudModal("delete");
 DeleteChatModal.displayName = "DeleteChatModal";
 
-export { DeleteChatModal, EditChatModal, NewChatModal };
+const DeleteAllChatsModal = createCrudModal("deleteAll");
+DeleteAllChatsModal.displayName = "DeleteAllChatsModal";
+
+export { DeleteAllChatsModal, DeleteChatModal, EditChatModal, NewChatModal };

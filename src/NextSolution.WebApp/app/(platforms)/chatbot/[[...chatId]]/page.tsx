@@ -1,9 +1,5 @@
-import { title } from "@/assets/primitives";
+import { ChatPage } from "@/components/chatbot/chat-page";
 
 export default function ChatbotPage() {
-  return (
-    <div>
-      <h1 className={title()}>Platform</h1>
-    </div>
-  );
+  return <ChatPage />;
 }

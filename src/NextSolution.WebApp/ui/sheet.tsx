@@ -48,6 +48,30 @@ const Sheet = forwardRef<ElementRef<typeof Modal>, SheetProps>(
       setMounted(true);
     }, []);
 
+    useEffect(() => {
+      if (!md) onOpenChange?.(false);
+    }, [md]);
+
+    // Feat: Workaround to ensure elements outside the sheet are focusable
+    // Get all elements with a tabindex attribute
+    const elementsWithTabIndex = containerRef.current?.querySelectorAll("*") || [];
+
+    // Remove the tabindex attribute from each element
+    elementsWithTabIndex.forEach((element) => {
+      var attributes = element.attributes;
+
+      // Iterate through the attributes and remove those that start with "aria"
+      for (var j = 0; j < attributes.length; j++) {
+        var attributeName = attributes[j].name;
+        if (attributeName.startsWith("aria")) {
+          element.removeAttribute(attributeName);
+        }
+        if (attributeName.startsWith("tabindex")) {
+          element.removeAttribute(attributeName);
+        }
+      }
+    });
+
     return (
       <>
         <div ref={containerRef} className={cn(isStatic && "sticky top-0 h-screen")}></div>

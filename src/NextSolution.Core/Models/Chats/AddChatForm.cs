@@ -2,7 +2,7 @@
 
 namespace NextSolution.Core.Models.Chats
 {
-    public class ChatCompletionForm
+    public class AddChatForm
     {
         public long? ChatId { get; set; }
 
@@ -11,7 +11,7 @@ namespace NextSolution.Core.Models.Chats
         public string Prompt { get; set; } = default!;
     }
 
-    public class ChatCompletionFormValidator : AbstractValidator<ChatCompletionForm>
+    public class ChatCompletionFormValidator : AbstractValidator<AddChatForm>
     {
         public ChatCompletionFormValidator()
         {

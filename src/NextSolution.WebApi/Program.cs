@@ -16,6 +16,7 @@ using NextSolution.Infrastructure.ViewRenderer.Razor;
 using NextSolution.WebApi.Middlewares;
 using NextSolution.WebApi.Services;
 using NextSolution.WebApi.Shared;
+using OpenAI_API;
 using Serilog;
 using Serilog.Settings.Configuration;
 using System.Security.Claims;
@@ -125,6 +126,12 @@ try
     {
         options.RootPath = Path.Combine(builder.Environment.WebRootPath, "uploads");
         options.WebRootPath = "/uploads";
+    });
+
+    builder.Services.AddSingleton(provider =>
+    {
+        var openai = new OpenAIAPI(builder.Configuration.GetValue<string>("OpenAIOptions:ApiKey"));
+        return openai.Chat;
     });
 
     builder.Services.AddCors(options =>

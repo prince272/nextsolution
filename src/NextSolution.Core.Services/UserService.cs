@@ -406,10 +406,10 @@ namespace NextSolution.Core.Services
             await _userRepository.ChangePasswordAsync(currentUser, form.CurrentPassword, form.NewPassword, cancellationToken);
         }
 
-        public async Task<UserPageModel> GetUsersAsync(UserSearchCriteria searchCriteria, long offset, int limit)
+        public async Task<UserPageModel> GetUsersAsync(UserCriteria criteria, long offset, int limit)
         {
-            if (searchCriteria == null) throw new ArgumentNullException(nameof(searchCriteria));
-            var predicate = searchCriteria.Build();
+            if (criteria == null) throw new ArgumentNullException(nameof(criteria));
+            var predicate = criteria.Build();
 
             var page = (await _userRepository.GetManyAsync(offset, limit, predicate: predicate, cancellationToken: cancellationToken));
             var pageModel = await _modelBuilder.BuildAsync(page, cancellationToken);
@@ -578,7 +578,7 @@ namespace NextSolution.Core.Services
         Task VerifyUsernameAsync(VerifyUsernameForm form);
 
         // User
-        Task<UserPageModel> GetUsersAsync(UserSearchCriteria searchCriteria, long offset, int limit);
+        Task<UserPageModel> GetUsersAsync(UserCriteria criteria, long offset, int limit);
         Task<UserModel> GetCurrentUserAsync();
         Task EditCurrentUserAsync(EditUserForm form);
         Task UploadCurrentUserAvatarAsync(UploadMediaChunkForm form);

@@ -1,4 +1,6 @@
-import { FC, ReactNode, useEffect, useRef } from "react";
+"use client";
+
+import { FC, ReactNode, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 // source: https://medium.com/trabe/reusable-react-portals-17dead20232b
@@ -8,9 +10,11 @@ export interface PortalProps {
 }
 
 export const Portal: FC<PortalProps> = ({ rootId, children }) => {
-  const target = useRef<HTMLElement | null>(document.getElementById(rootId));
+  const [mounted, setMounted] = useState(typeof window !== "undefined");
+  const target = useRef<HTMLElement | null>(mounted ? document.getElementById(rootId) : null);
 
   useEffect(() => {
+    setMounted(true);
     return () => {
       window.requestAnimationFrame(() => {
         if (target.current && target.current.childNodes.length === 0) {
@@ -24,11 +28,11 @@ export const Portal: FC<PortalProps> = ({ rootId, children }) => {
     };
   }, [rootId]);
 
-  if (!target.current) {
+  if (mounted && !target.current) {
     target.current = document.createElement("div");
     target.current.setAttribute("id", rootId);
     document.body.appendChild(target.current);
   }
 
-  return createPortal(children, target.current!);
+  return mounted ? createPortal(children, target.current!) : children;
 };

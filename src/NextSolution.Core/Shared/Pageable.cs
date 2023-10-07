@@ -1,4 +1,0 @@
-﻿namespace NextSolution.Core.Shared
-{
-
-}

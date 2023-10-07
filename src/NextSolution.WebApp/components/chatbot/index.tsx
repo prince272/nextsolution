@@ -1,52 +1,8 @@
 "use client";
 
-import { FC, ReactNode } from "react";
-import { useRouter } from "next/navigation";
-import { DockPanelLeftIcon } from "@/assets/icons";
-import { Button } from "@nextui-org/button";
 import dayjs from "dayjs";
 import { cloneDeep, Dictionary, groupBy } from "lodash";
-import queryString from "query-string";
 import * as zustand from "zustand";
-
-import { useApi, useUnauthenticated, useUser } from "@/lib/api/client";
-import { cn } from "@/lib/utils";
-
-import { Loader } from "../../ui/loader";
-import { useAppStore } from "../provider";
-import { ChatBotSidebar } from "./sidebar";
-
-export const ChatBotLayout: FC<{ children: ReactNode }> = ({ children }) => {
-  const router = useRouter();
-  const api = useApi();
-  const { loading } = useAppStore();
-  const { sidebarOpened, toggleSidebar, dispatchChats, setChatsStatus } = useChatBotStore();
-
-  useUnauthenticated(() => {
-    router.replace(queryString.stringifyUrl({ url: "/", query: { dialogId: "sign-in" } }));
-  });
-
-  const currentUser = useUser();
-
-  return (
-    <Loader loading={loading || !currentUser} className="relative flex min-h-screen flex-col">
-      {currentUser && (
-        <div className={cn("flex flex-1 items-start")}>
-          <ChatBotSidebar />
-          <main className="container mx-auto px-6 pt-16">
-            <div className={cn("absolute left-2 top-4", sidebarOpened ? "hidden" : "md:inline-block")}>
-              <Button className="h-11" variant="bordered" isIconOnly onPress={() => toggleSidebar()}>
-                <DockPanelLeftIcon className="h-5 w-5" type="outlined" />
-              </Button>
-            </div>
-            {children}
-            <footer className="flex w-full items-center justify-center py-3"></footer>
-          </main>
-        </div>
-      )}
-    </Loader>
-  );
-};
 
 export interface Chat {
   id: string;
@@ -55,11 +11,26 @@ export interface Chat {
   updatedAt: string;
 }
 
-export interface ChatBotState {
+export interface ChatMessage {
+  parentId: string;
+  id: string;
+  role: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+  childMessages: ChatMessage[];
+}
+
+export interface ChatStream {
+  chatId: string;
+  chatTitle: string;
+}
+
+export interface ChatState {
   sidebarOpened: boolean;
   chats: {
     items: Chat[];
-    groupedItems: Dictionary<ChatBotState["chats"]["items"]>;
+    groupedItems: Dictionary<ChatState["chats"]["items"]>;
     groupedKeys: string[];
     groupedCounts: number[];
     offset: number | null;
@@ -71,15 +42,15 @@ export interface ChatBotState {
   chatsStatus: { action: "idle" | "loading"; error?: any };
 }
 
-export interface ChatBotActions {
+export interface ChatActions {
   openSidebar: () => void;
   closeSidebar: () => void;
   toggleSidebar: () => void;
-  dispatchChats: (action: "add" | "update" | "remove" | "load", item: ChatBotState["chats"] | Chat) => void;
-  setChatsStatus: (status: ChatBotState["chatsStatus"]) => void;
+  dispatchChats: (action: "add" | "update" | "remove" | "removeAll" | "load", item?: ChatState["chats"] | Chat) => void;
+  setChatsStatus: (status: ChatState["chatsStatus"]) => void;
 }
 
-export const useChatBotStore = zustand.create<ChatBotState & ChatBotActions>((set) => ({
+const initialChatState: ChatState = {
   sidebarOpened: true,
   chats: {
     items: [],
@@ -92,18 +63,29 @@ export const useChatBotStore = zustand.create<ChatBotState & ChatBotActions>((se
     previous: null,
     next: null
   },
-  chatsStatus: { action: "loading" },
+  chatsStatus: { action: "loading" }
+};
+
+export const useChatBotStore = zustand.create<ChatState & ChatActions>((set) => ({
+  ...initialChatState,
   openSidebar: () => set((state) => ({ ...state, sidebarOpened: true })),
   closeSidebar: () => set((state) => ({ ...state, sidebarOpened: false })),
   toggleSidebar: () => set((state) => ({ ...state, sidebarOpened: !state.sidebarOpened })),
-  dispatchChats: (action: "add" | "update" | "remove" | "load", item: ChatBotState["chats"] | Chat) =>
+  dispatchChats: (action: "add" | "update" | "remove" | "removeAll" | "load", item?: ChatState["chats"] | Chat) =>
     set((state) => {
-      const chats = cloneDeep(action == "load" ? ({ ...item, items: [...state.chats.items, ...(item as ChatBotState["chats"]).items] } as ChatBotState["chats"]) : state.chats);
+      const chats = cloneDeep(
+        action == "load"
+          ? ({ ...item, items: [...state.chats.items, ...(item as ChatState["chats"]).items] } as ChatState["chats"])
+          : action != "removeAll"
+          ? state.chats
+          : initialChatState.chats
+      );
 
       chats.items = {
         add: [...chats.items, item as Chat],
-        update: [...chats.items].map((x) => (x.id == (item as Chat).id ? (item as Chat) : x)),
-        remove: [...chats.items].filter((x) => x.id != (item as Chat).id),
+        update: [...chats.items].map((x) => (x.id == (item as Chat)?.id ? (item as Chat) : x)),
+        remove: [...chats.items].filter((x) => x.id != (item as Chat)?.id),
+        removeAll: chats.items,
         load: chats.items
       }[action];
 
@@ -130,5 +112,5 @@ export const useChatBotStore = zustand.create<ChatBotState & ChatBotActions>((se
         chats: chats
       };
     }),
-  setChatsStatus: (status: ChatBotState["chatsStatus"]) => set((state) => ({ ...state, chatsStatus: status }))
+  setChatsStatus: (status: ChatState["chatsStatus"]) => set((state) => ({ ...state, chatsStatus: status }))
 }));
