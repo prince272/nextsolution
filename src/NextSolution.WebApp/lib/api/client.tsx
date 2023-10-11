@@ -3,7 +3,7 @@
 import { createContext, FC, ReactNode, useContext, useEffect, useRef, useState } from "react";
 
 import { useCookies } from "../cookies/client";
-import { useDebounceCallback } from "../hooks";
+import { useDebouncedCallback } from "../hooks";
 import { Api } from "./core";
 import { ApiConfig, User } from "./types";
 
@@ -40,10 +40,15 @@ export const useUser = (): User | null | undefined => {
 
 export const useUnauthenticated = (fn: () => void) => {
   const currentUser = useUser();
-  const authenticateCallback = useDebounceCallback(1000);
-  authenticateCallback(() => {
-    if (!currentUser) fn();
-  });
+  const authenticateCallback = useDebouncedCallback(
+    () => {
+      if (!currentUser) fn();
+    },
+    [],
+    1000
+  );
+
+  authenticateCallback();
 };
 
 export const ApiProvider: FC<{ config: ApiConfig; children: ReactNode }> = ({ config, children }) => {

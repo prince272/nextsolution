@@ -1,4 +1,4 @@
-import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse, CreateAxiosDefaults, HttpStatusCode, isAxiosError } from "axios";
+import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse, HttpStatusCode, isAxiosError } from "axios";
 import { BehaviorSubject } from "rxjs";
 
 import { ExternalWindow } from "../external-window";
@@ -18,7 +18,7 @@ export class Api {
   private retryRequests: Array<() => void>;
 
   constructor(config: ApiConfig) {
-    const defaultAxiosConfig = {} as CreateAxiosDefaults;
+    const defaultAxiosConfig = {} as ApiConfig;
 
     const { store, ...axiosConfig } = (config = { ...defaultAxiosConfig, ...config });
 
@@ -32,83 +32,6 @@ export class Api {
 
     this.refreshing = false;
     this.retryRequests = [];
-
-    // Add request interceptor
-    this.axiosInstance.interceptors.request.use(
-      (requestConfig) => {
-        const currentUser = this.user.getValue();
-
-        if (currentUser) {
-          requestConfig.headers.setAuthorization(`${currentUser.tokenType} ${currentUser.accessToken}`);
-        } else {
-          delete requestConfig.headers.Authorization;
-        }
-
-        return requestConfig;
-      },
-      (error: AxiosError | Error) => {
-        // Handle request errors if needed
-        console.error("Request Interceptor Error:", error);
-        return Promise.reject(error);
-      }
-    );
-
-    // Add response interceptor
-    this.axiosInstance.interceptors.response.use(
-      (response: AxiosResponse) => {
-        // You can perform any preprocessing of the response here
-        // For example, handling errors, transforming data, etc.
-        return response;
-      },
-      (error: AxiosError | Error) => {
-        if (isAxiosError(error) && error.response) {
-          const { config, response } = error;
-          const originalRequest = config as AxiosRequestConfig & { retryCount: number };
-
-          if (response.status != HttpStatusCode.Unauthorized) {
-            return Promise.reject(error);
-          }
-
-          originalRequest.retryCount = (originalRequest.retryCount ?? 0) + 1;
-          if (originalRequest.retryCount > 2) {
-            // If already retried twice, reject the request
-            return Promise.reject(error);
-          }
-
-          const currentUser = this.user.getValue();
-          if (!currentUser) {
-            return Promise.reject(error);
-          }
-
-          if (this.refreshing) {
-            // If already refreshing, add the failed request to the queue
-            const retryOriginalRequest = new Promise<AxiosResponse>((resolve) => {
-              this.retryRequests.push(() => resolve(this.axiosInstance.request(originalRequest!)));
-            });
-            return retryOriginalRequest;
-          }
-
-          this.refreshing = true;
-          return this.refresh()
-            .then(({ data: value }) => {
-              this.user.next(value);
-              this.refreshing = false;
-              this.retryRequests.forEach((prom) => prom());
-              this.retryRequests = [];
-              return this.axiosInstance.request(originalRequest);
-            })
-            .catch(() => {
-              this.user.next(null);
-              this.refreshing = false;
-              this.retryRequests.forEach((prom) => prom());
-              this.retryRequests = [];
-              throw error;
-            });
-        }
-
-        return Promise.reject(error);
-      }
-    );
   }
 
   public async signUp<T extends User = User, R extends AxiosResponse<T> = AxiosResponse<T>, D = { username: string; password: string; [key: string]: any }>(
@@ -121,7 +44,7 @@ export class Api {
       data,
       ...config
     };
-    const response = await this.axiosInstance.request<T, R, D>(config);
+    const response = await this.request<T, R, D>(config);
     this.user.next(response.data);
     return response;
   }
@@ -136,7 +59,7 @@ export class Api {
       data,
       ...config
     };
-    const response = await this.axiosInstance.request<T, R, D>(config);
+    const response = await this.request<T, R, D>(config);
     this.user.next(response.data);
     return response;
   }
@@ -149,13 +72,13 @@ export class Api {
     };
 
     try {
-      const externalUrl = new URL(`${this.axiosInstance.defaults.baseURL}/users/${provider}/session/generate`);
+      const externalUrl = new URL(`${this.config.baseURL}/users/${provider}/session/generate`);
       externalUrl.searchParams.set("returnUrl", window.location.href);
       await ExternalWindow.open(externalUrl, { center: true });
     } catch (error) {
       console.warn(error);
     }
-    const response = await this.axiosInstance.request<T, R, D>(config);
+    const response = await this.request<T, R, D>(config);
     this.user.next(response.data);
     return response;
   }
@@ -172,7 +95,7 @@ export class Api {
     };
 
     try {
-      const response = await this.axiosInstance.request<T, R, D>(config);
+      const response = await this.request<T, R, D>(config);
       this.user.next(response.data);
       return response;
     } catch (error) {
@@ -193,86 +116,200 @@ export class Api {
       data,
       ...config
     };
-    return this.axiosInstance.request<T, R, D>(config).finally(() => {
+    return this.request<T, R, D>(config).finally(() => {
       this.user.next(null);
     });
   }
 
-  public async sendResetPasswordCode<T extends User = User, R extends AxiosResponse<T> = AxiosResponse<T>, D = any>(data: D, config?: AxiosRequestConfig<D>): Promise<R> {
-    config = {
-      url: `/users/password/reset/send-code`,
-      method: "POST",
-      data,
-      ...config
-    };
-    const response = await this.axiosInstance.request<T, R, D>(config);
-    return response;
-  }
+  private handleError(error: any, callback: (config: AxiosRequestConfig<any>) => any) {
+    if (isAxiosError(error) && error.response) {
+      const { config, response } = error;
+      const originalRequest = config as AxiosRequestConfig & { retryCount: number };
 
-  public async resetPassword<T extends User = User, R extends AxiosResponse<T> = AxiosResponse<T>, D = any>(data: D, config?: AxiosRequestConfig<D>): Promise<R> {
-    config = {
-      url: `/users/password/reset`,
-      method: "POST",
-      data,
-      ...config
-    };
-    const response = await this.axiosInstance.request<T, R, D>(config);
-    this.user.next(response.data);
-    return response;
-  }
+      if (response.status != HttpStatusCode.Unauthorized) {
+        throw error;
+      }
 
-  public async sendUsernameVerifyCode<T extends User = User, R extends AxiosResponse<T> = AxiosResponse<T>, D = any>(data: D, config?: AxiosRequestConfig<D>): Promise<R> {
-    config = {
-      url: `/users/username/verify/send-code`,
-      method: "POST",
-      data,
-      ...config
-    };
-    const response = await this.axiosInstance.request<T, R, D>(config);
-    return response;
-  }
+      originalRequest.retryCount = (originalRequest.retryCount ?? 0) + 1;
+      if (originalRequest.retryCount > 2) {
+        // If already retried twice, reject the request
+        throw error;
+      }
 
-  public async verifyUsername<T extends User = User, R extends AxiosResponse<T> = AxiosResponse<T>, D = any>(data: D, config?: AxiosRequestConfig<D>): Promise<R> {
-    config = {
-      url: `/users/username/verify`,
-      method: "POST",
-      data,
-      ...config
-    };
-    const response = await this.axiosInstance.request<T, R, D>(config);
-    this.user.next(response.data);
-    return response;
+      const currentUser = this.user.getValue();
+      if (!currentUser) {
+        throw error;
+      }
+
+      if (this.refreshing) {
+        // If already refreshing, add the failed request to the queue
+        const retryOriginalRequest = new Promise<any>((resolve) => {
+          this.retryRequests.push(() => resolve(callback(originalRequest!)));
+        });
+        return retryOriginalRequest;
+      }
+
+      this.refreshing = true;
+      return this.refresh()
+        .then(({ data: value }) => {
+          this.user.next(value);
+          this.refreshing = false;
+          this.retryRequests.forEach((prom) => prom());
+          this.retryRequests = [];
+          const retryOriginalRequest = callback(originalRequest);
+          return retryOriginalRequest;
+        })
+        .catch((innerError) => {
+          this.user.next(null);
+          this.refreshing = false;
+          this.retryRequests.forEach((prom) => prom());
+          this.retryRequests = [];
+          throw error;
+        });
+    }
+
+    throw error;
   }
 
   public request<T = any, R = AxiosResponse<T>, D = any>(config: AxiosRequestConfig<D>): Promise<R> {
-    return this.axiosInstance.request<T, R, D>(config);
+    const currentUser = this.user.getValue();
+
+    if (currentUser) {
+      config = {
+        ...config,
+        headers: {
+          ...config?.headers,
+          Authorization: `${currentUser.tokenType} ${currentUser.accessToken}`
+        }
+      };
+    } else {
+      delete config?.headers?.Authorization;
+    }
+
+    return this.axiosInstance
+      .request<T, R, D>(config)
+      .then((response) => response)
+      .catch((error) => this.handleError(error, this.request.bind(this)));
   }
 
   public get<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R> {
-    return this.axiosInstance.get<T, R, D>(url, config);
+    return this.request<T, R, D>({ ...config, url, method: "GET" });
   }
 
   public delete<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R> {
-    return this.axiosInstance.delete<T, R, D>(url, config);
+    return this.request<T, R, D>({ ...config, url, method: "DELETE" });
   }
 
   public head<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R> {
-    return this.axiosInstance.head<T, R, D>(url, config);
+    return this.request<T, R, D>({ ...config, url, method: "HEAD" });
   }
 
   public options<T = any, R = AxiosResponse<T>, D = any>(url: string, config?: AxiosRequestConfig<D>): Promise<R> {
-    return this.axiosInstance.options<T, R, D>(url, config);
+    return this.request<T, R, D>({ ...config, url, method: "OPTIONS" });
   }
 
   public post<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R> {
-    return this.axiosInstance.post<T, R, D>(url, data, config);
+    return this.request<T, R, D>({ ...config, url, method: "POST", data });
   }
 
   public put<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R> {
-    return this.axiosInstance.put<T, R, D>(url, data, config);
+    return this.request<T, R, D>({ ...config, url, method: "PUT", data });
   }
 
   public patch<T = any, R = AxiosResponse<T>, D = any>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R> {
-    return this.axiosInstance.patch<T, R, D>(url, data, config);
+    return this.request<T, R, D>({ ...config, url, method: "PATCH", data });
+  }
+
+  public async stream<D = any>(config: AxiosRequestConfig<D>): Promise<Response> {
+    config = { ...this.config, ...config };
+
+    const currentUser = this.user.getValue();
+
+    if (currentUser) {
+      config = {
+        ...config,
+        headers: {
+          ...config?.headers,
+          Authorization: `${currentUser.tokenType} ${currentUser.accessToken}`
+        }
+      };
+    } else {
+      delete config?.headers?.Authorization;
+    }
+
+    const fetchInit: RequestInit = {};
+
+    if (config.method) {
+      fetchInit.method = config.method;
+    }
+
+    if (config.headers) {
+      const fetchHeaders = new Headers();
+      for (const key of Object.keys(config.headers)) {
+        fetchHeaders.append(key, config.headers[key]);
+      }
+      fetchInit.headers = fetchHeaders;
+    }
+
+    if (config.data) {
+      fetchInit.body = JSON.stringify(config.data);
+
+      fetchInit.headers = fetchInit.headers || new Headers();
+      if (fetchInit.headers instanceof Headers) {
+        fetchInit.headers.set("Accept", "application/json");
+        fetchInit.headers.set("Content-Type", "application/json");
+      }
+    }
+
+    if (config.params) {
+      const queryString = new URLSearchParams(config.params).toString();
+      config.url += `?${queryString}`;
+    }
+
+    if (config.auth) {
+      const basicAuthHeader = `Basic ${btoa(`${config.auth.username}:${config.auth.password}`)}`;
+      fetchInit.headers = fetchInit.headers || new Headers();
+
+      if (fetchInit.headers instanceof Headers) {
+        fetchInit.headers.set("Authorization", basicAuthHeader);
+      }
+    }
+
+    if (config.timeout) {
+      const abortController = new AbortController();
+      fetchInit.signal = abortController.signal;
+
+      setTimeout(() => {
+        // Abort the fetch request when the timeout is reached
+        abortController.abort();
+      }, config.timeout);
+    }
+
+    fetchInit.credentials = config.withCredentials ? "include" : fetchInit.credentials;
+
+    return fetch(`${config.baseURL}${config.url}`, fetchInit)
+      .then(async (response) => {
+        if (!response.ok) {
+          const data = await response.json().catch(() => response.text());
+
+          const error = new AxiosError(
+            "Request failed with status code " + response.status,
+            [AxiosError.ERR_BAD_REQUEST, AxiosError.ERR_BAD_RESPONSE][Math.floor(response.status / 100) - 4],
+            config as any,
+            fetchInit,
+            {
+              data,
+              status: response.status,
+              statusText: response.statusText
+            } as AxiosResponse
+          );
+
+          throw error;
+        } else {
+          // API Success
+          return response;
+        }
+      })
+      .catch((error) => this.handleError(error, this.stream.bind(this)));
   }
 }

@@ -7,5 +7,9 @@ namespace NextSolution.Core.Models.Chats
         public long? ChatId { get; set; }
 
         public string ChatTitle { get; set; } = default!;
+
+        public ChatMessageModel User { get; set; } = default!;
+
+        public ChatMessageModel Assistant { get; set; } = default!;
     }
 }

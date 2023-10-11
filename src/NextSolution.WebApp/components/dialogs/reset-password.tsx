@@ -57,7 +57,7 @@ export const ResetPasswordModal: FC<ResetPasswordProps> = ({ opened, onClose }) 
   const onResetPassword: SubmitHandler<ResetPasswordInputs> = async (inputs) => {
     try {
       setStatus({ action: "submitting" });
-      await api.resetPassword(inputs);
+      await api.post("/users/password/reset", inputs);
 
       try {
         await api.signIn(inputs);
@@ -84,7 +84,7 @@ export const ResetPasswordModal: FC<ResetPasswordProps> = ({ opened, onClose }) 
   const onSendCode: SubmitHandler<Exclude<ResetPasswordInputs, "password">> = async (inputs) => {
     try {
       setStatus({ action: "sending" });
-      await api.sendResetPasswordCode(inputs);
+      await api.post("/users/password/reset/send-code", inputs);
       resendCodeTimer.start();
       toast.success("Password reset code sent!");
       setStatus({ action: "idle" });

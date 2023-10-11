@@ -32,8 +32,8 @@ export const ChatLayout: FC<{ children: ReactNode }> = ({ children }) => {
       {currentUser && (
         <div className={cn("flex flex-1 items-start")}>
           <ChatSidebar />
-          <div className="relative flex h-full w-full flex-col bg-content1">
-            <header className="sticky top-0 z-20 flex items-center justify-between bg-content1 px-4 py-4">
+          <div className="relative flex h-full w-full flex-col bg-default-50">
+            <header className="sticky top-0 z-20 flex items-center justify-between bg-default-50 px-4 py-4">
               <div className="grid w-full grid-cols-3 items-center">
                 <Button className={cn("h-11", sidebarOpened && "invisible")} variant="bordered" isIconOnly onPress={() => toggleSidebar()}>
                   <DockPanelLeftIcon className="h-5 w-5" type="outlined" />

@@ -24,6 +24,8 @@ export interface ChatMessage {
 export interface ChatStream {
   chatId: string;
   chatTitle: string;
+  user: ChatMessage;
+  assistant: ChatMessage
 }
 
 export interface ChatState {

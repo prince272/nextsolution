@@ -98,11 +98,15 @@ namespace NextSolution.Core.Services
             await foreach (var chatResult in chatResponse)
             {
                 nextMessage.Content += chatResult.Choices.FirstOrDefault()?.Delta?.Content;
+
                 var model = new ChatStreamModel
                 {
                     ChatId = chat.Id,
-                    ChatTitle = chat.Title
+                    ChatTitle = chat.Title,
+                    User = await _modelBuilder.BuildAsync(currentMessage),
+                    Assistant = await _modelBuilder.BuildAsync(nextMessage),
                 };
+
                 yield return model;
             }
 
@@ -183,7 +187,7 @@ namespace NextSolution.Core.Services
             if (!currentUserIsInAdmin || !currentUserIsInMemeber) throw new ForbiddenException();
 
             var chat = await _chatRepository.GetByIdAsync(chatId, cancellationToken);
-            if (chat == null) throw new BadRequestException(nameof(chatId), $"Chat '{chatId}' does not exist.");
+            if (chat == null) throw new NotFoundException($"Chat '{chatId}' does not exist.");
 
             if (currentUserIsInMemeber && chat.UserId != currentUser.Id) throw new ForbiddenException();
 
@@ -219,7 +223,7 @@ namespace NextSolution.Core.Services
             if (!currentUserIsInAdmin || !currentUserIsInMemeber) throw new ForbiddenException();
 
             var chat = await _chatRepository.GetByIdAsync(chatId, cancellationToken);
-            if (chat == null) throw new BadRequestException(nameof(chatId), $"Chat '{chatId}' does not exist.");
+            if (chat == null) throw new NotFoundException($"Chat '{chatId}' does not exist.");
 
             if (currentUserIsInMemeber && chat.UserId != currentUser.Id) throw new ForbiddenException();
 

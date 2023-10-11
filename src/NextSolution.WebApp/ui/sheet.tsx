@@ -4,7 +4,7 @@ import { ElementRef, forwardRef, useEffect, useRef, useState } from "react";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalProps, useDisclosure } from "@nextui-org/modal";
 import { ModalSlots, SlotsToClasses } from "@nextui-org/theme";
 
-import { useResponsive } from "@/lib/hooks";
+import { useBreakpoint } from "@/lib/hooks";
 import { cn } from "@/lib/utils";
 
 export interface SheetProps extends Omit<ModalProps, "placement"> {
@@ -16,7 +16,7 @@ const Sheet = forwardRef<ElementRef<typeof Modal>, SheetProps>(
   ({ placement = "left", shouldBlockScroll, isOpen, isDismissable, isStatic = false, onOpenChange, classNames, ...props }, ref) => {
     const [mounted, setMounted] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
-    const { md } = useResponsive();
+    const md = useBreakpoint("md", "up");
     isStatic = mounted && md && isStatic;
 
     const extendedClassNames = {
@@ -52,24 +52,25 @@ const Sheet = forwardRef<ElementRef<typeof Modal>, SheetProps>(
       if (!md) onOpenChange?.(false);
     }, [md]);
 
-    // Feat: Workaround to ensure elements outside the sheet are focusable
-    // Get all elements with a tabindex attribute
-    const elementsWithTabIndex = containerRef.current?.querySelectorAll("*") || [];
+    useEffect(() => {
+      // Feat: Workaround to ensure elements outside the sheet are focusable
+      // Get all elements with a tabindex attribute
+      const elementsWithTabIndex = containerRef.current?.querySelectorAll("*") || [];
 
-    // Remove the tabindex attribute from each element
-    elementsWithTabIndex.forEach((element) => {
-      var attributes = element.attributes;
+      // Remove the tabindex attribute from each element
+      elementsWithTabIndex.forEach((element) => {
+        var attributes = element.attributes;
 
-      // Iterate through the attributes and remove those that start with "aria"
-      for (var j = 0; j < attributes.length; j++) {
-        var attributeName = attributes[j].name;
-        if (attributeName.startsWith("aria")) {
-          element.removeAttribute(attributeName);
+        // Iterate through the attributes and remove those that start with "aria"
+        for (var j = 0; j < attributes.length; j++) {
+          var attributeName = attributes[j].name;
+          if (attributeName.startsWith("aria")) {
+          }
+          if (attributeName.startsWith("tabindex")) {
+            element.removeAttribute(attributeName);
+          }
         }
-        if (attributeName.startsWith("tabindex")) {
-          element.removeAttribute(attributeName);
-        }
-      }
+      });
     });
 
     return (

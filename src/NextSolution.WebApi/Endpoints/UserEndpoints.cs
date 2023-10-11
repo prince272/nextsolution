@@ -37,15 +37,23 @@ namespace NextSolution.WebApi.Endpoints
             endpoints.MapPost("/password/reset", ResetPasswordAsync);
             endpoints.MapPost("/password/change", ChangePasswordAsync);
 
-            endpoints.MapGet("/", GetUsersAsync);
-            endpoints.MapGet("/current", GetCurrentUserAsync);
-            endpoints.MapPut("/current", EditCurrentUserAsync);
+            endpoints.MapGet("/", GetUsersAsync)
+                .RequireAuthorization();
 
-            endpoints.MapPost("/current/avatar", UploadCurrentUserAvatarAsync);
-            endpoints.MapPatch("/current/avatar/{avatarId}", UploadCurrentUserAvatarAsync);
-            endpoints.MapGet("/current/avatar/{avatarId}", GetCurrentUserAvatarAsync);
+            endpoints.MapGet("/current", GetCurrentUserAsync)
+                .RequireAuthorization();
 
-            endpoints.MapGet("/protected", () => "Protected").RequireAuthorization();
+            endpoints.MapPut("/current", EditCurrentUserAsync)
+                .RequireAuthorization();
+
+            endpoints.MapPost("/current/avatar", UploadCurrentUserAvatarAsync)
+                .RequireAuthorization();
+
+            endpoints.MapPatch("/current/avatar/{avatarId}", UploadCurrentUserAvatarAsync)
+                .RequireAuthorization();
+
+            endpoints.MapGet("/current/avatar/{avatarId}", GetCurrentUserAvatarAsync)
+                .RequireAuthorization();
         }
 
         public async Task<IResult> SignUpAsync([FromServices] IUserService userService, [FromBody] SignUpForm form)

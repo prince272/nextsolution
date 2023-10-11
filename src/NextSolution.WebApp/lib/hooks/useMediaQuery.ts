@@ -1,42 +1,78 @@
-import { useEffect, useState } from "react";
+// source: https://github.com/react-restart/hooks/blob/master/src/useMediaQuery.tsx
+import { useState } from "react";
 
-export function useMediaQuery(query: string): boolean {
-  const getMatches = (query: string): boolean => {
-    // Prevents SSR issues
-    if (typeof window !== "undefined") {
-      return window.matchMedia(query).matches;
-    }
-    return false;
-  };
+import { useIsomorphicEffect as useEffect } from "./useIsomorphicEffect";
 
-  const [matches, setMatches] = useState<boolean>(getMatches(query));
+interface RefCountedMediaQueryList extends MediaQueryList {
+  refCount: number;
+}
+const matchersByWindow = new WeakMap<Window, Map<string, RefCountedMediaQueryList>>();
 
-  function handleChange() {
-    setMatches(getMatches(query));
+const getMatcher = (query: string | null, targetWindow?: Window): RefCountedMediaQueryList | undefined => {
+  if (!query || !targetWindow) return undefined;
+
+  const matchers = matchersByWindow.get(targetWindow) || new Map<string, RefCountedMediaQueryList>();
+
+  matchersByWindow.set(targetWindow, matchers);
+
+  let mql = matchers.get(query);
+  if (!mql) {
+    mql = targetWindow.matchMedia(query) as RefCountedMediaQueryList;
+    mql.refCount = 0;
+    matchers.set(mql.media, mql);
   }
+  return mql;
+};
+/**
+ * Match a media query and get updates as the match changes. The media string is
+ * passed directly to `window.matchMedia` and run as a Layout Effect, so initial
+ * matches are returned before the browser has a chance to paint.
+ *
+ * ```tsx
+ * function Page() {
+ *   const isWide = useMediaQuery('min-width: 1000px')
+ *
+ *   return isWide ? "very wide" : 'not so wide'
+ * }
+ * ```
+ *
+ * Media query lists are also reused globally, hook calls for the same query
+ * will only create a matcher once under the hood.
+ *
+ * @param query A media query
+ * @param targetWindow The window to match against, uses the globally available one as a default.
+ */
+export default function useMediaQuery(query: string | null, targetWindow: Window | undefined = typeof window === "undefined" ? undefined : window) {
+  const mql = getMatcher(query, targetWindow);
+
+  const [matches, setMatches] = useState(() => (mql ? mql.matches : false));
 
   useEffect(() => {
-    const matchMedia = window.matchMedia(query);
-
-    // Triggered at the first client-side load and if query changes
-    handleChange();
-
-    // Listen matchMedia
-    if (matchMedia.addListener) {
-      matchMedia.addListener(handleChange);
-    } else {
-      matchMedia.addEventListener("change", handleChange);
+    let mql = getMatcher(query, targetWindow);
+    if (!mql) {
+      return setMatches(false);
     }
 
-    return () => {
-      if (matchMedia.removeListener) {
-        matchMedia.removeListener(handleChange);
-      } else {
-        matchMedia.removeEventListener("change", handleChange);
-      }
+    let matchers = matchersByWindow.get(targetWindow!);
+
+    const handleChange = () => {
+      setMatches(mql!.matches);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query]);
+
+    mql.refCount++;
+    mql.addListener(handleChange);
+
+    handleChange();
+
+    return () => {
+      mql!.removeListener(handleChange);
+      mql!.refCount--;
+      if (mql!.refCount <= 0) {
+        matchers?.delete(mql!.media);
+      }
+      mql = undefined;
+    };
+  }, [query, targetWindow]);
 
   return matches;
 }

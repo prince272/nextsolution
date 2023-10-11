@@ -9,7 +9,7 @@ import { AsYouType } from "libphonenumber-js";
 import { CountryData, defaultCountries, FlagEmoji, parseCountry } from "react-international-phone";
 import { Virtuoso } from "react-virtuoso";
 
-import { useDebounce } from "@/lib/hooks";
+import { useDebouncedValue } from "@/lib/hooks";
 import { cn } from "@/lib/utils";
 
 import "react-international-phone/style.css";
@@ -21,7 +21,7 @@ export interface CountrySelectorModalProps extends Partial<Omit<ModalProps, "onS
 
 const CountrySelectorModal: FC<CountrySelectorModalProps> = ({ onSelect, countries = defaultCountries, ...props }) => {
   const [search, setSearch] = useState("");
-  const debouncedSearch = useDebounce<string>(search, 100);
+  const debouncedSearch = useDebouncedValue<string>(search, 100);
 
   const organizedCountries = useMemo(() => {
     const getScore = (c: CountryData): number => {

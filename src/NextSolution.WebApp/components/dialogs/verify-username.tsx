@@ -60,7 +60,7 @@ const createVerifyUsernameModal = (usernameType: UsernameType) => {
     const onSubmit: SubmitHandler<VerifyUsernameInputs> = async (inputs) => {
       try {
         setStatus({ action: "submitting" });
-        await api.verifyUsername(inputs);
+        await api.post("/users/username/verify", inputs);
 
         toast.success(`${upperFirst(lowerCase(usernameType))} has been verified!`);
         onClose(false);
@@ -83,7 +83,7 @@ const createVerifyUsernameModal = (usernameType: UsernameType) => {
     const onSendCode: SubmitHandler<Exclude<VerifyUsernameInputs, "password">> = async (inputs) => {
       try {
         setStatus({ action: "sending" });
-        await api.sendUsernameVerifyCode(inputs);
+        await api.post("/users/username/verify/send-code", inputs);
         resendCodeTimer.start();
         toast.success("Verification code sent!");
         setStatus({ action: "idle" });

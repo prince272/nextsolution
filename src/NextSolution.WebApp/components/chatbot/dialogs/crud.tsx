@@ -28,7 +28,7 @@ export type CrudInputs = {
   title: string;
 };
 
-export type CrudType = "new" | "edit" | "delete" | "deleteAll";
+export type CrudType = "edit" | "delete" | "deleteAll";
 
 const createCrudModal = (crudType: CrudType) => {
   const CrudModal: FC<CrudProps> = ({ opened, onClose }) => {
@@ -60,29 +60,25 @@ const createCrudModal = (crudType: CrudType) => {
         setStatus({ action: "submitting" });
 
         switch (crudType) {
-          case "new":
-            const newResponse = await api.post<Chat>(`/chats`, inputs);
-            setChat(newResponse.data);
-            dispatchChats("add", newResponse.data);
-            toast.success(`Chat created.`, { id: componentId });
-            break;
-
           case "edit":
             const editResponse = await api.put<Chat>(`/chats/${chatId}`, inputs);
             setChat(editResponse.data);
             dispatchChats("update", editResponse.data);
+            router.refresh();
             toast.success(`Chat updated.`, { id: componentId });
             break;
 
           case "delete":
             await api.delete(`/chats/${chatId}`);
             dispatchChats("remove", { id: chatId } as Chat);
+            router.refresh();
             toast.success(`Chat deleted.`, { id: componentId });
             break;
 
           case "deleteAll":
             await api.delete(`/chats`);
             dispatchChats("removeAll");
+            router.refresh();
             toast.success(`All chats deleted.`, { id: componentId });
             break;
 
@@ -231,9 +227,6 @@ const createCrudModal = (crudType: CrudType) => {
   return CrudModal;
 };
 
-const NewChatModal = createCrudModal("new");
-NewChatModal.displayName = "NewChatModal";
-
 const EditChatModal = createCrudModal("edit");
 EditChatModal.displayName = "EditChatModal";
 
@@ -243,4 +236,4 @@ DeleteChatModal.displayName = "DeleteChatModal";
 const DeleteAllChatsModal = createCrudModal("deleteAll");
 DeleteAllChatsModal.displayName = "DeleteAllChatsModal";
 
-export { DeleteAllChatsModal, DeleteChatModal, EditChatModal, NewChatModal };
+export { DeleteAllChatsModal, DeleteChatModal, EditChatModal };

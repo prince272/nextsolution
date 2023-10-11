@@ -15,13 +15,26 @@ namespace NextSolution.WebApi.Endpoints
         {
             var endpoints = MapGroup("/chats");
 
-            endpoints.MapPost("/", AddChatAsync);
-            endpoints.MapPut("/{chatId}", EditChatAsync);
-            endpoints.MapDelete("/{chatId}", DeleteChatAsync);
-            endpoints.MapDelete("/", DeleteAllChatsAsync);
-            endpoints.MapGet("/{chatId}", GetChatAsync);
-            endpoints.MapGet("/", GetChatsAsync);
-            endpoints.MapGet("/{chatId}/messages", GetMessagesAsync);
+            endpoints.MapPost("/", AddChatAsync)
+                .RequireAuthorization();
+
+            endpoints.MapPut("/{chatId}", EditChatAsync)
+                .RequireAuthorization();
+
+            endpoints.MapDelete("/{chatId}", DeleteChatAsync)
+                .RequireAuthorization();
+
+            endpoints.MapDelete("/", DeleteAllChatsAsync)
+                .RequireAuthorization();
+
+            endpoints.MapGet("/{chatId}", GetChatAsync)
+                .RequireAuthorization();
+
+            endpoints.MapGet("/", GetChatsAsync)
+                .RequireAuthorization();
+
+            endpoints.MapGet("/{chatId}/messages", GetMessagesAsync)
+                .RequireAuthorization();
         }
 
         public IAsyncEnumerable<ChatStreamModel> AddChatAsync([FromServices] IChatService chatService, [FromBody] AddChatForm form)

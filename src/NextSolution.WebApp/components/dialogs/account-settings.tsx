@@ -24,7 +24,7 @@ import { v4 as uuidv4 } from "uuid";
 import { useApi, useUnauthenticated, useUser } from "@/lib/api/client";
 import { User } from "@/lib/api/types";
 import { getErrorMessage, isApiError } from "@/lib/api/utils";
-import { useConditionalState, useResponsive } from "@/lib/hooks";
+import { useBreakpoint, useConditionalState } from "@/lib/hooks";
 import { cn } from "@/lib/utils";
 
 export interface AccountSettingsProps {
@@ -40,7 +40,8 @@ export const AccountSettingsModal: FC<AccountSettingsProps> = ({ opened, onClose
   });
 
   const [selectedKeys, setSelectedKeys] = useState<Key[]>([]);
-  const { sm, md } = useResponsive();
+  const sm = useBreakpoint("sm", "up");
+  const md = useBreakpoint("md", "up");
 
   const footerId = useRef(uuidv4()).current;
 

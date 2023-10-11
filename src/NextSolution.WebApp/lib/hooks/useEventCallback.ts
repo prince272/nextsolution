@@ -1,15 +1,15 @@
-import { useCallback, useRef } from "react";
+// source: https://github.com/react-restart/hooks/blob/master/src/useEventCallback.ts
 
-import { useIsomorphicLayoutEffect } from "./useIsomorphicLayoutEffect";
+import { useCallback } from "react";
 
-export function useEventCallback<Args extends unknown[], R>(fn: (...args: Args) => R) {
-  const ref = useRef<typeof fn>(() => {
-    throw new Error("Cannot call an event handler while rendering.");
-  });
+import { useCommittedRef } from "./useCommittedRef";
 
-  useIsomorphicLayoutEffect(() => {
-    ref.current = fn;
-  }, [fn]);
-
-  return useCallback((...args: Args) => ref.current(...args), [ref]);
+export function useEventCallback<TCallback extends (...args: any[]) => any>(fn?: TCallback | null): TCallback {
+  const ref = useCommittedRef(fn);
+  return useCallback(
+    function (...args: any[]) {
+      return ref.current && ref.current(...args);
+    },
+    [ref]
+  ) as any;
 }

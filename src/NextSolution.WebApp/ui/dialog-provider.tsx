@@ -1,11 +1,11 @@
 "use client";
 
-import { ComponentType, createContext, FC, Fragment, ReactNode, useContext, useEffect, useRef } from "react";
+import { ComponentType, createContext, FC, Fragment, ReactNode, useContext, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import PQueue from "p-queue";
 import queryString from "query-string";
 
-import { usePrevious, useStateAsync } from "@/lib/hooks";
+import { usePreviousValue } from "@/lib/hooks";
 import { sleep } from "@/lib/utils";
 
 export interface DialogContextProps {
@@ -37,7 +37,7 @@ export const useDialog = () => {
 export const DialogProvider: FC<{ children: ReactNode; components: { name: string; Component: ComponentType<any> }[] }> = ({ children, components }) => {
   const queueRef = useRef(new PQueue({ concurrency: 1 }));
 
-  const [dialogs, setDialogs] = useStateAsync<DialogProps[]>(
+  const [dialogs, setDialogs] = useState<DialogProps[]>(
     components.map(({ name, Component }) => {
       const id = name.replace(/Modal$/, "").replace(/[A-Z]/g, (char, index) => (index !== 0 ? "-" : "") + char.toLowerCase());
       return { id, name, Component };
@@ -51,7 +51,7 @@ export const DialogProvider: FC<{ children: ReactNode; components: { name: strin
   const context = useRef<DialogContextProps>({
     open: (id, props) => {
       return queueRef.current.add(async () => {
-        await updateDialog(id, {
+        updateDialog(id, {
           ...props,
           mounted: true,
           opened: true
@@ -60,9 +60,9 @@ export const DialogProvider: FC<{ children: ReactNode; components: { name: strin
     },
     close: async (id) => {
       return queueRef.current.add(async () => {
-        await updateDialog(id, { opened: false });
+        updateDialog(id, { opened: false });
         await sleep();
-        await updateDialog(id, { mounted: false, opened: false });
+        updateDialog(id, { mounted: false, opened: false });
       });
     }
   });
@@ -89,7 +89,7 @@ export const DialogRouter: FC = () => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const href = queryString.stringifyUrl({ url: pathname, query: Object.fromEntries(searchParams) });
-  const prevHref = usePrevious(href) ?? queryString.parseUrl(href)?.url;
+  const prevHref = usePreviousValue(href) ?? queryString.parseUrl(href)?.url;
 
   useEffect(() => {
     queueRef.current.add(() =>

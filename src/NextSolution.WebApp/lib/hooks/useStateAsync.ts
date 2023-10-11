@@ -1,12 +1,27 @@
-// source: https://github.com/react-restart/hooks/blob/master/src/useStateAsync.ts
-
-import { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from "react";
+import React, { Dispatch, SetStateAction, useCallback, useEffect, useRef } from "react";
 
 type Updater<TState> = (state: TState) => TState;
 
-export type AsyncSetState<TState> = (stateUpdate: SetStateAction<TState>) => Promise<TState>;
+type AsyncSetState<TState> = (stateUpdate: React.SetStateAction<TState>) => Promise<TState>;
 
-export function useAsyncFromState<TState>([state, setState]: [TState, Dispatch<SetStateAction<TState>>]): [TState, AsyncSetState<TState>] {
+/**
+ * A hook that mirrors `useState` in function and API, expect that setState
+ * calls return a promise that resolves after the state has been set (in an effect).
+ *
+ * This is _similar_ to the second callback in classy setState calls, but fires later.
+ *
+ * ```ts
+ * const [counter, setState] = useStateAsync(1);
+ *
+ * const handleIncrement = async () => {
+ *   await setState(2);
+ *   doWorkRequiringCurrentState()
+ * }
+ * ```
+ *
+ * @param initialState initialize with some state value same as `useState`
+ */
+export function useStateAsync<TState>([state, setState]: [TState, Dispatch<SetStateAction<TState>>]): [TState, AsyncSetState<TState>] {
   const resolvers = useRef<((state: TState) => void)[]>([]);
 
   useEffect(() => {
@@ -46,8 +61,4 @@ export function useAsyncFromState<TState>([state, setState]: [TState, Dispatch<S
     [setState]
   );
   return [state, setStateAsync];
-}
-
-export function useStateAsync<TState>(initialState: TState | (() => TState)): [TState, AsyncSetState<TState>] {
-  return useAsyncFromState(useState(initialState));
 }

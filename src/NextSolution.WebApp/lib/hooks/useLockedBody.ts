@@ -1,6 +1,6 @@
 import { CSSProperties, MutableRefObject, useEffect, useState } from "react";
 
-import { useIsomorphicLayoutEffect } from "./useIsomorphicLayoutEffect";
+import { useIsomorphicEffect } from "./useIsomorphicEffect";
 
 type UseLockedBodyOutput = [boolean, (locked: boolean) => void];
 
@@ -12,7 +12,7 @@ export function useLockedBody(
   const [locked, setLocked] = useState(initialLocked);
 
   // Do the side effect before render
-  useIsomorphicLayoutEffect(() => {
+  useIsomorphicEffect(() => {
     if (!locked) {
       return;
     }
