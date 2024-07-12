@@ -12,6 +12,7 @@ using OpenAI = OpenAI_API.Chat;
 
 namespace NextSolution.Core.Services
 {
+
     public class ChatService : IChatService
     {
         private readonly IServiceProvider _serviceProvider;
