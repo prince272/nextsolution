@@ -13,20 +13,20 @@ using System.Threading.Tasks;
 namespace NextSolution.Server.Controllers
 {
     /// <summary>
-    /// Controller responsible for handling account operations.
+    /// Controller responsible for handling identity operations.
     /// </summary>
     [ApiController]
     [Route("[controller]")]
     [AllowAnonymous]
-    public class AccountsController : ControllerBase
+    public class IdentityController : ControllerBase
     {
         private readonly IIdentityService _identityService;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AccountsController"/> class.
+        /// Initializes a new instance of the <see cref="IdentityController"/> class.
         /// </summary>
         /// <param name="identityService">The identity service.</param>
-        public AccountsController(IIdentityService identityService)
+        public IdentityController(IIdentityService identityService)
         {
             _identityService = identityService ?? throw new ArgumentNullException(nameof(identityService));
         }
@@ -71,7 +71,7 @@ namespace NextSolution.Server.Controllers
         /// <param name="form">The new password form data.</param>
         /// <returns>The result of changing the password for the current user account.</returns>
         [Authorize]
-        [HttpPost("password")]
+        [HttpPost("password/change")]
         public async Task<IResult> ChangePassword([FromBody] ChangePasswordForm form)
         {
             return await _identityService.ChangePasswordAsync(form);
