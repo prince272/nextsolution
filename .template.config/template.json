@@ -1,10 +1,10 @@
 {
   "$schema": "http://json.schemastore.org/template",
   "author": "@prince272",
-  "classifications": [ "Web", "ASP.NET", "React.js", "Next.js" ],
+  "classifications": [ "Web", "ASP.NET" ],
   "identity": "NextSolution.Template",
-  "name": "Next Solution (ASP.NET API & Next.js)",
-  "description": "A starter solution template for creating a modern codebase for your upcoming application.",
+  "name": "Next Solution (ASP.NET API)",
+  "description": "A starter solution template for rapidly creating a modern, efficient codebase for your upcoming application.",
   "shortName": "nextsoln",
   "sourceName": "NextSolution",
   "preferNameDirectory": true,
@@ -19,14 +19,12 @@
         "**/*.filelist",
         "**/*.lock.json",
 
-        // User-specific files 
         "**/*.rsuser",
         "**/*.suo",
         "**/*.user",
         "**/*.userosscache",
         "**/*.sln.docstates",
 
-        // Build directories
         "**/[Dd]ebug/**",
         "**/[Dd]ebugPublic/**",
         "**/[Rr]elease/**",
@@ -43,13 +41,10 @@
         "**/[Ll]og/**",
         "**/[Ll]ogs/**",
 
-        // Template directories
         ".template.config/**/*",
 
-        // Visual Studio 2015/2017 cache/options directories
         "**/.vs/**",
 
-        // Git directories
         "**/.git/**",
         "**/*.gitattributes",
         "**/*.gitignore",
