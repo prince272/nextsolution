@@ -59,6 +59,11 @@ namespace NextSolution.Server.Providers.SwaggerGen
                 }
             });
 
+            options.CustomOperationIds(apiDesc =>
+            {
+                return apiDesc.TryGetMethodInfo(out MethodInfo methodInfo) ? methodInfo.Name : null;
+            });
+
             var xmlFilePath = Path.Combine(AppContext.BaseDirectory, $"{assembly.GetName().Name}.xml");
             if (File.Exists(xmlFilePath)) options.IncludeXmlComments(xmlFilePath);
         }

@@ -37,7 +37,7 @@ namespace NextSolution.Server.Controllers
         /// <param name="form">The account creation form data.</param>
         /// <returns>The result of the account creation.</returns>
         [HttpPost("create")]
-        public async Task<IResult> Create([FromBody] CreateAccountForm form)
+        public async Task<IResult> CreateAccount([FromBody] CreateAccountForm form)
         {
             return await _identityService.CreateAccountAsync(form);
         }
@@ -48,7 +48,7 @@ namespace NextSolution.Server.Controllers
         /// <param name="form">The confirmation form data.</param>
         /// <returns>The result of confirming the existing user account.</returns>
         [HttpPost("confirm")]
-        public async Task<IResult> Confirm([FromBody] ConfirmAccountForm form)
+        public async Task<IResult> ConfirmAccount([FromBody] ConfirmAccountForm form)
         {
             return await _identityService.ConfirmAccountAsync(form);
         }
@@ -60,7 +60,7 @@ namespace NextSolution.Server.Controllers
         /// <returns>The result of changing the current user account.</returns>
         [Authorize]
         [HttpPost("change")]
-        public async Task<IResult> Change([FromBody] ChangeAccountForm form)
+        public async Task<IResult> ChangeAccount([FromBody] ChangeAccountForm form)
         {
             return await _identityService.ChangeAccountAsync(form);
         }
