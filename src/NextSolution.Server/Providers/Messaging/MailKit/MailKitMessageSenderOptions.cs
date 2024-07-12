@@ -1,4 +1,4 @@
-﻿namespace NextSolution.Server.Providers.Messaging.Arkesel
+﻿namespace NextSolution.Server.Providers.Messaging.MailKit
 {
     public class MailKitMessageSenderOptions
     {

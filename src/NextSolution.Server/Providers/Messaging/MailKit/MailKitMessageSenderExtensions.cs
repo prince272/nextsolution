@@ -1,7 +1,6 @@
-﻿using NextSolution.Server.Providers.Messaging.MailKit;
-using Microsoft.Extensions.DependencyInjection.Extensions;
+﻿using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace NextSolution.Server.Providers.Messaging.Arkesel
+namespace NextSolution.Server.Providers.Messaging.MailKit
 {
     public static class MailKitMessageSenderExtensions
     {

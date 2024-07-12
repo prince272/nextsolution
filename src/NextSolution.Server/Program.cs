@@ -23,6 +23,9 @@ using System.Security.Claims;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
+using NextSolution.Server.Providers.Messaging.MailKit;
+using NextSolution.Server.Middlewares;
+using NextSolution.Server.Extensions;
 try
 {
     // Set the default culture info to "en-GH"
@@ -178,6 +181,10 @@ try
     builder.Services.AddSwaggerGen();
 
     var app = builder.Build();
+
+    await app.RunMigrationsAsync<ApplicationDbContext>();
+
+    app.UseDbTransaction<ApplicationDbContext>();
 
     app.UseStatusCodePagesWithReExecute("/errors/{0}");
     app.UseExceptionHandler(new ExceptionHandlerOptions()
