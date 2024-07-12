@@ -182,7 +182,7 @@ try
 
     var app = builder.Build();
 
-    await app.RunMigrationsAsync<ApplicationDbContext>();
+    await app.RunDbMigrationsAsync<ApplicationDbContext>();
 
     app.UseDbTransaction<ApplicationDbContext>();
 
