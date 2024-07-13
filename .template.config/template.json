@@ -54,13 +54,31 @@
     }
   ],
   "symbols": {
-    "DefaultDatabaseId": {
+    "DatabaseIdGenerated": {
       "type": "generated",
       "generator": "guid",
-      "replaces": "{{DefaultDatabaseId}}",
+      "replaces": "{{DatabaseIdGenerated}}",
       "parameters": {
         "format": "N"
       }
+    },
+    "HttpPortGenerated": {
+      "type": "generated",
+      "generator": "port",
+      "parameters": {
+        "low": 5000,
+        "high": 5400
+      },
+       "replaces": "5282"
+    },
+    "HttpsPortGenerated": {
+      "type": "generated",
+      "generator": "port",
+      "parameters": {
+        "low": 7000,
+        "high": 7400
+      },
+       "replaces": "7135"
     }
   }
 }
