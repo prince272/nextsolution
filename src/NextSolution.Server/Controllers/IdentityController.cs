@@ -180,9 +180,9 @@ namespace NextSolution.Server.Controllers
         /// <returns>The result of getting the current user's profile.</returns>
         [Authorize]
         [HttpGet("profile")]
-        public async Task<Results<UnauthorizedHttpResult, Ok<UserProfileModel>>> GetCurrentProfile()
+        public async Task<Results<UnauthorizedHttpResult, Ok<UserProfileModel>>> GetProfile()
         {
-            return await _identityService.GetCurrentProfileAsync();
+            return await _identityService.GetProfileAsync();
         }
     }
 }

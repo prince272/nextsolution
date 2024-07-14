@@ -446,7 +446,7 @@ namespace NextSolution.Server.Services
             return TypedResults.Ok();
         }
 
-        public async Task<Results<UnauthorizedHttpResult, Ok<UserProfileModel>>> GetCurrentProfileAsync()
+        public async Task<Results<UnauthorizedHttpResult, Ok<UserProfileModel>>> GetProfileAsync()
         {
             var currentUserId = (_httpContextAccessor.HttpContext != null ? _userManager.GetUserId(_httpContextAccessor.HttpContext.User) : null);
             var currentUser = currentUserId != null ? await _userManager.FindByIdAsync(currentUserId) : null;
@@ -556,7 +556,7 @@ namespace NextSolution.Server.Services
 
         Task<Results<ValidationProblem, Ok>> SignOutAsync(SignOutForm form);
 
-        Task<Results<UnauthorizedHttpResult, Ok<UserProfileModel>>> GetCurrentProfileAsync();
+        Task<Results<UnauthorizedHttpResult, Ok<UserProfileModel>>> GetProfileAsync();
     }
 
     public enum IdentityErrorReason
