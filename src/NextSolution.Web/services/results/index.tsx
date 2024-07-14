@@ -47,12 +47,10 @@ export class Result {
             return new Problem(response.status, response.statusText, response.data) as T;
           }
         }
-      }
-      else if (isAxiosError(error)) {
-        return new Problem(-1, "NetworkError", { title: "Unable to connect to the server", detail: "Please check your internet connection and try again.",  }) as T;
-      }
-      else {
-        return new Problem(-999, "UnknownError", { title: "An unknown error occurred", detail: "Please try again later.",  }) as T;
+      } else if (isAxiosError(error)) {
+        return new Problem(-1, "NetworkError", { title: "Unable to connect to the server", detail: "Please check your internet connection and try again." }) as T;
+      } else {
+        return new Problem(-999, "UnknownError", { title: "An unknown error occurred", detail: "Please try again later." }) as T;
       }
     }
   }
@@ -100,31 +98,19 @@ export class ValidationProblem<T extends Record<string, any> = any> extends BadR
 }
 
 export class NotFound extends Problem {
-  constructor(
-    statusCode: number,
-    status: string,
-    data: ProblemType
-  ) {
+  constructor(statusCode: number, status: string, data: ProblemType) {
     super(statusCode, status, data);
   }
 }
 
 export class Unauthorized extends Problem {
-  constructor(
-    statusCode: number,
-    status: string,
-    problem: ProblemType
-  ) {
+  constructor(statusCode: number, status: string, problem: ProblemType) {
     super(statusCode, status, problem);
   }
 }
 
 export class Forbidden extends Problem {
-  constructor(
-    statusCode: number,
-    status: string,
-    problem: ProblemType
-  ) {
+  constructor(statusCode: number, status: string, problem: ProblemType) {
     super(statusCode, status, problem);
   }
 }
