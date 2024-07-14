@@ -64,6 +64,11 @@ namespace NextSolution.Server.Providers.SwaggerGen
                 return apiDesc.TryGetMethodInfo(out MethodInfo methodInfo) ? methodInfo.Name : null;
             });
 
+            // .NET 7 introduce Typed Http Results, but Swashbuckle don't generate the Open Api Response from this types.
+            // This filter will generate the Open Api Response for Typed Http Results.
+            // source: https://github.com/vernou/Vernou.Swashbuckle.HttpResultsAdapter
+            options.OperationFilter<HttpResultsOperationFilter>();
+
             var xmlFilePath = Path.Combine(AppContext.BaseDirectory, $"{assembly.GetName().Name}.xml");
             if (File.Exists(xmlFilePath)) options.IncludeXmlComments(xmlFilePath);
         }

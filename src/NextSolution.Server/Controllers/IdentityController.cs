@@ -37,7 +37,7 @@ namespace NextSolution.Server.Controllers
         /// <param name="form">The account creation form data.</param>
         /// <returns>The result of the account creation.</returns>
         [HttpPost("create")]
-        public async Task<IResult> CreateAccount([FromBody] CreateAccountForm form)
+        public async Task<Results<ValidationProblem, Ok>> CreateAccount([FromBody] CreateAccountForm form)
         {
             return await _identityService.CreateAccountAsync(form);
         }
@@ -48,7 +48,7 @@ namespace NextSolution.Server.Controllers
         /// <param name="form">The confirmation form data.</param>
         /// <returns>The result of confirming the existing user account.</returns>
         [HttpPost("confirm")]
-        public async Task<IResult> ConfirmAccount([FromBody] ConfirmAccountForm form)
+        public async Task<Results<ValidationProblem, Ok>> ConfirmAccount([FromBody] ConfirmAccountForm form)
         {
             return await _identityService.ConfirmAccountAsync(form);
         }
@@ -60,7 +60,7 @@ namespace NextSolution.Server.Controllers
         /// <returns>The result of changing the current user account.</returns>
         [Authorize]
         [HttpPost("change")]
-        public async Task<IResult> ChangeAccount([FromBody] ChangeAccountForm form)
+        public async Task<Results<ValidationProblem, UnauthorizedHttpResult, Ok>> ChangeAccount([FromBody] ChangeAccountForm form)
         {
             return await _identityService.ChangeAccountAsync(form);
         }
@@ -72,7 +72,7 @@ namespace NextSolution.Server.Controllers
         /// <returns>The result of changing the password for the current user account.</returns>
         [Authorize]
         [HttpPost("password/change")]
-        public async Task<IResult> ChangePassword([FromBody] ChangePasswordForm form)
+        public async Task<Results<ValidationProblem, UnauthorizedHttpResult, Ok>> ChangePassword([FromBody] ChangePasswordForm form)
         {
             return await _identityService.ChangePasswordAsync(form);
         }
@@ -83,7 +83,7 @@ namespace NextSolution.Server.Controllers
         /// <param name="form">The new password form data.</param>
         /// <returns>The result of resetting the password for the user account.</returns>
         [HttpPost("password/reset")]
-        public async Task<IResult> ResetPassword([FromBody] ResetPasswordForm form)
+        public async Task<Results<ValidationProblem, Ok>> ResetPassword([FromBody] ResetPasswordForm form)
         {
             return await _identityService.ResetPasswordAsync(form);
         }
@@ -94,7 +94,7 @@ namespace NextSolution.Server.Controllers
         /// <param name="form">The sign-in form data.</param>
         /// <returns>The result of signing into an existing user account.</returns>
         [HttpPost("signin")]
-        public async Task<IResult> SignIn([FromBody] SignInForm form)
+        public async Task<Results<ValidationProblem, Ok<UserSessionModel>>> SignIn([FromBody] SignInForm form)
         {
             return await _identityService.SignInAsync(form);
         }
@@ -109,7 +109,7 @@ namespace NextSolution.Server.Controllers
         /// <param name="origin">The origin URL from which the sign-in request was made.</param>
         /// <returns>The result of the sign-in request.</returns>
         [HttpGet("signin/{provider}")]
-        public IResult SignInWithGet([FromServices] SignInManager<User> signInManager, [FromServices] IConfiguration configuration, [FromRoute(Name = "provider")] string providerValue, [FromQuery] string origin)
+        public Results<ValidationProblem, ChallengeHttpResult> SignInWithGet([FromServices] SignInManager<User> signInManager, [FromServices] IConfiguration configuration, [FromRoute(Name = "provider")] string providerValue, [FromQuery] string origin)
         {
             if (!Enum.TryParse<SignInProvider>(providerValue, ignoreCase: true, out var provider))
                 return TypedResults.ValidationProblem(new Dictionary<string, string[]>(), title: $"The sign-in provider specified is invalid. Supported providers: {Enum.GetValues<SignInProvider>().Humanize()}.");
@@ -133,7 +133,7 @@ namespace NextSolution.Server.Controllers
         /// <param name="providerValue">The name of the external sign-in provider.</param>
         /// <returns>The result of the sign-in process.</returns>
         [HttpPost("signin/{provider}")]
-        public async Task<IResult> SignInWithPost([FromServices] SignInManager<User> signInManager, [FromRoute(Name = "provider")] string providerValue)
+        public async Task<Results<ValidationProblem, Ok<UserSessionModel>>> SignInWithPost([FromServices] SignInManager<User> signInManager, [FromRoute(Name = "provider")] string providerValue)
         {
             if (!Enum.TryParse<SignInProvider>(providerValue, ignoreCase: true, out var provider))
                 return TypedResults.ValidationProblem(new Dictionary<string, string[]>(), title: $"The sign-in provider specified is invalid. Supported providers: {Enum.GetValues<SignInProvider>().Humanize()}.");
@@ -157,7 +157,7 @@ namespace NextSolution.Server.Controllers
         /// <param name="form">The refresh token form data.</param>
         /// <returns>The result of refreshing the current user's access token.</returns>
         [HttpPost("refresh-token")]
-        public async Task<IResult> RefreshToken([FromBody] RefreshTokenForm form)
+        public async Task<Results<ValidationProblem, Ok<UserSessionModel>>> RefreshToken([FromBody] RefreshTokenForm form)
         {
             return await _identityService.RefreshTokenAsync(form);
         }
@@ -169,7 +169,7 @@ namespace NextSolution.Server.Controllers
         /// <returns>The result of signing out the current user.</returns>
         [Authorize]
         [HttpPost("signout")]
-        public async Task<IResult> SignOut([FromBody] SignOutForm form)
+        public async Task<Results<ValidationProblem, Ok>> SignOut([FromBody] SignOutForm form)
         {
             return await _identityService.SignOutAsync(form);
         }
@@ -180,7 +180,7 @@ namespace NextSolution.Server.Controllers
         /// <returns>The result of getting the current user's profile.</returns>
         [Authorize]
         [HttpGet("profile")]
-        public async Task<IResult> GetCurrentProfile()
+        public async Task<Results<UnauthorizedHttpResult, Ok<UserProfileModel>>> GetCurrentProfile()
         {
             return await _identityService.GetCurrentProfileAsync();
         }
