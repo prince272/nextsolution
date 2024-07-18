@@ -1,7 +1,7 @@
 {
   "$schema": "http://json.schemastore.org/template",
   "author": "@prince272",
-  "classifications": [ "Web", "ASP.NET" ],
+  "classifications": ["Web", "ASP.NET"],
   "identity": "NextSolution.Template",
   "name": "Next Solution (ASP.NET API)",
   "description": "A starter solution template for rapidly creating a modern, efficient codebase for your upcoming application.",
@@ -15,7 +15,6 @@
   "sources": [
     {
       "exclude": [
-
         "**/*.filelist",
         "**/*.lock.json",
 
@@ -54,31 +53,45 @@
     }
   ],
   "symbols": {
-    "DatabaseIdGenerated": {
+    "applicationId": {
       "type": "generated",
       "generator": "guid",
-      "replaces": "{{DatabaseIdGenerated}}",
       "parameters": {
-        "format": "N"
-      }
+        "defaultFormat": "N"
+      },
+      "replaces": "1A114D3A52AA408FACFE89A437A9BCC4"
     },
-    "HttpPortGenerated": {
+    "httpPort": {
       "type": "generated",
       "generator": "port",
       "parameters": {
         "low": 5000,
         "high": 5400
       },
-       "replaces": "5282"
+      "replaces": "5282"
     },
-    "HttpsPortGenerated": {
+    "httpsPort": {
       "type": "generated",
       "generator": "port",
       "parameters": {
         "low": 7000,
         "high": 7400
       },
-       "replaces": "7135"
+      "replaces": "7135"
+    }
+  },
+  "forms": {
+    "kebab": {
+      "identifier": "replace",
+      "pattern": "(?<!^)([A-Z])|[\\s_]+",
+      "replacement": "-$1"
+    },
+    "kebabCase": {
+      "identifier": "chain",
+      "steps": ["kebab", "lowerCase"]
+    },
+    "lowerCase": {
+      "identifier": "lowerCase"
     }
   }
 }
