@@ -2,7 +2,6 @@ using NextSolution.Server.Data;
 using NextSolution.Server.Data.Entities.Identity;
 using NextSolution.Server.Helpers;
 using NextSolution.Server.Providers.JwtBearer;
-using NextSolution.Server.Providers.Messaging.Arkesel;
 using NextSolution.Server.Providers.SwaggerGen;
 using NextSolution.Server.Providers.Validation;
 using NextSolution.Server.Providers.ViewRender;
@@ -171,10 +170,6 @@ try
     builder.Services.AddAutoMapper(assemblies);
     builder.Services.AddFluentValidationProvider(assemblies);
     builder.Services.AddRazorViewRenderer(assemblies);
-    builder.Services.AddArkeselMessageSender(options =>
-    {
-        builder.Configuration.GetRequiredSection("Messaging:Arkesel").Bind(options);
-    });
     builder.Services.AddMailKitMessageSender();
 
     // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
