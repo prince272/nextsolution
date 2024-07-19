@@ -1,8 +1,8 @@
-import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
+import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { merge } from "lodash";
-import { useEffect, useState } from "react";
+import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
 
 export interface AppearanceState {
   theme: "light" | "dark" | "system";
@@ -26,8 +26,8 @@ const createAppStore = (initialState?: Partial<AppState>) => {
   const defaultState: Partial<AppState> = {
     appearance: {
       theme: "dark", // Default theme
-      themeVersion: 3, // Default theme version
-    },
+      themeVersion: 3 // Default theme version
+    }
   };
 
   const predefinedState = merge({}, defaultState, initialState) as AppState;
@@ -42,26 +42,26 @@ const createAppStore = (initialState?: Partial<AppState>) => {
             set((state) => ({
               appearance: {
                 ...state.appearance,
-                theme,
-              },
+                theme
+              }
             })),
           setThemeVersion: (themeVersion) =>
             set((state) => ({
               appearance: {
                 ...state.appearance,
-                themeVersion,
-              },
-            })),
-        },
+                themeVersion
+              }
+            }))
+        }
       }),
       {
         name: "NextSolution.Storage-1A114D3A52AA408FACFE89A437A9BCC4",
         storage: createJSONStorage(() => AsyncStorage),
         // zustand persist - actions inside nested object are undefined on rehydration
         // fix: https://github.com/pmndrs/zustand/issues/457
-        merge: (persistedState, currentState) => { 
+        merge: (persistedState, currentState) => {
           return merge({}, currentState, persistedState);
-      } 
+        }
       }
     )
   );
@@ -75,13 +75,9 @@ export const useAppHydration = () => {
   useEffect(() => {
     // Note: This is just in case you want to take into account manual rehydration.
     // You can remove the following line if you don't need it.
-    const unsubHydrate = useAppStore.persist.onHydrate(() =>
-      setHydrated(false)
-    );
+    const unsubHydrate = useAppStore.persist.onHydrate(() => setHydrated(false));
 
-    const unsubFinishHydration = useAppStore.persist.onFinishHydration(() =>
-      setHydrated(true)
-    );
+    const unsubFinishHydration = useAppStore.persist.onFinishHydration(() => setHydrated(true));
 
     setHydrated(useAppStore.persist.hasHydrated());
 

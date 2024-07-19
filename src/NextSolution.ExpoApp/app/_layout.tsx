@@ -1,26 +1,19 @@
+import { useEffect, useMemo, useState } from "react";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { DarkTheme as NativeNavigationDarkTheme, DefaultTheme as NativeNavigationLightTheme, ThemeProvider as NativeNavigationThemeProvider } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import { Slot } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect, useMemo, useState } from "react";
-import {
-  ThemeProvider as NativeNavigationThemeProvider,
-  DefaultTheme as NativeNavigationLightTheme,
-  DarkTheme as NativeNavigationDarkTheme,
-} from "@react-navigation/native";
-import {
-  MD3DarkTheme,
-  MD3LightTheme,
-  PaperProvider,
-  adaptNavigationTheme,
-} from "react-native-paper";
+import { adaptNavigationTheme, MD3DarkTheme, MD3LightTheme, PaperProvider } from "react-native-paper";
+
 import "react-native-reanimated";
-import { Appearance } from "react-native";
+
 import { useAppStore } from "@/stores";
+import { Appearance } from "react-native";
 
 export {
   // Catch any errors thrown by the Layout component.
-  ErrorBoundary,
+  ErrorBoundary
 } from "expo-router";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -30,11 +23,10 @@ export default function RootLayout() {
   const [systemTheme, setSystemTheme] = useState(Appearance.getColorScheme());
   const userTheme = useAppStore((state) => state.appearance.theme);
 
-  const { LightTheme: NavigationLightTheme, DarkTheme: NavigationDarkTheme } =
-    adaptNavigationTheme({
-      reactNavigationLight: NativeNavigationLightTheme,
-      reactNavigationDark: NativeNavigationDarkTheme,
-    });
+  const { LightTheme: NavigationLightTheme, DarkTheme: NavigationDarkTheme } = adaptNavigationTheme({
+    reactNavigationLight: NativeNavigationLightTheme,
+    reactNavigationDark: NativeNavigationDarkTheme
+  });
 
   const themeConfig = useMemo(
     () =>
@@ -44,13 +36,13 @@ export default function RootLayout() {
             ...NavigationDarkTheme,
             colors: {
               ...MD3DarkTheme.colors,
-              ...NavigationDarkTheme.colors,
-            },
+              ...NavigationDarkTheme.colors
+            }
           }
         : {
             ...MD3LightTheme,
             ...NavigationLightTheme,
-            colors: { ...MD3LightTheme.colors, ...NavigationLightTheme.colors },
+            colors: { ...MD3LightTheme.colors, ...NavigationLightTheme.colors }
           },
     [systemTheme, userTheme]
   );
@@ -64,7 +56,7 @@ export default function RootLayout() {
 
   const [loaded, error] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
-    ...FontAwesome.font,
+    ...FontAwesome.font
   });
 
   // Expo Router uses Error Boundaries to catch errors in the navigation tree.
