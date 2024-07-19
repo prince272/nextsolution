@@ -25,7 +25,7 @@ export interface AppStore extends AppState {
 const createAppStore = (initialState?: Partial<AppState>) => {
   const defaultState: Partial<AppState> = {
     appearance: {
-      theme: "light", // Default theme
+      theme: "dark", // Default theme
       themeVersion: 3, // Default theme version
     },
   };
@@ -57,6 +57,11 @@ const createAppStore = (initialState?: Partial<AppState>) => {
       {
         name: "NextSolution.Storage-1A114D3A52AA408FACFE89A437A9BCC4",
         storage: createJSONStorage(() => AsyncStorage),
+        // zustand persist - actions inside nested object are undefined on rehydration
+        // fix: https://github.com/pmndrs/zustand/issues/457
+        merge: (persistedState, currentState) => { 
+          return merge({}, currentState, persistedState);
+      } 
       }
     )
   );

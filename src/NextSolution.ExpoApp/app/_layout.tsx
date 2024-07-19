@@ -16,8 +16,7 @@ import {
 } from "react-native-paper";
 import "react-native-reanimated";
 import { Appearance } from "react-native";
-import { useAppStore } from "@/app-store";
-import { useStore } from "@/hooks";
+import { useAppStore } from "@/stores";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -37,7 +36,7 @@ export default function RootLayout() {
       reactNavigationDark: NativeNavigationDarkTheme,
     });
 
-  const themeConfiguration = useMemo(
+  const themeConfig = useMemo(
     () =>
       (userTheme === "system" ? systemTheme : userTheme) === "dark"
         ? {
@@ -84,8 +83,8 @@ export default function RootLayout() {
   }
 
   return (
-    <PaperProvider theme={themeConfiguration}>
-      <NativeNavigationThemeProvider value={themeConfiguration}>
+    <PaperProvider theme={themeConfig}>
+      <NativeNavigationThemeProvider value={themeConfig}>
         <Slot />
       </NativeNavigationThemeProvider>
     </PaperProvider>
