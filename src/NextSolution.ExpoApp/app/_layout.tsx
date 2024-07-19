@@ -2,7 +2,7 @@ import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useFonts } from "expo-font";
 import { Slot } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ThemeProvider as NativeNavigationThemeProvider,
   DefaultTheme as NativeNavigationLightTheme,
@@ -15,6 +15,9 @@ import {
   adaptNavigationTheme,
 } from "react-native-paper";
 import "react-native-reanimated";
+import { Appearance } from "react-native";
+import { useAppStore } from "@/app-store";
+import { useStore } from "@/hooks";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -25,7 +28,8 @@ export {
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const colorScheme = 'dark';
+  const [systemTheme, setSystemTheme] = useState(Appearance.getColorScheme());
+  const userTheme = useAppStore((state) => state.appearance.theme);
 
   const { LightTheme: NavigationLightTheme, DarkTheme: NavigationDarkTheme } =
     adaptNavigationTheme({
@@ -33,21 +37,31 @@ export default function RootLayout() {
       reactNavigationDark: NativeNavigationDarkTheme,
     });
 
-  const configuredTheme =
-    colorScheme === "dark"
-      ? {
-          ...MD3DarkTheme,
-          ...NavigationDarkTheme,
-          colors: {
-            ...MD3DarkTheme.colors,
-            ...NavigationDarkTheme.colors,
+  const themeConfiguration = useMemo(
+    () =>
+      (userTheme === "system" ? systemTheme : userTheme) === "dark"
+        ? {
+            ...MD3DarkTheme,
+            ...NavigationDarkTheme,
+            colors: {
+              ...MD3DarkTheme.colors,
+              ...NavigationDarkTheme.colors,
+            },
+          }
+        : {
+            ...MD3LightTheme,
+            ...NavigationLightTheme,
+            colors: { ...MD3LightTheme.colors, ...NavigationLightTheme.colors },
           },
-        }
-      : {
-          ...MD3LightTheme,
-          ...NavigationLightTheme,
-          colors: { ...MD3LightTheme.colors, ...NavigationLightTheme.colors },
-        };
+    [systemTheme, userTheme]
+  );
+
+  useEffect(() => {
+    const subscription = Appearance.addChangeListener(({ colorScheme }) => {
+      setSystemTheme(colorScheme);
+    });
+    return () => subscription.remove();
+  }, []);
 
   const [loaded, error] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
@@ -70,8 +84,8 @@ export default function RootLayout() {
   }
 
   return (
-    <PaperProvider theme={configuredTheme}>
-      <NativeNavigationThemeProvider value={configuredTheme}>
+    <PaperProvider theme={themeConfiguration}>
+      <NativeNavigationThemeProvider value={themeConfiguration}>
         <Slot />
       </NativeNavigationThemeProvider>
     </PaperProvider>
