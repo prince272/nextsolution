@@ -8,7 +8,7 @@ import { adaptNavigationTheme, MD3DarkTheme, MD3LightTheme, PaperProvider } from
 
 import "react-native-reanimated";
 
-import { useAppStore } from "@/stores";
+import { useHydration, useAppStore } from "@/stores";
 import { Appearance } from "react-native";
 
 export {
@@ -54,6 +54,8 @@ export default function RootLayout() {
     return () => subscription.remove();
   }, []);
 
+  const hydrated = useHydration();
+
   const [loaded, error] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
     ...FontAwesome.font
@@ -65,12 +67,12 @@ export default function RootLayout() {
   }, [error]);
 
   useEffect(() => {
-    if (loaded) {
+    if (loaded && hydrated) {
       SplashScreen.hideAsync();
     }
-  }, [loaded]);
+  }, [loaded, hydrated]);
 
-  if (!loaded) {
+  if (!loaded || !hydrated) {
     return null;
   }
 

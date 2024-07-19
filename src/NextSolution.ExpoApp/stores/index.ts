@@ -69,7 +69,7 @@ const createAppStore = (initialState?: Partial<AppState>) => {
 
 export const useAppStore = createAppStore();
 
-export const useAppHydration = () => {
+export const useHydration = () => {
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {

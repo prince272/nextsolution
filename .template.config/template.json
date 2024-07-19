@@ -53,7 +53,13 @@
     }
   ],
   "symbols": {
-    "applicationId": {
+    "slug": {
+      "type": "derived",
+      "valueSource": "name",
+      "valueTransform": "kebabCase",
+      "replaces": "next-solution"
+    },
+    "key": {
       "type": "generated",
       "generator": "guid",
       "parameters": {
