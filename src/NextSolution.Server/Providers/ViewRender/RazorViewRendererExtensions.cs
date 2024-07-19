@@ -5,45 +5,51 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.ObjectPool;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace NextSolution.Server.Providers.ViewRender
 {
     public static class RazorViewRendererExtensions
     {
-        public static IServiceCollection AddRazorViewRenderer(this IServiceCollection services, Action<RazorViewRendererOptions> options)
+        public static IServiceCollection AddRazorViewRenderer(this IServiceCollection services, IEnumerable<Assembly> assemblies, Action<RazorViewRendererOptions> options)
         {
+            if (services == null) throw new ArgumentNullException(nameof(services));
+            if (options == null) throw new ArgumentNullException(nameof(options));
+            if (assemblies == null) throw new ArgumentNullException(nameof(assemblies));
+
             services.Configure(options);
-            services.AddRazorViewRenderer();
+            services.AddRazorViewRenderer(assemblies);
             return services;
         }
 
-        public static IServiceCollection AddRazorViewRenderer(this IServiceCollection services)
+        public static IServiceCollection AddRazorViewRenderer(this IServiceCollection services, Assembly assembly, Action<RazorViewRendererOptions> options)
         {
-
             if (services == null) throw new ArgumentNullException(nameof(services));
+            if (options == null) throw new ArgumentNullException(nameof(options));
+            if (assembly == null) throw new ArgumentNullException(nameof(assembly));
 
-            var identifier = typeof(RazorViewRenderer).Assembly.GetName().Name!;
+            return services.AddRazorViewRenderer(new[] { assembly }, options);
+        }
 
-            // source: https://docs.microsoft.com/en-us/dotnet/core/deploying/single-file#api-incompatibility
+        public static IServiceCollection AddRazorViewRenderer(this IServiceCollection services, IEnumerable<Assembly> assemblies)
+        {
+            if (services == null) throw new ArgumentNullException(nameof(services));
+            if (assemblies == null) throw new ArgumentNullException(nameof(assemblies));
+
+            var mainAssembly = typeof(RazorViewRenderer).Assembly;
+            var mainAssemblyName = mainAssembly.GetName().Name!;
             var assembliesBaseDirectory = AppContext.BaseDirectory;
-
-            var mainExecutableDirectory = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule?.FileName);
 
             var webRootName = "wwwroot";
             var webRootDirectory = Directory.Exists(Path.Combine(assembliesBaseDirectory, webRootName)) ? Path.Combine(assembliesBaseDirectory, webRootName) : assembliesBaseDirectory;
 
-            Debug.WriteLine($"Assemblies Base Directory: {assembliesBaseDirectory}");
-            Debug.WriteLine($"Main Executable Directory: {mainExecutableDirectory}");
-            Debug.WriteLine($"Web Root Directory: {webRootDirectory}");
-
             var fileProvider = new PhysicalFileProvider(assembliesBaseDirectory);
 
-            // MVC, API applications will have this object already.
             if (!services.Any(_ => _.ServiceType == typeof(IWebHostEnvironment)))
             {
                 services.TryAddSingleton<IWebHostEnvironment>(new RazorViewHostingEnvironment
                 {
-                    ApplicationName = identifier,
+                    ApplicationName = mainAssemblyName,
                     ContentRootPath = assembliesBaseDirectory,
                     ContentRootFileProvider = fileProvider,
                     WebRootPath = webRootDirectory,
@@ -52,43 +58,45 @@ namespace NextSolution.Server.Providers.ViewRender
             }
 
             services.TryAddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
-            services.TryAddSingleton<DiagnosticSource>(new DiagnosticListener(identifier));
-            services.TryAddSingleton(new DiagnosticListener(identifier));
+            services.TryAddSingleton<DiagnosticSource>(new DiagnosticListener(mainAssemblyName));
+            services.TryAddSingleton(new DiagnosticListener(mainAssemblyName));
             services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
             services.TryAddSingleton<ConsolidatedAssemblyApplicationPartFactory>();
-            services.AddLogging();
             services.AddHttpContextAccessor();
             var builder = services.AddMvcCore().AddRazorViewEngine();
 
             builder.ConfigureApplicationPartManager(manager =>
             {
-                var applicationParts = new List<ApplicationPart>();
+                assemblies ??= new Assembly[0];
+                assemblies = assemblies.Concat(new[] { mainAssembly }).ToArray();
 
-                foreach (var rclAssembly in AssemblyHelper.GetRclAssemblies())
+                foreach (var assembly in assemblies)
                 {
-                    var applicationPartFactory = ApplicationPartFactory.GetApplicationPartFactory(rclAssembly);
-                    applicationParts.AddRange(applicationPartFactory.GetApplicationParts(rclAssembly));
-                }
+                    var applicationPartFactory = ApplicationPartFactory.GetApplicationPartFactory(assembly);
+                    var applicationParts = applicationPartFactory.GetApplicationParts(assembly);
 
-                Debug.WriteLine($"Found {applicationParts.Count} application parts");
+                    foreach (var applicationPart in applicationParts)
+                    {
+                        var applicationPartExists = manager.ApplicationParts.Any(x => x.GetType() == applicationPart.GetType() && x.Name == applicationPart.Name);
 
-                foreach (var applicationPart in applicationParts)
-                {
-                    // For MVC projects, application parts are already added by the framework
-                    if (!manager.ApplicationParts.Any(x => x.GetType() == applicationPart.GetType() && x.Name == applicationPart.Name))
-                    {
-                        manager.ApplicationParts.Add(applicationPart);
-                        Debug.WriteLine($"Application part added ({applicationPart.Name} {applicationPart.GetType().Name})");
-                    }
-                    else
-                    {
-                        Debug.WriteLine($"Application part already added {applicationPart.Name} ({applicationPart.GetType().Name})");
+                        if (!applicationPartExists)
+                        {
+                            manager.ApplicationParts.Add(applicationPart);
+                        }
                     }
                 }
             });
 
             services.TryAddTransient<IViewRenderer, RazorViewRenderer>();
             return services;
+        }
+
+        public static IServiceCollection AddRazorViewRenderer(this IServiceCollection services, Assembly assembly)
+        {
+            if (services == null) throw new ArgumentNullException(nameof(services));
+            if (assembly == null) throw new ArgumentNullException(nameof(assembly));
+
+            return services.AddRazorViewRenderer(new[] { assembly });
         }
     }
 

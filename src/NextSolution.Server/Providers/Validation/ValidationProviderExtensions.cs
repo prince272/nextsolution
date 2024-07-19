@@ -1,14 +1,23 @@
 ﻿using NextSolution.Server.Helpers;
 using FluentValidation;
 using Humanizer;
+using System.Reflection;
 
 namespace NextSolution.Server.Providers.Validation
 {
     public static class ValidationProviderExtensions
     {
-        public static IServiceCollection AddFluentValidationProvider(this IServiceCollection services)
+        public static IServiceCollection AddFluentValidationProvider(this IServiceCollection services, Assembly assembly)
         {
             if (services == null) throw new ArgumentNullException(nameof(services));
+            if (assembly == null) throw new ArgumentNullException(nameof(assembly));
+            return services.AddFluentValidationProvider(new[] { assembly });
+        }
+
+        public static IServiceCollection AddFluentValidationProvider(this IServiceCollection services, IEnumerable<Assembly> assemblies)
+        {
+            if (services == null) throw new ArgumentNullException(nameof(services));
+            if (assemblies == null) throw new ArgumentNullException(nameof(assemblies));
 
             services.AddSingleton<IValidationProvider, ValidationProvider>();
 
@@ -36,7 +45,7 @@ namespace NextSolution.Server.Providers.Validation
                 return propertyName;
             };
 
-            var validatorTypes = AssemblyHelper.GetAppAssemblies().SelectMany(_ => _.DefinedTypes).Select(_ => _.AsType()).Where(type => type.IsClass && !type.IsAbstract && !type.IsGenericType && type.IsCompatibleWith(typeof(IValidator<>))).ToArray();
+            var validatorTypes = assemblies.SelectMany(_ => _.DefinedTypes).Select(_ => _.AsType()).Where(type => type.IsClass && !type.IsAbstract && !type.IsGenericType && type.IsCompatibleWith(typeof(IValidator<>))).ToArray();
 
             foreach (var concreteType in validatorTypes)
             {

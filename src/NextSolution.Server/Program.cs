@@ -28,6 +28,8 @@ using NextSolution.Server.Middlewares;
 using NextSolution.Server.Extensions;
 try
 {
+    var assemblies = AssemblyHelper.GetAppAssemblies().ToArray();
+
     // Set the default culture info to "en-GH"
     var defaultCultureInfo = new CultureInfo("en-GH");
     CultureInfo.DefaultThreadCurrentCulture = defaultCultureInfo;
@@ -166,9 +168,9 @@ try
     builder.Services.AddScoped<IIdentityService, IdentityService>();
 
     // Add providers to the container.
-    builder.Services.AddAutoMapper(AssemblyHelper.GetAppAssemblies());
-    builder.Services.AddFluentValidationProvider();
-    builder.Services.AddRazorViewRenderer();
+    builder.Services.AddAutoMapper(assemblies);
+    builder.Services.AddFluentValidationProvider(assemblies);
+    builder.Services.AddRazorViewRenderer(assemblies);
     builder.Services.AddArkeselMessageSender(options =>
     {
         builder.Configuration.GetRequiredSection("Messaging:Arkesel").Bind(options);

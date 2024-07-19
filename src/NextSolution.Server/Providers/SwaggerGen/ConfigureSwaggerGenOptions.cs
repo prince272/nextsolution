@@ -18,6 +18,8 @@ namespace NextSolution.Server.Providers.SwaggerGen
 
         public void Configure(SwaggerGenOptions options)
         {
+            if (options == null) throw new ArgumentNullException(nameof(options));
+
             var httpContext = (_httpContextAccessor?.HttpContext) ?? throw new InvalidOperationException("Unable to determine the current HttpContext.");
             string currentOrigin = string.Concat(httpContext.Request.Scheme, "://", httpContext.Request.Host.ToUriComponent()).ToLower();
 

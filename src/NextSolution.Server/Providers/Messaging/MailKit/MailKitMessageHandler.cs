@@ -11,13 +11,15 @@ namespace NextSolution.Server.Providers.Messaging.MailKit
 
         public MailKitMessageHandler(IOptions<MailKitMessageSenderOptions> messageSenderOptions)
         {
-            _messageSenderOptions = messageSenderOptions;
+            _messageSenderOptions = messageSenderOptions ?? throw new ArgumentNullException(nameof(messageSenderOptions));
         }
 
         public MessageChannel Channels => MessageChannel.Email;
 
         public async Task SenderAsync(MessageChannel channel, Message message, CancellationToken cancellationToken = default)
         {
+            if (message == null) throw new ArgumentNullException(nameof(message));
+
             if (channel == MessageChannel.Email)
             {
                 if (message == null) throw new ArgumentNullException(nameof(message));
