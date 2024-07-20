@@ -19,29 +19,13 @@ export { ErrorBoundary } from "expo-router";
 
 SplashScreen.preventAutoHideAsync();
 
-const { LightTheme: NavigationLightTheme, DarkTheme: NavigationDarkTheme } = adaptNavigationTheme({
-  reactNavigationLight: NativeNavigationLightTheme,
-  reactNavigationDark: NativeNavigationDarkTheme
-});
-
-const LightTheme = merge({}, NavigationLightTheme, { ...MD3LightTheme, colors: { ...MD3LightTheme.colors, ...Colors.light } });
-const DarkTheme = merge({}, NavigationDarkTheme, { ...MD3DarkTheme, colors: { ...MD3DarkTheme.colors, ...Colors.dark } });
-
 export default function RootLayout() {
-  const { activeTheme, inverseTheme, addSystemThemeListener } = useAppStore((state) => state.appearance);
-  const themeConfig = useMemo(() => (activeTheme == "dark" ? DarkTheme : LightTheme), [activeTheme]);
-
   const hydrated = useHydration();
 
   const [loaded, error] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
     ...FontAwesome.font
   });
-
-  useEffect(() => {
-    const systemThemeListener = addSystemThemeListener();
-    return () => systemThemeListener.remove();
-  }, []);
 
   useEffect(() => {
     if (error) throw error;
@@ -57,6 +41,26 @@ export default function RootLayout() {
     return null;
   }
 
+  return <Root />;
+}
+
+const { LightTheme: NavigationLightTheme, DarkTheme: NavigationDarkTheme } = adaptNavigationTheme({
+  reactNavigationLight: NativeNavigationLightTheme,
+  reactNavigationDark: NativeNavigationDarkTheme
+});
+
+const LightTheme = merge({}, NavigationLightTheme, { ...MD3LightTheme, colors: { ...MD3LightTheme.colors, ...Colors.light } });
+const DarkTheme = merge({}, NavigationDarkTheme, { ...MD3DarkTheme, colors: { ...MD3DarkTheme.colors, ...Colors.dark } });
+
+const Root = () => {
+  const { activeTheme, inverseTheme, addSystemThemeListener } = useAppStore((state) => state.appearance);
+  const themeConfig = useMemo(() => (activeTheme == "dark" ? DarkTheme : LightTheme), [activeTheme]);
+
+  useEffect(() => {
+    const systemThemeListener = addSystemThemeListener();
+    return () => systemThemeListener.remove();
+  }, []);
+
   return (
     <SafeAreaProvider>
       <PaperProvider theme={themeConfig}>
@@ -67,4 +71,4 @@ export default function RootLayout() {
       </PaperProvider>
     </SafeAreaProvider>
   );
-}
+};
