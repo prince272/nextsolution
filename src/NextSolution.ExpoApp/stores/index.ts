@@ -1,58 +1,31 @@
 import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { merge } from "lodash";
-import { create } from "zustand";
+import { Appearance } from "react-native";
+import { create, StoreApi, UseBoundStore } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-export interface AppearanceState {
-  theme: "light" | "dark" | "system";
-  themeVersion: 2 | 3;
-}
+import { AppearanceSlice, createAppearanceSlice } from "./appearance";
+import { AuthenticationSlice, createAuthenticationSlice } from "./authentication";
 
-export interface AppearanceActions {
-  setTheme: (theme: AppearanceState["theme"]) => void;
-  setThemeVersion: (themeVersion: AppearanceState["themeVersion"]) => void;
-}
+type WithSelectors<S> = S extends { getState: () => infer T } ? S & { state: { [K in keyof T]: () => T[K] } } : never;
 
-export interface AppState {
-  appearance: AppearanceState;
-}
+const createSelectors = <S extends UseBoundStore<StoreApi<object>>>(_store: S) => {
+  let store = _store as WithSelectors<typeof _store>;
+  store.state = {};
+  for (let k of Object.keys(store.getState())) {
+    (store.state as any)[k] = () => store((s) => s[k as keyof typeof s]);
+  }
 
-export interface AppStore extends AppState {
-  appearance: AppearanceState & AppearanceActions;
-}
+  return store;
+};
 
-const createAppStore = (initialState?: Partial<AppState>) => {
-  const defaultState: Partial<AppState> = {
-    appearance: {
-      theme: "dark", // Default theme
-      themeVersion: 3 // Default theme version
-    }
-  };
-
-  const predefinedState = merge({}, defaultState, initialState) as AppState;
-
-  return create<AppStore>()(
+export const useAppStore = createSelectors(
+  create<AppearanceSlice & AuthenticationSlice>()(
     persist(
-      (set) => ({
-        ...predefinedState,
-        appearance: {
-          ...predefinedState.appearance,
-          setTheme: (theme) =>
-            set((state) => ({
-              appearance: {
-                ...state.appearance,
-                theme
-              }
-            })),
-          setThemeVersion: (themeVersion) =>
-            set((state) => ({
-              appearance: {
-                ...state.appearance,
-                themeVersion
-              }
-            }))
-        }
+      (...a) => ({
+        ...createAppearanceSlice(...a),
+        ...createAuthenticationSlice(...a)
       }),
       {
         name: "NextSolution.Storage-1A114D3A52AA408FACFE89A437A9BCC4",
@@ -64,10 +37,8 @@ const createAppStore = (initialState?: Partial<AppState>) => {
         }
       }
     )
-  );
-};
-
-export const useAppStore = createAppStore();
+  )
+);
 
 export const useHydration = () => {
   const [hydrated, setHydrated] = useState(false);

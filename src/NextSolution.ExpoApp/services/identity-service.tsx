@@ -9,6 +9,7 @@ import {
   RefreshTokenForm,
   ResetPasswordForm,
   SignInForm,
+  SignInProvider,
   SignOutForm,
   UserProfileModel,
   UserSessionModel
@@ -38,7 +39,11 @@ export class IdentityService {
   }
 
   async signIn<Form extends SignInForm>(form: Form) {
-    return await Result.handle<ValidationProblem<Form> | Ok<UserSessionModel>>(this.api.post("/identity/signin", form));
+    return await Result.handle<ValidationProblem<Form> | Ok<UserSessionModel>>(this.api.post("/identity/sign-in", form));
+  }
+
+  async signInWith(provider: SignInProvider) {
+    return await Result.handle<ValidationProblem | Ok<UserSessionModel>>(this.api.post(`/identity/sign-in/${provider.toLowerCase()}`));
   }
 
   async refreshToken<Form extends RefreshTokenForm>(form: Form) {
@@ -46,7 +51,7 @@ export class IdentityService {
   }
 
   async signOut<Form extends SignOutForm>(form: Form) {
-    return await Result.handle<Ok>(this.api.post("/identity/signout", form));
+    return await Result.handle<Ok>(this.api.post("/identity/sign-out", form));
   }
 
   async getProfile() {

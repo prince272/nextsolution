@@ -1,58 +1,35 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { DarkTheme as NativeNavigationDarkTheme, DefaultTheme as NativeNavigationLightTheme, ThemeProvider as NativeNavigationThemeProvider } from "@react-navigation/native";
+import { DarkTheme as NativeNavigationDarkTheme, DefaultTheme as NativeNavigationLightTheme, ThemeProvider as NavigationThemeProvider } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import { Slot } from "expo-router";
+import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { adaptNavigationTheme, MD3DarkTheme, MD3LightTheme, PaperProvider } from "react-native-paper";
 
 import "react-native-reanimated";
+import "../global.css";
 
-import { useHydration, useAppStore } from "@/stores";
-import { Appearance } from "react-native";
+import { Colors } from "@/constants/Colors";
+import { useAppStore, useHydration } from "@/stores";
+import { StatusBar } from "expo-status-bar";
+import { merge } from "lodash";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
-export {
-  // Catch any errors thrown by the Layout component.
-  ErrorBoundary
-} from "expo-router";
+export { ErrorBoundary } from "expo-router";
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
+const { LightTheme: NavigationLightTheme, DarkTheme: NavigationDarkTheme } = adaptNavigationTheme({
+  reactNavigationLight: NativeNavigationLightTheme,
+  reactNavigationDark: NativeNavigationDarkTheme
+});
+
+const LightTheme = merge({}, NavigationLightTheme, { ...MD3LightTheme, colors: { ...MD3LightTheme.colors, ...Colors.light } });
+const DarkTheme = merge({}, NavigationDarkTheme, { ...MD3DarkTheme, colors: { ...MD3DarkTheme.colors, ...Colors.dark } });
+
 export default function RootLayout() {
-  const [systemTheme, setSystemTheme] = useState(Appearance.getColorScheme());
-  const userTheme = useAppStore((state) => state.appearance.theme);
-
-  const { LightTheme: NavigationLightTheme, DarkTheme: NavigationDarkTheme } = adaptNavigationTheme({
-    reactNavigationLight: NativeNavigationLightTheme,
-    reactNavigationDark: NativeNavigationDarkTheme
-  });
-
-  const themeConfig = useMemo(
-    () =>
-      (userTheme === "system" ? systemTheme : userTheme) === "dark"
-        ? {
-            ...MD3DarkTheme,
-            ...NavigationDarkTheme,
-            colors: {
-              ...MD3DarkTheme.colors,
-              ...NavigationDarkTheme.colors
-            }
-          }
-        : {
-            ...MD3LightTheme,
-            ...NavigationLightTheme,
-            colors: { ...MD3LightTheme.colors, ...NavigationLightTheme.colors }
-          },
-    [systemTheme, userTheme]
-  );
-
-  useEffect(() => {
-    const subscription = Appearance.addChangeListener(({ colorScheme }) => {
-      setSystemTheme(colorScheme);
-    });
-    return () => subscription.remove();
-  }, []);
+  const { activeTheme, inverseTheme, addSystemThemeListener } = useAppStore((state) => state.appearance);
+  const themeConfig = useMemo(() => (activeTheme == "dark" ? DarkTheme : LightTheme), [activeTheme]);
 
   const hydrated = useHydration();
 
@@ -61,7 +38,11 @@ export default function RootLayout() {
     ...FontAwesome.font
   });
 
-  // Expo Router uses Error Boundaries to catch errors in the navigation tree.
+  useEffect(() => {
+    const systemThemeListener = addSystemThemeListener();
+    return () => systemThemeListener.remove();
+  }, []);
+
   useEffect(() => {
     if (error) throw error;
   }, [error]);
@@ -77,10 +58,13 @@ export default function RootLayout() {
   }
 
   return (
-    <PaperProvider theme={themeConfig}>
-      <NativeNavigationThemeProvider value={themeConfig}>
-        <Slot />
-      </NativeNavigationThemeProvider>
-    </PaperProvider>
+    <SafeAreaProvider>
+      <PaperProvider theme={themeConfig}>
+        <NavigationThemeProvider value={themeConfig}>
+          <StatusBar style={inverseTheme} />
+          <Stack />
+        </NavigationThemeProvider>
+      </PaperProvider>
+    </SafeAreaProvider>
   );
 }

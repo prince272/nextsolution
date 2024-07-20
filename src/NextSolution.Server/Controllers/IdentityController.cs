@@ -93,7 +93,7 @@ namespace NextSolution.Server.Controllers
         /// </summary>
         /// <param name="form">The sign-in form data.</param>
         /// <returns>The result of signing into an existing user account.</returns>
-        [HttpPost("signin")]
+        [HttpPost("sign-in")]
         public async Task<Results<ValidationProblem, Ok<UserSessionModel>>> SignIn([FromBody] SignInForm form)
         {
             return await _identityService.SignInAsync(form);
@@ -108,7 +108,7 @@ namespace NextSolution.Server.Controllers
         /// <param name="providerValue">The name of the external sign-in provider.</param>
         /// <param name="origin">The origin URL from which the sign-in request was made.</param>
         /// <returns>The result of the sign-in request.</returns>
-        [HttpGet("signin/{provider}")]
+        [HttpGet("sign-in/{provider}")]
         public Results<ValidationProblem, ChallengeHttpResult> SignInWithGet([FromServices] SignInManager<User> signInManager, [FromServices] IConfiguration configuration, [FromRoute(Name = "provider")] string providerValue, [FromQuery] string origin)
         {
             if (!Enum.TryParse<SignInProvider>(providerValue, ignoreCase: true, out var provider))
@@ -132,7 +132,7 @@ namespace NextSolution.Server.Controllers
         /// <param name="signInManager">The sign-in manager service.</param>
         /// <param name="providerValue">The name of the external sign-in provider.</param>
         /// <returns>The result of the sign-in process.</returns>
-        [HttpPost("signin/{provider}")]
+        [HttpPost("sign-in/{provider}")]
         public async Task<Results<ValidationProblem, Ok<UserSessionModel>>> SignInWithPost([FromServices] SignInManager<User> signInManager, [FromRoute(Name = "provider")] string providerValue)
         {
             if (!Enum.TryParse<SignInProvider>(providerValue, ignoreCase: true, out var provider))
@@ -168,7 +168,7 @@ namespace NextSolution.Server.Controllers
         /// <param name="form">The sign-out form data.</param>
         /// <returns>The result of signing out the current user.</returns>
         [Authorize]
-        [HttpPost("signout")]
+        [HttpPost("sign-out")]
         public async Task<Results<ValidationProblem, Ok>> SignOut([FromBody] SignOutForm form)
         {
             return await _identityService.SignOutAsync(form);
