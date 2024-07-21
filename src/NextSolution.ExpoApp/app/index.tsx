@@ -1,17 +1,12 @@
-import { useAppStore } from "@/stores";
-import { Link, Stack } from "expo-router";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Text } from "react-native";
 import { useTheme } from "react-native-paper";
+import { SafeAreaView as View } from 'react-native-safe-area-context';
 
 export default function Home() {
+  const themeConfig = useTheme();
   return (
-    <View>
-      <Stack.Screen
-        options={{
-          title: "My home",
-          headerShown: false,
-        }}
-      />
+    <View className="flex flex-1 justify-center items-center">
+      <Text>Home</Text>
     </View>
   );
 }

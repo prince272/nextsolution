@@ -1,19 +1,19 @@
 import { useEffect, useMemo } from "react";
+import { Colors } from "@/constants/Colors";
+import { useAppStore, useHydration } from "@/stores";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { DarkTheme as NativeNavigationDarkTheme, DefaultTheme as NativeNavigationLightTheme, ThemeProvider as NavigationThemeProvider } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
+import { StatusBar } from "expo-status-bar";
+import { merge } from "lodash";
 import { adaptNavigationTheme, MD3DarkTheme, MD3LightTheme, PaperProvider } from "react-native-paper";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import "react-native-reanimated";
 import "../global.css";
-
-import { Colors } from "@/constants/Colors";
-import { useAppStore, useHydration } from "@/stores";
-import { StatusBar } from "expo-status-bar";
-import { merge } from "lodash";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import { verifyInstallation } from "nativewind";
 
 export { ErrorBoundary } from "expo-router";
 
@@ -41,7 +41,7 @@ export default function RootLayout() {
     return null;
   }
 
-  return <Root />;
+  return <Layout />;
 }
 
 const { LightTheme: NavigationLightTheme, DarkTheme: NavigationDarkTheme } = adaptNavigationTheme({
@@ -52,7 +52,7 @@ const { LightTheme: NavigationLightTheme, DarkTheme: NavigationDarkTheme } = ada
 const LightTheme = merge({}, NavigationLightTheme, { ...MD3LightTheme, colors: { ...MD3LightTheme.colors, ...Colors.light } });
 const DarkTheme = merge({}, NavigationDarkTheme, { ...MD3DarkTheme, colors: { ...MD3DarkTheme.colors, ...Colors.dark } });
 
-const Root = () => {
+const Layout = () => {
   const { activeTheme, inverseTheme, addSystemThemeListener } = useAppStore((state) => state.appearance);
   const themeConfig = useMemo(() => (activeTheme == "dark" ? DarkTheme : LightTheme), [activeTheme]);
 
@@ -61,12 +61,18 @@ const Root = () => {
     return () => systemThemeListener.remove();
   }, []);
 
+  verifyInstallation();
+  
   return (
     <SafeAreaProvider>
       <PaperProvider theme={themeConfig}>
         <NavigationThemeProvider value={themeConfig}>
           <StatusBar style={inverseTheme} />
-          <Stack />
+          <Stack>
+            <Stack.Screen name="index" options={{ headerShown: false }} />
+            <Stack.Screen name="sign-in" options={{ headerShown: false }} />
+            <Stack.Screen name="sign-up" options={{ headerShown: false }} />
+          </Stack>
         </NavigationThemeProvider>
       </PaperProvider>
     </SafeAreaProvider>
