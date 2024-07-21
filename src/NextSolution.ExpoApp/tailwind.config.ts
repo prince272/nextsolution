@@ -9,9 +9,9 @@ export default {
   theme: {
     extend: {
       borderWidth: {
-        hairline: hairlineWidth(),
-      },
-    },
+        hairline: hairlineWidth()
+      }
+    }
   },
-  plugins: [],
+  plugins: []
 } satisfies import("tailwindcss").Config;

@@ -1,5 +1,4 @@
 import { AxiosInstance } from "axios";
-
 import { Ok, Result, Unauthorized, ValidationProblem } from "./results";
 import {
   ChangeAccountForm,

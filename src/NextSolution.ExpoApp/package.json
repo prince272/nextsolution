@@ -4,10 +4,10 @@
   "version": "1.0.0",
   "repository": "git@github.com:prince272/nextsolution.git",
   "scripts": {
-    "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web",
+    "dev:start": "expo start --clear",
+    "dev:android": "expo start --android",
+    "dev:ios": "expo start --ios",
+    "dev:web": "expo start --web",
     "test": "jest --watchAll",
     "format:check": "prettier --check .",
     "format": "prettier --write ."

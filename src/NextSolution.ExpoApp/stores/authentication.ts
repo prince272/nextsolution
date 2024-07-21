@@ -1,5 +1,4 @@
 import { StateCreator } from "zustand";
-
 import { UserSessionModel } from "@/services/types";
 
 export interface AuthenticationState {

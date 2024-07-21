@@ -1,5 +1,5 @@
+import "../global.css";
 import { useEffect, useMemo } from "react";
-import { Colors } from "@/constants/Colors";
 import { useAppStore, useHydration } from "@/stores";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { DarkTheme as NativeNavigationDarkTheme, DefaultTheme as NativeNavigationLightTheme, ThemeProvider as NavigationThemeProvider } from "@react-navigation/native";
@@ -10,10 +10,8 @@ import { StatusBar } from "expo-status-bar";
 import { merge } from "lodash";
 import { adaptNavigationTheme, MD3DarkTheme, MD3LightTheme, PaperProvider } from "react-native-paper";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-
+import { Colors } from "@/constants/Colors";
 import "react-native-reanimated";
-import "../global.css";
-import { verifyInstallation } from "nativewind";
 
 export { ErrorBoundary } from "expo-router";
 
@@ -61,8 +59,6 @@ const Layout = () => {
     return () => systemThemeListener.remove();
   }, []);
 
-  verifyInstallation();
-  
   return (
     <SafeAreaProvider>
       <PaperProvider theme={themeConfig}>

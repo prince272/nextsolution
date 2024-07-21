@@ -1,7 +1,3 @@
-/**
- * @see https://prettier.io/docs/en/configuration.html
- * @type {import("prettier").Config}
- */
 const config = {
   endOfLine: "auto",
   semi: true,
@@ -12,20 +8,19 @@ const config = {
   plugins: ["@ianvs/prettier-plugin-sort-imports"],
   importOrder: [
     "^(react/(.*)$)|^(react$)",
-    "^(next/(.*)$)|^(next$)",
+    "^(react-native/(.*)$)|^(react-native$)",
+    "^(expo/(.*)$)|^(expo$)",
     "<THIRD_PARTY_MODULES>",
-    "",
-    "^types$",
+    "^@/constants/(.*)$",
     "^@/types/(.*)$",
     "^@/config/(.*)$",
     "^@/lib/(.*)$",
+    "^@/stores/(.*)$",
     "^@/services/(.*)$",
     "^@/hooks/(.*)$",
     "^@/components/ui/(.*)$",
     "^@/components/(.*)$",
-    "^@/styles/(.*)$",
     "^@/app/(.*)$",
-    "",
     "^[./]"
   ],
   importOrderParserPlugins: ["typescript", "jsx", "decorators-legacy"]

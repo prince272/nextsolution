@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
+import { Appearance } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { merge } from "lodash";
-import { Appearance } from "react-native";
 import { create, StoreApi, UseBoundStore } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-
 import { AppearanceSlice, createAppearanceSlice } from "./appearance";
 import { AuthenticationSlice, createAuthenticationSlice } from "./authentication";
 
