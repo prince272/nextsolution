@@ -4,7 +4,7 @@ const config = {
   singleQuote: false,
   tabWidth: 2,
   trailingComma: "none",
-  printWidth: 180,
+  printWidth: 100,
   plugins: ["@ianvs/prettier-plugin-sort-imports"],
   importOrder: [
     "^(react/(.*)$)|^(react$)",

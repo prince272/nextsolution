@@ -1,4 +1,4 @@
-import { Appearance } from "react-native";
+import { Appearance as NativeAppearance } from "react-native";
 import { StateCreator } from "zustand";
 
 export interface AppearanceState {
@@ -20,7 +20,7 @@ export interface AppearanceSlice {
 
 export const createAppearanceSlice: StateCreator<AppearanceSlice, [], [], AppearanceSlice> = (set, get) => {
   const initialTheme = "system" as AppearanceState["theme"];
-  const initialSystemTheme = (Appearance.getColorScheme() ?? initialTheme == "system") ? "light" : initialTheme;
+  const initialSystemTheme = (NativeAppearance.getColorScheme() ?? initialTheme == "system") ? "light" : initialTheme;
 
   const getActiveTheme = (theme: "light" | "dark" | "system", systemTheme: "light" | "dark") => (theme === "system" ? systemTheme : theme);
 
@@ -33,7 +33,7 @@ export const createAppearanceSlice: StateCreator<AppearanceSlice, [], [], Appear
       systemTheme: initialSystemTheme,
       activeTheme: getActiveTheme(initialTheme, initialSystemTheme),
       inverseTheme: getInverseTheme(initialTheme, initialSystemTheme),
-      setTheme: (theme) =>
+      setTheme: (theme) => {
         set((state) => ({
           appearance: {
             ...state.appearance,
@@ -41,7 +41,9 @@ export const createAppearanceSlice: StateCreator<AppearanceSlice, [], [], Appear
             activeTheme: getActiveTheme(theme, state.appearance.systemTheme),
             inverseTheme: getInverseTheme(theme, state.appearance.systemTheme)
           }
-        })),
+        }));
+        NativeAppearance.setColorScheme(theme == "system" ? get().appearance.systemTheme : theme);
+      },
       setSystemTheme: (systemTheme) =>
         set((state) => ({
           appearance: {
@@ -52,7 +54,7 @@ export const createAppearanceSlice: StateCreator<AppearanceSlice, [], [], Appear
           }
         })),
       addSystemThemeListener: () => {
-        const subscription = Appearance.addChangeListener(({ colorScheme: systemTheme }) => {
+        const subscription = NativeAppearance.addChangeListener(({ colorScheme: systemTheme }) => {
           if (systemTheme) get().appearance.setSystemTheme(systemTheme);
         });
         return {
