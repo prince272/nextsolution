@@ -2,7 +2,7 @@
 {
     public class Message
     {
-        public string? SenderId { get; set; } = null!;
+        public string? AccountId { get; set; } = null!;
 
         public string? Subject { get; set; } = null!;
 

@@ -8,8 +8,6 @@
 
         public bool UseSsl { get; set; }
 
-        public string DefaultSenderId { get; set; } = null!;
-
         public IDictionary<string, MailKitMessageAccount> Accounts { get; set; } = new Dictionary<string, MailKitMessageAccount>();
     }
 

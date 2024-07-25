@@ -140,7 +140,7 @@ namespace NextSolution.Server.Services
                     _ => throw new InvalidOperationException("Invalid username type.")
                 };
 
-                await _messageSender.SenderAsync(messageChannel, message);
+                await _messageSender.SendAsync(messageChannel, message);
             }
             else
             {
@@ -216,7 +216,7 @@ namespace NextSolution.Server.Services
                     _ => throw new InvalidOperationException("Invalid username type.")
                 };
 
-                await _messageSender.SenderAsync(messageChannel, message);
+                await _messageSender.SendAsync(messageChannel, message);
 
                 return TypedResults.Ok();
             }
@@ -311,7 +311,7 @@ namespace NextSolution.Server.Services
                     _ => throw new InvalidOperationException("Invalid username type.")
                 };
 
-                await _messageSender.SenderAsync(messageChannel, message);
+                await _messageSender.SendAsync(messageChannel, message);
             }
             else
             {

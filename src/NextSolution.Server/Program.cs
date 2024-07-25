@@ -170,7 +170,15 @@ try
     builder.Services.AddAutoMapper(assemblies);
     builder.Services.AddFluentValidationProvider(assemblies);
     builder.Services.AddRazorViewRenderer(assemblies);
-    builder.Services.AddMailKitMessageSender();
+
+    builder.Services.AddMailKitMessageSender(options =>
+    {
+        builder.Configuration.GetRequiredSection("Messaging:MailKit").Bind(options);
+    });
+    builder.Services.AddTwilioMessageSender(options =>
+    {
+        builder.Configuration.GetRequiredSection("Messaging:Twilio").Bind(options);
+    });
 
     // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
     builder.Services.AddEndpointsApiExplorer();
