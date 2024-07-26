@@ -1,6 +1,0 @@
-@NextSolution.Server_HostAddress = http://localhost:5282
-
-GET {{NextSolution.Server_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
