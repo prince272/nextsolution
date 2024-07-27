@@ -6,7 +6,7 @@
   "name": "Next Solution (ASP.NET API)",
   "description": "A starter solution template for rapidly creating a modern, efficient codebase for your upcoming application.",
   "shortName": "nextsoln",
-  "sourceName": "NextSolution",
+  "sourceName": "Next-Solution",
   "preferNameDirectory": true,
   "tags": {
     "type": "solution",
@@ -53,12 +53,6 @@
     }
   ],
   "symbols": {
-    "slug": {
-      "type": "derived",
-      "valueSource": "name",
-      "valueTransform": "kebabCase",
-      "replaces": "next-solution"
-    },
     "key": {
       "type": "generated",
       "generator": "guid",
