@@ -10,10 +10,11 @@ import { cssInterop } from "nativewind";
 import { Controller, useForm } from "react-hook-form";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { Button, customText, HelperText, Icon, TextInput, TouchableRipple, useTheme } from "react-native-paper";
-import { ValidationProblem } from "@/services/results";
+import { Problem, ValidationProblem } from "@/services/results";
 import { SignInForm } from "@/services/types";
 import { useConditionalState } from "@/hooks/use-conditional-state";
 import { clone } from "lodash";
+import { useSnackbar } from "@/components/providers/snackbar";
 
 const Text = customText();
 
@@ -24,18 +25,23 @@ export interface SignInScreenProps extends ComponentProps<typeof View> {
 export const SignInScreen = ({ className, formOnly, ...props }: SignInScreenProps) => {
   const form = useForm<SignInForm>();
   const formErrors = useConditionalState(clone(form.formState.errors), !form.formState.isSubmitting);
+  const snackbar = useSnackbar();
   
   const themeConfig = useTheme();
 
   const handleSubmit = form.handleSubmit(async (inputs) => {
     const response = await identityService.signIn(inputs);
+
     if (!response.success) {
+
       if (response instanceof ValidationProblem) {
         const errorFields = Object.entries<string[]>(response.errors || []);
         errorFields.forEach(([name, message]) => {
           form.setError(name as keyof SignInForm, { message: message?.join("\n") });
         });
       }
+
+      snackbar.show(response.reason);
       return;
     }
   });

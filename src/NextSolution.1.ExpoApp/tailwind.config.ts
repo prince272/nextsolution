@@ -5,7 +5,7 @@ import { colors, convertToCssVariables } from "./configs/colors";
 
 export default {
   darkMode: "media",
-  content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./screens/**/*.{ts,tsx}"],
+  content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
   presets: [nativewind],
   theme: {
     extend: {

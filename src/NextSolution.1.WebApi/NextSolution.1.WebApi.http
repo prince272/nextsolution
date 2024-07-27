@@ -1,6 +1,6 @@
-@NextSolution.1.Server_HostAddress = http://localhost:5282
+@NextSolution._1.Server_HostAddress = http://localhost:5282
 
-GET {{NextSolution.1.Server_HostAddress}}/weatherforecast/
+GET {{NextSolution._1.Server_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
