@@ -58,7 +58,7 @@ namespace NextSolution._1.Server.Helpers
 
         public static IEnumerable<Assembly> GetAppAssemblies()
         {
-            return GetAssemblies(x => x.FullName?.StartsWith("NextSolution._1") ?? false);
+            return GetAssemblies(x => x.FullName?.StartsWith("NextSolution.1") ?? false);
         }
 
         public static IEnumerable<Assembly> GetRclAssemblies()

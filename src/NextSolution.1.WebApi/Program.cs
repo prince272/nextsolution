@@ -49,22 +49,6 @@ try
     builder.Logging.ClearProviders();
     builder.Host.UseSerilog(Log.Logger);
 
-    // Configure Kestrel server for development environment
-    if (builder.Environment.IsDevelopment())
-    {
-        builder.WebHost.ConfigureKestrel(opts =>
-        {
-            var ipAddress = NetworkHelper.GetDefaultIpAddress() ?? IPAddress.Loopback;
-
-            opts.Listen(ipAddress, 5282); // HTTP port
-            opts.Listen(ipAddress, 7135, listenOptions =>
-            {
-                var localhostCert = CertificateLoader.LoadFromStoreCert("localhost", "My", StoreLocation.CurrentUser, allowInvalid: true);
-                listenOptions.UseHttps(localhostCert); // HTTPS port
-            });
-        });
-    }
-
     // Configure JSON serialization options
     builder.Services.ConfigureHttpJsonOptions(options =>
     {

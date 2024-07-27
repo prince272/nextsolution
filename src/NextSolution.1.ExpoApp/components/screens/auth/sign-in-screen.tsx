@@ -6,14 +6,22 @@ import { identityService } from "@/services";
 import { cn } from "@/utils";
 import { Image } from "expo-image";
 import { Link } from "expo-router";
+import { clone } from "lodash";
 import { cssInterop } from "nativewind";
 import { Controller, useForm } from "react-hook-form";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import { Button, customText, HelperText, Icon, TextInput, TouchableRipple, useTheme } from "react-native-paper";
+import {
+  Button,
+  customText,
+  HelperText,
+  Icon,
+  TextInput,
+  TouchableRipple,
+  useTheme
+} from "react-native-paper";
 import { Problem, ValidationProblem } from "@/services/results";
 import { SignInForm } from "@/services/types";
 import { useConditionalState } from "@/hooks/use-conditional-state";
-import { clone } from "lodash";
 import { useSnackbar } from "@/components/providers/snackbar";
 
 const Text = customText();
@@ -24,16 +32,18 @@ export interface SignInScreenProps extends ComponentProps<typeof View> {
 
 export const SignInScreen = ({ className, formOnly, ...props }: SignInScreenProps) => {
   const form = useForm<SignInForm>();
-  const formErrors = useConditionalState(clone(form.formState.errors), !form.formState.isSubmitting);
+  const formErrors = useConditionalState(
+    clone(form.formState.errors),
+    !form.formState.isSubmitting
+  );
   const snackbar = useSnackbar();
-  
+
   const themeConfig = useTheme();
 
   const handleSubmit = form.handleSubmit(async (inputs) => {
     const response = await identityService.signIn(inputs);
 
     if (!response.success) {
-
       if (response instanceof ValidationProblem) {
         const errorFields = Object.entries<string[]>(response.errors || []);
         errorFields.forEach(([name, message]) => {
@@ -54,17 +64,25 @@ export const SignInScreen = ({ className, formOnly, ...props }: SignInScreenProp
           {/* Header */}
           {!formOnly && (
             <View className="mb-9 mx-6">
-              <Image className="w-24 h-24 self-center mb-9" source={require("@/assets/images/right-arrow-512x512.png")} />
-              <Text variant="titleLarge" className="text-center font-bold">
+              <Image
+                className="w-24 h-24 self-center mb-9"
+                source={require("@/assets/images/right-arrow-512x512.png")}
+              />
+              <Text variant="titleLarge" className="text-center font-bold" onPress={doSomething}>
                 Welcome to Next Solution
               </Text>
-              <Text className="text-center text-on-surface-variant">Kickstart your app with our codebase template!</Text>
+              <Text className="text-center text-on-surface-variant">
+                Kickstart your app with our codebase template!
+              </Text>
             </View>
           )}
 
           {formOnly && (
             <View className="flex-row items-start mb-9 px-6">
-              <Image className="w-12 h-12 mr-4" source={require("@/assets/images/right-arrow-512x512.png")} />
+              <Image
+                className="w-12 h-12 mr-4"
+                source={require("@/assets/images/right-arrow-512x512.png")}
+              />
               <View className="flex-1">
                 <Text variant="titleLarge" className="font-bold">
                   Sign into your account
@@ -89,8 +107,16 @@ export const SignInScreen = ({ className, formOnly, ...props }: SignInScreenProp
                     control={form.control}
                     render={({ field: { onChange, onBlur, value } }) => (
                       <>
-                        <TextInput dense mode="outlined" onBlur={onBlur} onChangeText={onChange} value={value} />
-                        {formErrors.username && <HelperText type="error">{formErrors.username.message}</HelperText>}
+                        <TextInput
+                          dense
+                          mode="outlined"
+                          onBlur={onBlur}
+                          onChangeText={onChange}
+                          value={value}
+                        />
+                        {formErrors.username && (
+                          <HelperText type="error">{formErrors.username.message}</HelperText>
+                        )}
                       </>
                     )}
                     name="username"
@@ -102,7 +128,16 @@ export const SignInScreen = ({ className, formOnly, ...props }: SignInScreenProp
                   </Text>
                   <Controller
                     control={form.control}
-                    render={({ field: { onChange, onBlur, value } }) => <TextInput dense mode="outlined" secureTextEntry onBlur={onBlur} onChangeText={onChange} value={value} />}
+                    render={({ field: { onChange, onBlur, value } }) => (
+                      <TextInput
+                        dense
+                        mode="outlined"
+                        secureTextEntry
+                        onBlur={onBlur}
+                        onChangeText={onChange}
+                        value={value}
+                      />
+                    )}
                     name="password"
                   />
                 </View>
@@ -124,7 +159,8 @@ export const SignInScreen = ({ className, formOnly, ...props }: SignInScreenProp
               <View>
                 <TouchableRipple onPress={() => {}}>
                   <Text className="text-center py-1">
-                    Forgot your password? <Text className="text-primary font-bold">Reset it here</Text>
+                    Forgot your password?{" "}
+                    <Text className="text-primary font-bold">Reset it here</Text>
                   </Text>
                 </TouchableRipple>
               </View>
@@ -134,7 +170,11 @@ export const SignInScreen = ({ className, formOnly, ...props }: SignInScreenProp
           {!formOnly && (
             <View className="mx-6">
               <Link href="/sign-in-form" asChild>
-                <Button icon={({ color }) => <Icon source="account" size={24} color={color} />} className="rounded-md mb-4" mode="contained">
+                <Button
+                  icon={({ color }) => <Icon source="account" size={24} color={color} />}
+                  className="rounded-md mb-4"
+                  mode="contained"
+                >
                   Sign in with email or phone
                 </Button>
               </Link>
@@ -180,7 +220,8 @@ export const SignInScreen = ({ className, formOnly, ...props }: SignInScreenProp
         {!formOnly && (
           <View className="pb-6 px-2">
             <Text className="text-center">
-              By signing in you accept our <Text className="text-primary underline font-bold">Terms of Service</Text> and{" "}
+              By signing in you accept our{" "}
+              <Text className="text-primary underline font-bold">Terms of Service</Text> and{" "}
               <Text className="text-primary underline font-bold">Privacy Policy</Text>
             </Text>
           </View>
