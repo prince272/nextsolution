@@ -9,6 +9,12 @@
     <Product>$(AssemblyName)</Product>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
 	<NoWarn>$(NoWarn);1591</NoWarn>
+    <!--#if (false) -->
+    <!-- The condition above is evaluated by the .NET Template Engine but not by the Microsoft Build Engine (MSBuild).
+         Hence, the properties below will apply when compiling the template itself,
+         but will be removed by the .NET Template Engine when creating a project. -->
+    <DefineConstants>$(DefineConstants);configureNgrok</DefineConstants>
+    <!--#endif -->	  
   </PropertyGroup>
 
   <ItemGroup>
