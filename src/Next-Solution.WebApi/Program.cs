@@ -38,6 +38,9 @@ try
     CultureInfo.DefaultThreadCurrentCulture = defaultCultureInfo;
     CultureInfo.DefaultThreadCurrentUICulture = defaultCultureInfo;
 
+    var appAssemblies = AssemblyHelper.GetAppAssemblies().ToArray();
+
+
     var builder = WebApplication.CreateBuilder(args);
 
     // Configure Serilog for logging
@@ -115,9 +118,9 @@ try
 
     // Add domain services and providers to the container
     builder.Services.AddScoped<IIdentityService, IdentityService>();
-    builder.Services.AddAutoMapper(AssemblyHelper.GetAppAssemblies().ToArray());
-    builder.Services.AddFluentValidationProvider(AssemblyHelper.GetAppAssemblies().ToArray());
-    builder.Services.AddRazorViewRenderer(AssemblyHelper.GetAppAssemblies().ToArray());
+    builder.Services.AddAutoMapper(appAssemblies);
+    builder.Services.AddFluentValidationProvider(appAssemblies);
+    builder.Services.AddRazorViewRenderer(appAssemblies);
 
     // Configure messaging services
     builder.Services.AddMailKitMessageSender(options =>

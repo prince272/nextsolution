@@ -53,7 +53,7 @@
     }
   ],
   "symbols": {
-    "key": {
+    "uniqueKey": {
       "type": "generated",
       "generator": "guid",
       "parameters": {
@@ -78,20 +78,6 @@
         "high": 7400
       },
       "replaces": "7135"
-    }
-  },
-  "forms": {
-    "kebab": {
-      "identifier": "replace",
-      "pattern": "(?<!^)([A-Z])|[\\s_]+",
-      "replacement": "-$1"
-    },
-    "kebabCase": {
-      "identifier": "chain",
-      "steps": ["kebab", "lowerCase"]
-    },
-    "lowerCase": {
-      "identifier": "lowerCase"
     }
   }
 }
