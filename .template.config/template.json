@@ -63,22 +63,22 @@
     "includeExpoProject": {
       "type": "parameter",
       "datatype": "bool",
-      "displayName": "Include Expo Project in the Solution",
-      "description": "Specify whether to include an Expo project as part of the solution.",
+      "displayName": "Include Expo Project in Solution",
+      "description": "Adds an Expo project to the solution.",
       "defaultValue": "true"
     },
     "includeNextProject": {
       "type": "parameter",
       "datatype": "bool",
-      "displayName": "Include Next.js Project in the Solution",
-      "description": "Specify whether to include an Next.js project as part of the solution.",
+      "displayName": "Include Next.js Project in Solution",
+      "description": "Adds a Next.js project to the solution.",
       "defaultValue": "false"
     },
-    "enableNgrok": {
+    "configureNgrok": {
       "type": "parameter",
       "datatype": "bool",
-      "displayName": "Enable Ngrok for Tunneling",
-      "description": "Specify whether to enable Ngrok for tunneling the Web Api.",
+      "displayName": "Configure Ngrok for Web API Tunneling",
+      "description": "Enables Ngrok for tunneling the Web API.",
       "defaultValue": "true"
     },
     "uniqueKey": {

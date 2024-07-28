@@ -22,8 +22,7 @@ using Next_Solution.WebApi.Providers.Messaging.Twilio;
 using Next_Solution.WebApi.Providers.JwtBearer;
 using Next_Solution.WebApi.Providers.RazorViewRender;
 using Next_Solution.WebApi.Providers.ModelValidator;
-
-#if (enableNgrok)
+#if (configureNgrok)
 using Next_Solution.WebApi.Providers.Ngrok;
 #endif
 using Next_Solution.WebApi.Services;
@@ -194,7 +193,7 @@ try
     builder.Services.ConfigureOptions<ConfigureSwaggerGenOptions>();
     builder.Services.AddSwaggerGen();
 
-#if (enableNgrok)
+#if (configureNgrok)
     // Configure Ngrok
     if (builder.Environment.IsDevelopment())
     {
