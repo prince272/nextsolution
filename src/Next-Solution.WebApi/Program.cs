@@ -5,30 +5,27 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
-using Serilog.Events;
 using Serilog.Settings.Configuration;
-using Serilog.Sinks.SystemConsole.Themes;
 using System.Globalization;
-using System.Reflection;
 using System.Security.Claims;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
-using System.Net;
-using Microsoft.AspNetCore.Server.Kestrel.Https;
-using System.Security.Cryptography.X509Certificates;
 using Next_Solution.WebApi.Data.Entities.Identity;
 using Next_Solution.WebApi.Data;
 using Next_Solution.WebApi.Providers.Messaging.MailKit;
 using Next_Solution.WebApi.Middlewares;
 using Next_Solution.WebApi.Extensions;
 using Next_Solution.WebApi.Providers.SwaggerGen;
-using Next_Solution.WebApi.Providers.Ngrok;
 using Next_Solution.WebApi.Helpers;
-using Next_Solution.WebApi.Providers.Validation;
 using Next_Solution.WebApi.Providers.Messaging.Twilio;
 using Next_Solution.WebApi.Providers.JwtBearer;
-using Next_Solution.WebApi.Providers.ViewRender;
+using Next_Solution.WebApi.Providers.RazorViewRender;
+using Next_Solution.WebApi.Providers.ModelValidator;
+
+#if (enableNgrok)
+using Next_Solution.WebApi.Providers.Ngrok;
+#endif
 using Next_Solution.WebApi.Services;
 
 try
@@ -119,16 +116,16 @@ try
     // Add domain services and providers to the container
     builder.Services.AddScoped<IIdentityService, IdentityService>();
     builder.Services.AddAutoMapper(appAssemblies);
-    builder.Services.AddFluentValidationProvider(appAssemblies);
+    builder.Services.AddModelValidator(appAssemblies);
     builder.Services.AddRazorViewRenderer(appAssemblies);
 
     // Configure messaging services
-    builder.Services.AddMailKitMessageSender(options =>
+    builder.Services.AddMailKitSender(options =>
     {
         builder.Configuration.GetRequiredSection("MailKit").Bind(options);
     });
 
-    builder.Services.AddTwilioMessageSender(options =>
+    builder.Services.AddTwilioSender(options =>
     {
         builder.Configuration.GetRequiredSection("Twilio").Bind(options);
     });
@@ -197,6 +194,7 @@ try
     builder.Services.ConfigureOptions<ConfigureSwaggerGenOptions>();
     builder.Services.AddSwaggerGen();
 
+#if (enableNgrok)
     // Configure Ngrok
     if (builder.Environment.IsDevelopment())
     {
@@ -206,6 +204,7 @@ try
 
         });
     }
+#endif
 
     var app = builder.Build();
 
@@ -234,23 +233,27 @@ try
         app.UseSwaggerUI(swaggerUiOptions =>
         {
             var responseInterceptor = @"(res) => 
-                {
-                    if(res.obj.accessToken)
-                    { 
-                        console.log(res.obj.accessToken);
-                        const token = res.obj.accessToken;
-                        localStorage.setItem('token', token);
-                    }; 
-                    return res; 
-                }";
+        {
+            if (res.obj && res.obj.accessToken) 
+            { 
+                console.log(res.obj.accessToken);
+                const token = res.obj.accessToken;
+                localStorage.setItem('token', token);
+            }; 
+            return res; 
+        }";
             var requestInterceptor = @"(req) => 
-                { 
-                    req.headers['Authorization'] = 'Bearer ' + localStorage.getItem('token');
-                    return req; 
-                }";
+        { 
+            const token = localStorage.getItem('token');
+            if (token) {
+                req.headers['Authorization'] = 'Bearer ' + token;
+            }
+            return req; 
+        }";
             swaggerUiOptions.UseResponseInterceptor(Regex.Replace(responseInterceptor, @"\s+", " "));
             swaggerUiOptions.UseRequestInterceptor(Regex.Replace(requestInterceptor, @"\s+", " "));
         });
+
     }
     else
     {

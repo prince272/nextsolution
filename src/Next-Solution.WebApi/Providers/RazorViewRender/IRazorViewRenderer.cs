@@ -1,6 +1,6 @@
-﻿namespace Next_Solution.WebApi.Providers.ViewRender
+﻿namespace Next_Solution.WebApi.Providers.RazorViewRender
 {
-    public interface IViewRenderer
+    public interface IRazorViewRenderer
     {
         Task<string> RenderAsync(string name, object? model = null, CancellationToken cancellationToken = default);
     }

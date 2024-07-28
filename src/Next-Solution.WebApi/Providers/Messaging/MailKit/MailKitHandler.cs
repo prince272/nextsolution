@@ -6,12 +6,12 @@ using Next_Solution.WebApi.Providers.Messaging;
 
 namespace Next_Solution.WebApi.Providers.Messaging.MailKit
 {
-    public class MailKitMessageHandler : IMessageHandler
+    public class MailKitHandler : IMessageHandler
     {
-        private readonly IOptions<MailKitMessageSenderOptions> _messageSenderOptions;
-        private readonly ILogger<MailKitMessageHandler> _logger;
+        private readonly IOptions<MailKitSenderOptions> _messageSenderOptions;
+        private readonly ILogger<MailKitHandler> _logger;
 
-        public MailKitMessageHandler(IOptions<MailKitMessageSenderOptions> messageSenderOptions, ILogger<MailKitMessageHandler> logger)
+        public MailKitHandler(IOptions<MailKitSenderOptions> messageSenderOptions, ILogger<MailKitHandler> logger)
         {
             _messageSenderOptions = messageSenderOptions ?? throw new ArgumentNullException(nameof(messageSenderOptions));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));

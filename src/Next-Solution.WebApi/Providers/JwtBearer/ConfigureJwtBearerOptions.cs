@@ -5,7 +5,8 @@ using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Next_Solution.WebApi.Data.Entities.Identity;
-using Next_Solution.WebApi.Providers.Identity;
+using Next_Solution.WebApi.Services;
+using System.Security.Claims;
 
 namespace Next_Solution.WebApi.Providers.JwtBearer
 {
@@ -86,7 +87,7 @@ namespace Next_Solution.WebApi.Providers.JwtBearer
                     var userId = userManager.GetUserId(claimsPrincipal);
                     var user = !string.IsNullOrEmpty(userId) ? await userManager.FindByIdAsync(userId) : null;
 
-                    var securityStamp = userManager.GetSecurityStamp(claimsPrincipal);
+                    var securityStamp = claimsPrincipal.FindFirst(userManager.Options.ClaimsIdentity.SecurityStampClaimType) is Claim claim ? claim.Value : null;
 
                     if (user == null || !string.Equals(user.SecurityStamp, securityStamp, StringComparison.Ordinal))
                     {

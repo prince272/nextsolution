@@ -3,23 +3,23 @@ using Humanizer;
 using System.Reflection;
 using Next_Solution.WebApi.Helpers;
 
-namespace Next_Solution.WebApi.Providers.Validation
+namespace Next_Solution.WebApi.Providers.ModelValidator
 {
-    public static class ValidationProviderExtensions
+    public static class ModelValidatorExtensions
     {
-        public static IServiceCollection AddFluentValidationProvider(this IServiceCollection services, Assembly assembly)
+        public static IServiceCollection AddModelValidator(this IServiceCollection services, Assembly assembly)
         {
             if (services == null) throw new ArgumentNullException(nameof(services));
             if (assembly == null) throw new ArgumentNullException(nameof(assembly));
-            return services.AddFluentValidationProvider(new[] { assembly });
+            return services.AddModelValidator(new[] { assembly });
         }
 
-        public static IServiceCollection AddFluentValidationProvider(this IServiceCollection services, IEnumerable<Assembly> assemblies)
+        public static IServiceCollection AddModelValidator(this IServiceCollection services, IEnumerable<Assembly> assemblies)
         {
             if (services == null) throw new ArgumentNullException(nameof(services));
             if (assemblies == null) throw new ArgumentNullException(nameof(assemblies));
 
-            services.AddSingleton<IValidationProvider, ValidationProvider>();
+            services.AddSingleton<IModelValidator, ModelValidator>();
 
             ValidatorOptions.Global.DefaultClassLevelCascadeMode = CascadeMode.Continue;
             ValidatorOptions.Global.DefaultRuleLevelCascadeMode = CascadeMode.Stop;

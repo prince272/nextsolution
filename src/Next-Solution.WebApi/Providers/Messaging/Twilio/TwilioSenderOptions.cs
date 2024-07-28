@@ -1,6 +1,6 @@
 ﻿namespace Next_Solution.WebApi.Providers.Messaging.Twilio
 {
-    public class TwilioMessageSenderOptions
+    public class TwilioSenderOptions
     {
         public string AccountSid { get; set; } = null!;
 

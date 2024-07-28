@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
 using Next_Solution.WebApi.Providers.Validation;
 
-namespace Next_Solution.WebApi.Providers.Validation
+namespace Next_Solution.WebApi.Providers.ModelValidator
 {
     public static class ValidationExtensions
     {

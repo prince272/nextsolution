@@ -1,18 +1,18 @@
 ﻿using FluentValidation;
 
-namespace Next_Solution.WebApi.Providers.Validation
+namespace Next_Solution.WebApi.Providers.ModelValidator
 {
-    public class ValidationProvider : IValidationProvider
+    public class ModelValidator : IModelValidator
     {
         private readonly IServiceScopeFactory _serviceScopeFactory;
 
-        public ValidationProvider(IServiceScopeFactory serviceScopeFactory)
+        public ModelValidator(IServiceScopeFactory serviceScopeFactory)
         {
             _serviceScopeFactory = serviceScopeFactory ?? throw new ArgumentNullException(nameof(serviceScopeFactory));
         }
 
 
-        public async Task<ValidationResult> ValidateAsync<TModel>(TModel model)
+        public async Task<ValidationResult> ValidateAsync<TModel>(TModel model) where TModel : class
         {
             if (model == null) throw new ArgumentNullException(nameof(model));
 
@@ -37,9 +37,9 @@ namespace Next_Solution.WebApi.Providers.Validation
         }
     }
 
-    public interface IValidationProvider
+    public interface IModelValidator
     {
-        Task<ValidationResult> ValidateAsync<TModel>(TModel model);
+        Task<ValidationResult> ValidateAsync<TModel>(TModel model) where TModel : class;
     }
 
     public class ValidationResult

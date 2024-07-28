@@ -6,21 +6,21 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using Next_Solution.WebApi.Data.Entities.Identity;
 using Next_Solution.WebApi.Models.Identity;
-using Next_Solution.WebApi.Providers.Identity;
 using Next_Solution.WebApi.Providers.Messaging;
 using Next_Solution.WebApi.Providers.Validation;
 using Next_Solution.WebApi.Providers.JwtBearer;
 using Next_Solution.WebApi.Helpers;
-using Next_Solution.WebApi.Providers.ViewRender;
+using Next_Solution.WebApi.Providers.RazorViewRender;
+using Next_Solution.WebApi.Providers.ModelValidator;
 
 namespace Next_Solution.WebApi.Services
 {
     public class IdentityService : IIdentityService
     {
         private readonly IJwtProvider _jwtProvider;
-        private readonly IValidationProvider _validationProvider;
+        private readonly IModelValidator _modelValidator;
         private readonly IMessageSender _messageSender;
-        private readonly IViewRenderer _viewRenderer;
+        private readonly IRazorViewRenderer _razorViewRenderer;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IMapper _mapper;
         private readonly UserManager<User> _userManager;
@@ -28,18 +28,18 @@ namespace Next_Solution.WebApi.Services
 
         public IdentityService(
             IJwtProvider jwtBearerProvider,
-            IValidationProvider validationProvider,
+            IModelValidator modelValidator,
             IMessageSender messageSender,
-            IViewRenderer viewRenderer,
+            IRazorViewRenderer razorViewRenderer,
             IHttpContextAccessor httpContextAccessor,
             IMapper mapper,
             UserManager<User> userManager,
             RoleManager<Role> roleManager)
         {
             _jwtProvider = jwtBearerProvider ?? throw new ArgumentNullException(nameof(jwtBearerProvider));
-            _validationProvider = validationProvider ?? throw new ArgumentNullException(nameof(validationProvider));
+            _modelValidator = modelValidator ?? throw new ArgumentNullException(nameof(modelValidator));
             _messageSender = messageSender ?? throw new ArgumentNullException(nameof(messageSender));
-            _viewRenderer = viewRenderer ?? throw new ArgumentNullException(nameof(viewRenderer));
+            _razorViewRenderer = razorViewRenderer ?? throw new ArgumentNullException(nameof(razorViewRenderer));
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
@@ -49,7 +49,7 @@ namespace Next_Solution.WebApi.Services
         public async Task<Results<ValidationProblem, Ok>> CreateAccountAsync(CreateAccountForm form)
         {
             if (form is null) throw new ArgumentNullException(nameof(form));
-            var formValidation = await _validationProvider.ValidateAsync(form);
+            var formValidation = await _modelValidator.ValidateAsync(form);
             if (!formValidation.IsValid) return TypedResults.ValidationProblem(formValidation.Errors);
 
             var existingUser = form.UsernameType switch
@@ -93,7 +93,7 @@ namespace Next_Solution.WebApi.Services
         public async Task<Results<ValidationProblem, Ok>> ConfirmAccountAsync(ConfirmAccountForm form)
         {
             if (form is null) throw new ArgumentNullException(nameof(form));
-            var formValidation = await _validationProvider.ValidateAsync(form);
+            var formValidation = await _modelValidator.ValidateAsync(form);
             if (!formValidation.IsValid) return TypedResults.ValidationProblem(formValidation.Errors);
 
             var user = form.UsernameType switch
@@ -121,13 +121,13 @@ namespace Next_Solution.WebApi.Services
                     ContactType.Email => new Message
                     {
                         Subject = "Confirm Your Email Address",
-                        Body = await _viewRenderer.RenderAsync("/Templates/Email/ConfirmAccount", (user, code)),
+                        Body = await _razorViewRenderer.RenderAsync("/Templates/Email/ConfirmAccount", (user, code)),
                         Recipients = new[] { user.Email! },
                     },
                     ContactType.PhoneNumber => new Message
                     {
                         Subject = "Confirm Your Phone Number",
-                        Body = await _viewRenderer.RenderAsync("/Templates/Text/ConfirmAccount", (user, code)),
+                        Body = await _razorViewRenderer.RenderAsync("/Templates/Text/ConfirmAccount", (user, code)),
                         Recipients = new[] { user.PhoneNumber! },
                     },
                     _ => throw new InvalidOperationException("Invalid username type.")
@@ -162,7 +162,7 @@ namespace Next_Solution.WebApi.Services
         public async Task<Results<ValidationProblem, UnauthorizedHttpResult, Ok>> ChangeAccountAsync(ChangeAccountForm form)
         {
             if (form is null) throw new ArgumentNullException(nameof(form));
-            var formValidation = await _validationProvider.ValidateAsync(form);
+            var formValidation = await _modelValidator.ValidateAsync(form);
             if (!formValidation.IsValid) return TypedResults.ValidationProblem(formValidation.Errors);
 
             var currentUserId = _httpContextAccessor.HttpContext != null ? _userManager.GetUserId(_httpContextAccessor.HttpContext.User) : null;
@@ -197,13 +197,13 @@ namespace Next_Solution.WebApi.Services
                     ContactType.Email => new Message
                     {
                         Subject = "Change Your Email Address",
-                        Body = await _viewRenderer.RenderAsync("/Templates/Email/ChangeAccount", (currentUser, code)),
+                        Body = await _razorViewRenderer.RenderAsync("/Templates/Email/ChangeAccount", (currentUser, code)),
                         Recipients = new[] { currentUser.Email! },
                     },
                     ContactType.PhoneNumber => new Message
                     {
                         Subject = "Change Your Phone Number",
-                        Body = await _viewRenderer.RenderAsync("/Templates/Text/ChangeAccount", (currentUser, code)),
+                        Body = await _razorViewRenderer.RenderAsync("/Templates/Text/ChangeAccount", (currentUser, code)),
                         Recipients = new[] { currentUser.PhoneNumber! },
                     },
                     _ => throw new InvalidOperationException("Invalid username type.")
@@ -239,7 +239,7 @@ namespace Next_Solution.WebApi.Services
         public async Task<Results<ValidationProblem, UnauthorizedHttpResult, Ok>> ChangePasswordAsync(ChangePasswordForm form)
         {
             if (form is null) throw new ArgumentNullException(nameof(form));
-            var formValidation = await _validationProvider.ValidateAsync(form);
+            var formValidation = await _modelValidator.ValidateAsync(form);
             if (!formValidation.IsValid) return TypedResults.ValidationProblem(formValidation.Errors);
 
             var currentUserId = _httpContextAccessor.HttpContext != null ? _userManager.GetUserId(_httpContextAccessor.HttpContext.User) : null;
@@ -269,7 +269,7 @@ namespace Next_Solution.WebApi.Services
         public async Task<Results<ValidationProblem, Ok>> ResetPasswordAsync(ResetPasswordForm form)
         {
             if (form is null) throw new ArgumentNullException(nameof(form));
-            var formValidation = await _validationProvider.ValidateAsync(form);
+            var formValidation = await _modelValidator.ValidateAsync(form);
             if (!formValidation.IsValid) return TypedResults.ValidationProblem(formValidation.Errors);
 
             var user = form.UsernameType switch
@@ -292,13 +292,13 @@ namespace Next_Solution.WebApi.Services
                     ContactType.Email => new Message
                     {
                         Subject = "Reset Your Password",
-                        Body = await _viewRenderer.RenderAsync("/Templates/Email/ResetPassword", (user, code)),
+                        Body = await _razorViewRenderer.RenderAsync("/Templates/Email/ResetPassword", (user, code)),
                         Recipients = new[] { user.Email! },
                     },
                     ContactType.PhoneNumber => new Message
                     {
                         Subject = "Reset Your Password",
-                        Body = await _viewRenderer.RenderAsync("/Templates/Text/ResetPassword", (user, code)),
+                        Body = await _razorViewRenderer.RenderAsync("/Templates/Text/ResetPassword", (user, code)),
                         Recipients = new[] { user.PhoneNumber! },
                     },
                     _ => throw new InvalidOperationException("Invalid username type.")
@@ -328,7 +328,7 @@ namespace Next_Solution.WebApi.Services
         public async Task<Results<ValidationProblem, Ok<UserSessionModel>>> SignInAsync(SignInForm form)
         {
             if (form is null) throw new ArgumentNullException(nameof(form));
-            var formValidation = await _validationProvider.ValidateAsync(form);
+            var formValidation = await _modelValidator.ValidateAsync(form);
             if (!formValidation.IsValid) return TypedResults.ValidationProblem(formValidation.Errors);
 
             var user = form.UsernameType switch
@@ -359,7 +359,7 @@ namespace Next_Solution.WebApi.Services
         public async Task<Results<ValidationProblem, Ok<UserSessionModel>>> SignInWithAsync(SignInWithForm form)
         {
             if (form is null) throw new ArgumentNullException(nameof(form));
-            var formValidation = await _validationProvider.ValidateAsync(form);
+            var formValidation = await _modelValidator.ValidateAsync(form);
             if (!formValidation.IsValid) return TypedResults.ValidationProblem(formValidation.Errors);
 
             var firstName = form.Principal.FindFirstValue(ClaimTypes.GivenName) ?? "Unknown";
@@ -423,7 +423,7 @@ namespace Next_Solution.WebApi.Services
         public async Task<Results<ValidationProblem, Ok<UserSessionModel>>> RefreshTokenAsync(RefreshTokenForm form)
         {
             if (form is null) throw new ArgumentNullException(nameof(form));
-            var formValidation = await _validationProvider.ValidateAsync(form);
+            var formValidation = await _modelValidator.ValidateAsync(form);
             if (!formValidation.IsValid) return TypedResults.ValidationProblem(formValidation.Errors);
 
             var user = await _jwtProvider.FindUserByRefreshTokenAsync(form.RefreshToken);
@@ -565,5 +565,23 @@ namespace Next_Solution.WebApi.Services
         UsernameNotConfirmed,
         UsernameNotFound,
         PasswordIncorrect,
+    }
+
+    public static class IdentityExtensions
+    {
+        public static Task<TUser?> FindByPhoneNumberAsync<TUser>(this UserManager<TUser> userManager, string phoneNumber)
+            where TUser : IdentityUser<string>
+        {
+            if (userManager is null) throw new ArgumentNullException(nameof(userManager));
+            if (phoneNumber is null) throw new ArgumentNullException(nameof(phoneNumber));
+
+            return userManager.Users.FirstOrDefaultAsync(_ => _.PhoneNumber == phoneNumber);
+        }
+
+        public static string GetMessage(this IEnumerable<IdentityError> errors)
+        {
+            if (errors == null) throw new ArgumentNullException(nameof(errors));
+            return $"Identity operation failed:{string.Concat(errors.Select(x => $"{Environment.NewLine} -- {x.Code}: {x.Description}"))}";
+        }
     }
 }

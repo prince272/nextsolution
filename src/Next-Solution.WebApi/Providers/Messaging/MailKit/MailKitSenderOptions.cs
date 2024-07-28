@@ -1,6 +1,6 @@
 ﻿namespace Next_Solution.WebApi.Providers.Messaging.MailKit
 {
-    public class MailKitMessageSenderOptions
+    public class MailKitSenderOptions
     {
         public string Host { get; set; } = null!;
 

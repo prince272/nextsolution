@@ -1,25 +1,25 @@
 ﻿using Microsoft.Extensions.DependencyInjection.Extensions;
 using Next_Solution.WebApi.Providers.Messaging;
 
-namespace Next_Solution.WebApi.Providers.Messaging.Twilio
+namespace Next_Solution.WebApi.Providers.Messaging.MailKit
 {
-    public static class TwilioMessageSenderExtensions
+    public static class MailKitSenderExtensions
     {
-        public static IServiceCollection AddTwilioMessageSender(this IServiceCollection services, Action<TwilioMessageSenderOptions> options)
+        public static IServiceCollection AddMailKitSender(this IServiceCollection services, Action<MailKitSenderOptions> options)
         {
             if (services == null) throw new ArgumentNullException(nameof(services));
             if (options == null) throw new ArgumentNullException(nameof(options));
             services.Configure(options);
-            services.AddTwilioMessageSender();
+            services.AddMailKitSender();
             return services;
         }
 
-        public static IServiceCollection AddTwilioMessageSender(this IServiceCollection services)
+        public static IServiceCollection AddMailKitSender(this IServiceCollection services)
         {
             if (services == null) throw new ArgumentNullException(nameof(services));
 
             services.TryAddSingleton<IMessageSender, MessageSender>();
-            services.AddScoped<IMessageHandler, TwilioMessageHandler>();
+            services.AddScoped<IMessageHandler, MailKitHandler>();
             return services;
         }
     }

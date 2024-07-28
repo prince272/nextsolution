@@ -5,12 +5,12 @@ using Twilio.Types;
 
 namespace Next_Solution.WebApi.Providers.Messaging.Twilio
 {
-    public class TwilioMessageHandler : IMessageHandler
+    public class TwilioHandler : IMessageHandler
     {
-        private readonly IOptions<TwilioMessageSenderOptions> _messageSenderOptions;
-        private readonly ILogger<TwilioMessageHandler> _messageSenderLogger;
+        private readonly IOptions<TwilioSenderOptions> _messageSenderOptions;
+        private readonly ILogger<TwilioHandler> _messageSenderLogger;
 
-        public TwilioMessageHandler(IOptions<TwilioMessageSenderOptions> messageSenderOptions, ILogger<TwilioMessageHandler> messageSenderLogger)
+        public TwilioHandler(IOptions<TwilioSenderOptions> messageSenderOptions, ILogger<TwilioHandler> messageSenderLogger)
         {
             _messageSenderOptions = messageSenderOptions ?? throw new ArgumentNullException(nameof(messageSenderOptions));
             _messageSenderLogger = messageSenderLogger ?? throw new ArgumentNullException(nameof(messageSenderLogger));

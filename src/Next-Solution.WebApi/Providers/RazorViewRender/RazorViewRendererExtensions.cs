@@ -7,7 +7,7 @@ using Microsoft.Extensions.ObjectPool;
 using System.Diagnostics;
 using System.Reflection;
 
-namespace Next_Solution.WebApi.Providers.ViewRender
+namespace Next_Solution.WebApi.Providers.RazorViewRender
 {
     public static class RazorViewRendererExtensions
     {
@@ -87,7 +87,7 @@ namespace Next_Solution.WebApi.Providers.ViewRender
                 }
             });
 
-            services.TryAddTransient<IViewRenderer, RazorViewRenderer>();
+            services.TryAddTransient<IRazorViewRenderer, RazorViewRenderer>();
             return services;
         }
 

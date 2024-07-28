@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using FluentValidation;
 using Next_Solution.WebApi.Data.Entities.Identity;
+using Next_Solution.WebApi.Providers.ModelValidator;
 using Next_Solution.WebApi.Providers.Validation;
 
 namespace Next_Solution.WebApi.Models.Identity

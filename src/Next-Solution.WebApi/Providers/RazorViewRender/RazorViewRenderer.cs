@@ -6,9 +6,9 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
-namespace Next_Solution.WebApi.Providers.ViewRender
+namespace Next_Solution.WebApi.Providers.RazorViewRender
 {
-    public class RazorViewRenderer : IViewRenderer
+    public class RazorViewRenderer : IRazorViewRenderer
     {
         private readonly IRazorViewEngine _viewEngine;
         private readonly ITempDataProvider _tempDataProvider;
