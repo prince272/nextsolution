@@ -23,6 +23,7 @@ using Next_Solution.WebApi.Providers.Messaging.MailKit;
 using Next_Solution.WebApi.Middlewares;
 using Next_Solution.WebApi.Extensions;
 using Next_Solution.WebApi.Providers.SwaggerGen;
+using Next_Solution.WebApi.Providers.Ngrok;
 using Next_Solution.WebApi.Helpers;
 using Next_Solution.WebApi.Providers.Validation;
 using Next_Solution.WebApi.Providers.Messaging.Twilio;
@@ -42,7 +43,7 @@ try
     // Configure Serilog for logging
     Log.Logger = new LoggerConfiguration()
         .ReadFrom.Configuration(builder.Configuration,
-            new ConfigurationReaderOptions { SectionName = "Logging:Serilog" })
+            new ConfigurationReaderOptions { SectionName = "Serilog" })
         .Enrich.FromLogContext()
         .CreateLogger();
 
@@ -121,11 +122,12 @@ try
     // Configure messaging services
     builder.Services.AddMailKitMessageSender(options =>
     {
-        builder.Configuration.GetRequiredSection("Messaging:MailKit").Bind(options);
+        builder.Configuration.GetRequiredSection("MailKit").Bind(options);
     });
+
     builder.Services.AddTwilioMessageSender(options =>
     {
-        builder.Configuration.GetRequiredSection("Messaging:Twilio").Bind(options);
+        builder.Configuration.GetRequiredSection("Twilio").Bind(options);
     });
 
     // Configure authentication schemes
@@ -144,12 +146,12 @@ try
         .AddGoogle(GoogleDefaults.AuthenticationScheme, options =>
         {
             options.SignInScheme = IdentityConstants.ExternalScheme;
-            builder.Configuration.GetRequiredSection("Authentication:Google").Bind(options);
+            builder.Configuration.GetRequiredSection("OAuth:Google").Bind(options);
         })
         .AddFacebook(FacebookDefaults.AuthenticationScheme, options =>
         {
             options.SignInScheme = IdentityConstants.ExternalScheme;
-            builder.Configuration.GetRequiredSection("Authentication:Facebook").Bind(options);
+            builder.Configuration.GetRequiredSection("OAuth:Facebook").Bind(options);
         });
 
     // Configure CORS policies
@@ -191,6 +193,16 @@ try
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.ConfigureOptions<ConfigureSwaggerGenOptions>();
     builder.Services.AddSwaggerGen();
+
+    // Configure Ngrok
+    if (builder.Environment.IsDevelopment())
+    {
+        builder.Services.AddNgrokHostedService(options =>
+        {
+            builder.Configuration.GetRequiredSection("Ngrok").Bind(options);
+
+        });
+    }
 
     var app = builder.Build();
 
@@ -237,8 +249,11 @@ try
             swaggerUiOptions.UseRequestInterceptor(Regex.Replace(requestInterceptor, @"\s+", " "));
         });
     }
+    else
+    {
+        app.UseHttpsRedirection();
+    }
 
-    app.UseHttpsRedirection();
     app.UseAuthentication();
     app.UseAuthorization();
     app.MapControllers();
