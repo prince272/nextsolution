@@ -1,5 +1,6 @@
 import { AxiosInstance } from "axios";
-import { Succeeded, Result, Unauthorized, ValidationProblem } from "./results";
+import queryString from "query-string";
+import { Result, Succeeded, Unauthorized, ValidationProblem } from "./results";
 import {
   ChangeAccountForm,
   ChangePasswordForm,
@@ -8,7 +9,7 @@ import {
   RefreshTokenForm,
   ResetPasswordForm,
   SignInForm,
-  SignInProvider,
+  SignInWithProvider,
   SignOutForm,
   UserProfileModel,
   UserSessionModel
@@ -17,43 +18,69 @@ import {
 export class IdentityService {
   constructor(private api: AxiosInstance) {}
 
-  async createAccount<Form extends CreateAccountForm>(form: Form) {
-    return await Result.handle<ValidationProblem<Form> | Succeeded>(this.api.post("/identity/create", form));
+  async createAccountAsync<Form extends CreateAccountForm>(form: Form) {
+    return await Result.handle<ValidationProblem<Form> | Succeeded>(
+      this.api.post("/identity/create", form)
+    );
   }
 
-  async confirmAccount<Form extends ConfirmAccountForm>(form: Form) {
-    return await Result.handle<ValidationProblem<Form> | Succeeded>(this.api.post("/identity/confirm", form));
+  async confirmAccountAsync<Form extends ConfirmAccountForm>(form: Form) {
+    return await Result.handle<ValidationProblem<Form> | Succeeded>(
+      this.api.post("/identity/confirm", form)
+    );
   }
 
-  async changeAccount<Form extends ChangeAccountForm>(form: Form) {
-    return await Result.handle<ValidationProblem<Form> | Unauthorized | Succeeded>(this.api.post("/identity/change", form));
+  async changeAccountAsync<Form extends ChangeAccountForm>(form: Form) {
+    return await Result.handle<ValidationProblem<Form> | Unauthorized | Succeeded>(
+      this.api.post("/identity/change", form)
+    );
   }
 
-  async changePassword<Form extends ChangePasswordForm>(form: Form) {
-    return await Result.handle<ValidationProblem<Form> | Unauthorized | Succeeded>(this.api.post("/identity/password/change", form));
+  async changePasswordAsync<Form extends ChangePasswordForm>(form: Form) {
+    return await Result.handle<ValidationProblem<Form> | Unauthorized | Succeeded>(
+      this.api.post("/identity/password/change", form)
+    );
   }
 
-  async resetPassword<Form extends ResetPasswordForm>(form: Form) {
-    return await Result.handle<ValidationProblem<Form> | Succeeded>(this.api.post("/identity/password/reset", form));
+  async resetPasswordAsync<Form extends ResetPasswordForm>(form: Form) {
+    return await Result.handle<ValidationProblem<Form> | Succeeded>(
+      this.api.post("/identity/password/reset", form)
+    );
   }
 
-  async signIn<Form extends SignInForm>(form: Form) {
-    return await Result.handle<ValidationProblem<Form> | Succeeded<UserSessionModel>>(this.api.post("/identity/sign-in", form));
+  async signInAsync<Form extends SignInForm>(form: Form) {
+    return await Result.handle<ValidationProblem<Form> | Succeeded<UserSessionModel>>(
+      this.api.post("/identity/sign-in", form)
+    );
   }
 
-  async signInWith(provider: SignInProvider) {
-    return await Result.handle<ValidationProblem | Succeeded<UserSessionModel>>(this.api.post(`/identity/sign-in/${provider.toLowerCase()}`));
+  async SignInWithAsync(provider: SignInWithProvider, token: string) {
+    return await Result.handle<ValidationProblem | Succeeded<UserSessionModel>>(
+      this.api.post(`/identity/sign-in/${provider.toLowerCase()}/${token}`)
+    );
   }
 
-  async refreshToken<Form extends RefreshTokenForm>(form: Form) {
-    return await Result.handle<ValidationProblem<Form> | Succeeded<UserSessionModel>>(this.api.post("/identity/refresh-token", form));
+  signInWithRedirect(provider: SignInWithProvider, callbackUrl: string) {
+    const redirectUrl = queryString.stringifyUrl({
+      url: `${this.api.defaults.baseURL!.replace(/\/+$/, "")}/identity/sign-in/${provider.toLowerCase()}`,
+      query: { callbackUrl }
+    });
+    return redirectUrl;
   }
 
-  async signOut<Form extends SignOutForm>(form: Form) {
+  async refreshTokenAsync<Form extends RefreshTokenForm>(form: Form) {
+    return await Result.handle<ValidationProblem<Form> | Succeeded<UserSessionModel>>(
+      this.api.post("/identity/refresh-token", form)
+    );
+  }
+
+  async signOutAsync<Form extends SignOutForm>(form: Form) {
     return await Result.handle<Unauthorized | Succeeded>(this.api.post("/identity/sign-out", form));
   }
 
-  async getProfile() {
-    return await Result.handle<Unauthorized | Succeeded<UserProfileModel>>(this.api.get("/identity/profile"));
+  async getProfileAsync() {
+    return await Result.handle<Unauthorized | Succeeded<UserProfileModel>>(
+      this.api.get("/identity/profile")
+    );
   }
 }

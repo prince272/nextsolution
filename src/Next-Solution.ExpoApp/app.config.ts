@@ -5,7 +5,7 @@ export default ({ config }: ConfigContext): Partial<ExpoConfig> => ({
   name: "Next-Solution",
   slug: "next_solution",
   version: "1.0.0",
-  orientation: "portrait",
+  orientation: "default",
   icon: "./assets/images/icon.png",
   scheme: "nextsoln",
   userInterfaceStyle: "automatic",

@@ -35,7 +35,11 @@ function RootLayout() {
             {({ messages: snackbarMessages, hide: hideSnackbar }) => (
               <>
                 <StatusBar style={inverseTheme} />
-                <Stack>
+                <Stack
+                  screenOptions={{
+                    animation: "fade_from_bottom"
+                  }}
+                >
                   <Stack.Screen name="index" options={{ headerShown: false }} />
                   <Stack.Screen name="(auth)" options={{ headerShown: false }} />
                 </Stack>

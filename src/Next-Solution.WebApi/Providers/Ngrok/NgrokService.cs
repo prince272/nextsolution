@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Next_Solution.WebApi.Providers.Ngrok.Models;
 
 namespace Next_Solution.WebApi.Providers.Ngrok
@@ -7,6 +8,7 @@ namespace Next_Solution.WebApi.Providers.Ngrok
     {
         private readonly INgrokDownloader _downloader;
         private readonly INgrokProcess _process;
+        private readonly IOptionsMonitor<NgrokOptions> _options;
         private readonly IEnumerable<INgrokLifetimeHook> _hooks;
         private readonly INgrokApiClient _ngrok;
         private readonly ILogger _logger;
@@ -20,12 +22,14 @@ namespace Next_Solution.WebApi.Providers.Ngrok
         public NgrokService(
             INgrokDownloader downloader,
             INgrokProcess process,
+            IOptionsMonitor<NgrokOptions> options,
             IEnumerable<INgrokLifetimeHook> hooks,
             INgrokApiClient ngrok,
             ILogger<NgrokService> logger)
         {
             _downloader = downloader;
             _process = process;
+            _options = options;
             _hooks = hooks;
             _ngrok = ngrok;
             _logger = logger;
@@ -54,7 +58,7 @@ namespace Next_Solution.WebApi.Providers.Ngrok
             Uri host,
             CancellationToken cancellationToken)
         {
-            var tunnel = await GetOrCreateTunnelAsync(host, cancellationToken);
+            var tunnel = await GetOrCreateTunnelAsync(host, _options.CurrentValue.Domain, cancellationToken);
             _activeTunnels.Clear();
             _activeTunnels.Add(tunnel);
 
@@ -75,7 +79,7 @@ namespace Next_Solution.WebApi.Providers.Ngrok
             return tunnel;
         }
 
-        private async Task<TunnelResponse> GetOrCreateTunnelAsync(Uri host, CancellationToken cancellationToken)
+        private async Task<TunnelResponse> GetOrCreateTunnelAsync(Uri host, string? domain, CancellationToken cancellationToken)
         {
             var existingTunnels = await _ngrok.GetTunnelsAsync(cancellationToken);
             var existingTunnel = existingTunnels.FirstOrDefault(x => x.Name == AppDomain.CurrentDomain.FriendlyName);
@@ -85,6 +89,7 @@ namespace Next_Solution.WebApi.Providers.Ngrok
             return await _ngrok.CreateTunnelAsync(
                 AppDomain.CurrentDomain.FriendlyName,
                 host,
+                domain,
                 cancellationToken);
         }
 

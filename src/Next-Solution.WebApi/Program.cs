@@ -22,6 +22,9 @@ using Next_Solution.WebApi.Providers.Messaging.Twilio;
 using Next_Solution.WebApi.Providers.JwtBearer;
 using Next_Solution.WebApi.Providers.RazorViewRender;
 using Next_Solution.WebApi.Providers.ModelValidator;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 #if (configureNgrok)
 using Next_Solution.WebApi.Providers.Ngrok;
 #endif
@@ -65,6 +68,13 @@ try
     {
         options.SuppressModelStateInvalidFilter = true;
     });
+
+    builder.Services.AddDataProtection()
+        .UseCryptographicAlgorithms(new AuthenticatedEncryptorConfiguration
+        {
+            EncryptionAlgorithm = EncryptionAlgorithm.AES_256_CBC,
+            ValidationAlgorithm = ValidationAlgorithm.HMACSHA256
+        });
 
     // Configure database context with SQL Server
     builder.Services.AddDbContext<ApplicationDbContext>(options =>

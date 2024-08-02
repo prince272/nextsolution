@@ -1,6 +1,6 @@
 ﻿namespace Next_Solution.WebApi.Helpers
 {
-    public static class ReflectionExtensions
+    public static class ReflectionHelper
     {
         public static bool IsCompatibleWith(this Type type, Type otherType)
         {

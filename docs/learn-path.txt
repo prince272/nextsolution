@@ -2,3 +2,4 @@ https://tailwindcss.com
 https://reactnativepaper.com/
 https://www.youtube.com/watch?v=lA_73_-n-V4
 https://uxwing.com/
+https://stackoverflow.com/questions/74547689/net-template-code-in-conditional-is-ignored-during-compilation

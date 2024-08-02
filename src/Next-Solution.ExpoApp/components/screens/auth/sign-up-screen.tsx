@@ -1,14 +1,17 @@
-import { ComponentProps, useCallback, useEffect, useRef, useState } from "react";
-import { Keyboard, ScrollView, TouchableWithoutFeedback, View } from "react-native";
+import { ComponentProps, useState } from "react";
+import {
+  Keyboard,
+  KeyboardAvoidingView,
+  ScrollView,
+  TouchableWithoutFeedback,
+  View
+} from "react-native";
 import FacebookRoundColorIcon from "@/assets/icons/facebook-round-color-icon.svg";
 import GoogleColorIcon from "@/assets/icons/google-color-icon.svg";
 import { identityService } from "@/services";
-import { cn, sleep } from "@/utils";
+import { cn } from "@/utils";
 import { Image } from "expo-image";
-import * as Linking from "expo-linking";
 import { Link } from "expo-router";
-import * as WebBrowser from "expo-web-browser";
-import { delay } from "lodash";
 import { cssInterop } from "nativewind";
 import { Controller, useForm } from "react-hook-form";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
@@ -22,38 +25,36 @@ import {
   useTheme
 } from "react-native-paper";
 import { ValidationProblem } from "@/services/results";
-import { SignInForm, SignInWithProvider } from "@/services/types";
+import { CreateAccountForm } from "@/services/types";
 import { useMemoizedValue } from "@/hooks/use-memoized-value";
 import { useSnackbar } from "@/components/providers/snackbar";
 
 const Text = customText();
 
-export interface SignInScreenProps extends ComponentProps<typeof View> {
+export interface SignUpScreenProps extends ComponentProps<typeof View> {
   formOnly?: boolean;
 }
 
-export const SignInScreen = ({ className, formOnly, ...props }: SignInScreenProps) => {
-  const form = useForm<SignInForm>();
+export const SignUpScreen = ({ className, formOnly, ...props }: SignUpScreenProps) => {
+  const form = useForm<CreateAccountForm>();
   const [formSubmitting, setFormSubmitting] = useState(false);
   const formErrors = useMemoizedValue(form.formState.errors, formSubmitting);
 
-  const [signInWith, setSignInWith] = useState<SignInWithProvider | null>(null);
-  const linkingUrl = Linking.useURL();
-
   const snackbar = useSnackbar();
+
   const themeConfig = useTheme();
 
-  const handleSignIn = (e?: React.BaseSyntheticEvent) => {
+  const handleSubmit = (e?: React.BaseSyntheticEvent) => {
     setFormSubmitting(true);
     return form.handleSubmit(async (inputs) => {
-      const response = await identityService.signInAsync(inputs);
+      const response = await identityService.createAccountAsync(inputs);
       setFormSubmitting(false);
 
       if (!response.success) {
         if (response instanceof ValidationProblem) {
           const errorFields = Object.entries<string[]>(response.errors || []);
           errorFields.forEach(([name, message]) => {
-            form.setError(name as keyof SignInForm, { message: message?.join("\n") });
+            form.setError(name as keyof CreateAccountForm, { message: message?.join("\n") });
           });
 
           if (errorFields.length <= 0) snackbar.show(response.message);
@@ -65,32 +66,6 @@ export const SignInScreen = ({ className, formOnly, ...props }: SignInScreenProp
       }
     })(e);
   };
-
-  const handleSignInWithRedirect = useCallback(async (provider: SignInWithProvider) => {
-    setSignInWith(provider);
-    await sleep(2000);
-    const callbackUrl = Linking.createURL("/sign-in");
-    const redirectUrl = identityService.signInWithRedirect(provider, callbackUrl);
-    await WebBrowser.openAuthSessionAsync(redirectUrl);
-    setSignInWith(null);
-  }, []);
-
-  const handleSignInWithCallback = useCallback(
-    async (provider: SignInWithProvider, token: string) => {
-      const response = await identityService.SignInWithAsync(provider, token);
-      console.log(response.statusCode);
-    },
-    []
-  );
-
-  useEffect(() => {
-    if (linkingUrl) {
-      const { hostname, path, queryParams } = Linking.parse(linkingUrl);
-      const { token, provider } = queryParams || {};
-      if (token && provider)
-        handleSignInWithCallback(provider as SignInWithProvider, token as string);
-    }
-  }, [linkingUrl]);
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -112,20 +87,20 @@ export const SignInScreen = ({ className, formOnly, ...props }: SignInScreenProp
                 </Text>
               </View>
               <View className="px-6">
-                <Link href="/sign-in-form" asChild>
+                <Link href="/sign-up-form" asChild>
                   <Button
                     icon={({ color }) => <Icon source="account" size={24} color={color} />}
                     className="rounded-full mb-4"
                     mode="contained"
                   >
-                    Sign in with email or phone
+                    Sign up with email or phone
                   </Button>
                 </Link>
-                <Link href="/sign-up-form" asChild>
+                <Link href="/sign-in-form" asChild>
                   <TouchableRipple onPress={() => {}}>
                     <Text className="text-center py-1">
-                      Don't have an account?{" "}
-                      <Text className="text-primary font-bold">Create one</Text>
+                      Already have an account?{" "}
+                      <Text className="text-primary font-bold">Sign in</Text>
                     </Text>
                   </TouchableRipple>
                 </Link>
@@ -143,8 +118,7 @@ export const SignInScreen = ({ className, formOnly, ...props }: SignInScreenProp
                   buttonColor={themeConfig.colors.surfaceVariant}
                   textColor={themeConfig.colors.onBackground}
                   mode="elevated"
-                  onPress={() => handleSignInWithRedirect("Google")}
-                  loading={signInWith === "Google"}
+                  onPress={() => {}}
                 >
                   Continue with Google
                 </Button>
@@ -155,8 +129,7 @@ export const SignInScreen = ({ className, formOnly, ...props }: SignInScreenProp
                   buttonColor={themeConfig.colors.surfaceVariant}
                   textColor={themeConfig.colors.onBackground}
                   mode="elevated"
-                  onPress={() => handleSignInWithRedirect("Facebook")}
-                  loading={signInWith === "Facebook"}
+                  onPress={() => {}}
                 >
                   Continue with Facebook
                 </Button>
@@ -173,14 +146,62 @@ export const SignInScreen = ({ className, formOnly, ...props }: SignInScreenProp
                 />
                 <View className="flex-1">
                   <Text variant="titleLarge" className="font-bold">
-                    Sign into your account
+                    Create a new account
                   </Text>
                   <Text className="text-on-surface-variant" variant="bodySmall">
-                    Enter your credentials to sign in.
+                    Enter your details to sign up.
                   </Text>
                 </View>
               </View>
               <KeyboardAwareScrollView className="px-6 mt-20" extraHeight={500}>
+                <View className="flex-row pb-4">
+                  <View className="flex-1 pr-2">
+                    <Text variant="labelLarge" className="mb-2">
+                      First name
+                    </Text>
+                    <Controller
+                      control={form.control}
+                      render={({ field: { onChange, onBlur, value } }) => (
+                        <>
+                          <TextInput
+                            dense
+                            mode="flat"
+                            onBlur={onBlur}
+                            onChangeText={onChange}
+                            value={value}
+                          />
+                          {formErrors.firstName && (
+                            <HelperText type="error">{formErrors.firstName.message}</HelperText>
+                          )}
+                        </>
+                      )}
+                      name="firstName"
+                    />
+                  </View>
+                  <View className="flex-1 pl-2">
+                    <Text variant="labelLarge" className="mb-2">
+                      Last Name
+                    </Text>
+                    <Controller
+                      control={form.control}
+                      render={({ field: { onChange, onBlur, value } }) => (
+                        <>
+                          <TextInput
+                            dense
+                            mode="flat"
+                            onBlur={onBlur}
+                            onChangeText={onChange}
+                            value={value}
+                          />
+                          {formErrors.lastName && (
+                            <HelperText type="error">{formErrors.lastName.message}</HelperText>
+                          )}
+                        </>
+                      )}
+                      name="lastName"
+                    />
+                  </View>
+                </View>
                 <View className="pb-4">
                   <Text variant="labelLarge" className="mb-2">
                     Email or phone number
@@ -238,21 +259,21 @@ export const SignInScreen = ({ className, formOnly, ...props }: SignInScreenProp
           <View className="px-6 pt-4 pb-3 bg-surface">
             <Button
               onPress={() => {
-                handleSignIn();
+                Keyboard.dismiss();
+                handleSubmit();
               }}
               className="rounded-full mb-4"
               mode="contained"
               loading={formSubmitting}
               disabled={formSubmitting}
             >
-              Sign in
+              Sign up
             </Button>
             <View>
-              <Link href="/sign-up-form" asChild>
+              <Link href="/sign-in-form" asChild>
                 <TouchableRipple>
                   <Text className="text-center py-1">
-                    Don't have an account?{" "}
-                    <Text className="text-primary font-bold">Create one</Text>
+                    Already have an account? <Text className="text-primary font-bold">Sign in</Text>
                   </Text>
                 </TouchableRipple>
               </Link>
@@ -264,7 +285,7 @@ export const SignInScreen = ({ className, formOnly, ...props }: SignInScreenProp
         {!formOnly && (
           <View className="pb-6 px-2">
             <Text className="text-center">
-              By signing in you accept our{" "}
+              By signing up you accept our{" "}
               <Text className="text-primary underline font-bold">Terms of Service</Text> and{" "}
               <Text className="text-primary underline font-bold">Privacy Policy</Text>
             </Text>

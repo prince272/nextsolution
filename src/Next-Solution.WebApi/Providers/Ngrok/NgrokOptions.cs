@@ -5,5 +5,7 @@
         public bool ShowNgrokWindow { get; set; } 
 
         public string AuthToken { get; set; } = null!;
+
+        public string? Domain { get; set; } = null!;
     }
 }

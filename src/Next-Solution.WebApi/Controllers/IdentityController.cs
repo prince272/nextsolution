@@ -5,10 +5,22 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Next_Solution.WebApi.Models.Identity;
 using Next_Solution.WebApi.Data.Entities.Identity;
 using Next_Solution.WebApi.Services;
+using System.Net.Mime;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.DataProtection;
+using System.Text.Json;
+using Microsoft.AspNetCore.WebUtilities;
+using Next_Solution.WebApi.Options;
+using Microsoft.Extensions.Primitives;
+using Next_Solution.WebApi.Providers.Validation;
+using System.Security.Claims;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace Next_Solution.WebApi.Controllers
 {
@@ -21,21 +33,24 @@ namespace Next_Solution.WebApi.Controllers
     public class IdentityController : ControllerBase
     {
         private readonly IIdentityService _identityService;
+        private readonly ILogger<IdentityController> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="IdentityController"/> class.
         /// </summary>
         /// <param name="identityService">The identity service.</param>
-        public IdentityController(IIdentityService identityService)
+        /// <param name="logger">The logger service.</param>
+        public IdentityController(IIdentityService identityService, ILogger<IdentityController> logger)
         {
             _identityService = identityService ?? throw new ArgumentNullException(nameof(identityService));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
         /// Creates a new user account.
         /// </summary>
-        /// <param name="form">The account creation form data.</param>
-        /// <returns>The result of the account creation.</returns>
+        /// <param name="form">The data required to create the new user account.</param>
+        /// <returns>The result of the account creation operation.</returns>
         [HttpPost("create")]
         public async Task<Results<ValidationProblem, Ok>> CreateAccount([FromBody] CreateAccountForm form)
         {
@@ -43,24 +58,47 @@ namespace Next_Solution.WebApi.Controllers
         }
 
         /// <summary>
-        /// Confirms an existing user account.
+        /// Sends a confirmation code to the user for account verification.
         /// </summary>
-        /// <param name="form">The confirmation form data.</param>
-        /// <returns>The result of confirming the existing user account.</returns>
-        [HttpPost("confirm")]
-        public async Task<Results<ValidationProblem, Ok>> ConfirmAccount([FromBody] ConfirmAccountForm form)
+        /// <param name="form">The data required to send the confirmation code.</param>
+        /// <returns>The result of sending the confirmation code.</returns>
+        [HttpPost("confirm/send-code")]
+        public async Task<Results<ValidationProblem, Ok>> ConfirmAccount([FromBody] ConfirmAccountSendCodeForm form)
         {
             return await _identityService.ConfirmAccountAsync(form);
         }
 
         /// <summary>
-        /// Changes the current user account.
+        /// Confirms an existing user account using a confirmation code.
         /// </summary>
-        /// <param name="form">The new user account form data.</param>
-        /// <returns>The result of changing the current user account.</returns>
+        /// <param name="form">The data required to confirm the account using the confirmation code.</param>
+        /// <returns>The result of confirming the user account.</returns>
+        [HttpPost("confirm")]
+        public async Task<Results<ValidationProblem, Ok>> ConfirmAccount([FromBody] ConfirmAccountVerifyCodeForm form)
+        {
+            return await _identityService.ConfirmAccountAsync(form);
+        }
+
+        /// <summary>
+        /// Requests a code to change user account details.
+        /// </summary>
+        /// <param name="form">The data required to request the code for changing account details.</param>
+        /// <returns>The result of requesting the change code.</returns>
+        [Authorize]
+        [HttpPost("change/send-code")]
+        public async Task<Results<ValidationProblem, UnauthorizedHttpResult, Ok>> ChangeAccount([FromBody] ChangeAccountSendCodeForm form)
+        {
+            return await _identityService.ChangeAccountAsync(form);
+        }
+
+        /// <summary>
+        /// Changes the current user account details using a confirmation code.
+        /// </summary>
+        /// <param name="form">The data required to change the account details using the confirmation code.</param>
+        /// <returns>The result of changing the account details.</returns>
         [Authorize]
         [HttpPost("change")]
-        public async Task<Results<ValidationProblem, UnauthorizedHttpResult, Ok>> ChangeAccount([FromBody] ChangeAccountForm form)
+        public async Task<Results<ValidationProblem, UnauthorizedHttpResult, Ok>> ChangeAccount([FromBody] ChangeAccountVerifyCodeForm form)
         {
             return await _identityService.ChangeAccountAsync(form);
         }
@@ -68,8 +106,8 @@ namespace Next_Solution.WebApi.Controllers
         /// <summary>
         /// Changes the password for the current user account.
         /// </summary>
-        /// <param name="form">The new password form data.</param>
-        /// <returns>The result of changing the password for the current user account.</returns>
+        /// <param name="form">The data required to change the password.</param>
+        /// <returns>The result of changing the password.</returns>
         [Authorize]
         [HttpPost("password/change")]
         public async Task<Results<ValidationProblem, UnauthorizedHttpResult, Ok>> ChangePassword([FromBody] ChangePasswordForm form)
@@ -78,12 +116,23 @@ namespace Next_Solution.WebApi.Controllers
         }
 
         /// <summary>
-        /// Resets the password for the user account.
+        /// Sends a code to reset the user account password.
         /// </summary>
-        /// <param name="form">The new password form data.</param>
-        /// <returns>The result of resetting the password for the user account.</returns>
+        /// <param name="form">The data required to request the password reset code.</param>
+        /// <returns>The result of sending the reset code.</returns>
+        [HttpPost("password/reset/send-code")]
+        public async Task<Results<ValidationProblem, Ok>> ResetPassword([FromBody] ResetPasswordSendCodeForm form)
+        {
+            return await _identityService.ResetPasswordAsync(form);
+        }
+
+        /// <summary>
+        /// Resets the password for the user account using a confirmation code.
+        /// </summary>
+        /// <param name="form">The data required to reset the password using the confirmation code.</param>
+        /// <returns>The result of resetting the password.</returns>
         [HttpPost("password/reset")]
-        public async Task<Results<ValidationProblem, Ok>> ResetPassword([FromBody] ResetPasswordForm form)
+        public async Task<Results<ValidationProblem, Ok>> ResetPassword([FromBody] ResetPasswordVerifyCodeForm form)
         {
             return await _identityService.ResetPasswordAsync(form);
         }
@@ -91,71 +140,86 @@ namespace Next_Solution.WebApi.Controllers
         /// <summary>
         /// Signs into an existing user account.
         /// </summary>
-        /// <param name="form">The sign-in form data.</param>
-        /// <returns>The result of signing into an existing user account.</returns>
+        /// <param name="form">The data required to sign into the user account.</param>
+        /// <returns>The result of the sign-in operation.</returns>
         [HttpPost("sign-in")]
         public async Task<Results<ValidationProblem, Ok<UserSessionModel>>> SignIn([FromBody] SignInForm form)
         {
             return await _identityService.SignInAsync(form);
         }
 
-
         /// <summary>
-        /// Requests a redirect to the external sign-in provider.
+        /// Redirects the user to the external sign-in provider.
         /// </summary>
         /// <param name="signInManager">The sign-in manager service.</param>
-        /// <param name="configuration">The configuration service.</param>
-        /// <param name="providerValue">The name of the external sign-in provider.</param>
-        /// <param name="origin">The origin URL from which the sign-in request was made.</param>
-        /// <returns>The result of the sign-in request.</returns>
+        /// <param name="provider">The name of the external sign-in provider.</param>
+        /// <param name="callbackUrl">The URL to redirect to after sign-in.</param>
+        /// <returns>The result of the redirect operation.</returns>
         [HttpGet("sign-in/{provider}")]
-        public Results<ValidationProblem, ChallengeHttpResult> SignInWithGet([FromServices] SignInManager<User> signInManager, [FromServices] IConfiguration configuration, [FromRoute(Name = "provider")] string providerValue, [FromQuery] string origin)
+        public Results<ValidationProblem, ChallengeHttpResult, Ok> SignInWithRedirect([FromServices] SignInManager<User> signInManager, SignInWithProvider provider, [FromQuery] string callbackUrl)
         {
-            if (!Enum.TryParse<SignInProvider>(providerValue, ignoreCase: true, out var provider))
-                return TypedResults.ValidationProblem(new Dictionary<string, string[]>(), title: $"The sign-in provider specified is invalid. Supported providers: {Enum.GetValues<SignInProvider>().Humanize()}.");
-
-            if (string.IsNullOrWhiteSpace(origin))
-                return TypedResults.ValidationProblem(new Dictionary<string, string[]>(), title: $"The origin must be specified.");
-
-            var allowedOrigins = configuration.GetSection("AllowedOrigins")?.Get<string[]>() ?? Array.Empty<string>();
-            if (!allowedOrigins.Any(o => Uri.Compare(new Uri(o, UriKind.Absolute), new Uri(origin), UriComponents.SchemeAndServer, UriFormat.UriEscaped, StringComparison.OrdinalIgnoreCase) == 0))
-                return TypedResults.ValidationProblem(new Dictionary<string, string[]>(), title: $"The origin specified is not allowed.");
-
-            // Request a redirect to the external sign-in provider.
-            var authenticationProperties = signInManager.ConfigureExternalAuthenticationProperties(provider.ToString(), origin);
+            var redirectUrl = Url.ActionLink(nameof(SignInWithCallback), values: new { provider, callbackUrl });
+            var authenticationProperties = signInManager.ConfigureExternalAuthenticationProperties(provider.ToString(), redirectUrl: redirectUrl);
             return TypedResults.Challenge(authenticationProperties, new[] { provider.ToString() });
         }
 
-        /// <summary>
-        /// Handles the post-back from the external sign-in provider and signs the user in.
-        /// </summary>
-        /// <param name="signInManager">The sign-in manager service.</param>
-        /// <param name="providerValue">The name of the external sign-in provider.</param>
-        /// <returns>The result of the sign-in process.</returns>
-        [HttpPost("sign-in/{provider}")]
-        public async Task<Results<ValidationProblem, Ok<UserSessionModel>>> SignInWithPost([FromServices] SignInManager<User> signInManager, [FromRoute(Name = "provider")] string providerValue)
+        [SwaggerIgnore]
+        [HttpGet("sign-in/{provider}/callback")]
+        public async Task<Results<RedirectHttpResult, Ok>> SignInWithCallback([FromServices] SignInManager<User> signInManager, SignInWithProvider provider, [FromQuery] string callbackUrl)
         {
-            if (!Enum.TryParse<SignInProvider>(providerValue, ignoreCase: true, out var provider))
-                return TypedResults.ValidationProblem(new Dictionary<string, string[]>(), title: $"The sign-in provider specified is invalid. Supported providers: {Enum.GetValues<SignInProvider>().Humanize()}.");
-
             var authenticationResult = await signInManager.GetExternalLoginInfoAsync();
-            if (authenticationResult is null)
-                return TypedResults.ValidationProblem(new Dictionary<string, string[]>(), title: "No External sign-in information was found.");
 
-            return await _identityService.SignInWithAsync(new SignInWithForm
+            if (authenticationResult is null)
             {
-                Principal = authenticationResult.Principal,
+                return TypedResults.Redirect(callbackUrl, permanent: true);
+            }
+
+            var protectedForm = await _identityService.ProtectFormAsync(new SignInWithProviderForm
+            {
                 Provider = provider,
                 ProviderKey = authenticationResult.ProviderKey,
-                ProviderDisplayName = authenticationResult.ProviderDisplayName
+                FirstName = authenticationResult.Principal.FindFirstValue(ClaimTypes.GivenName) ?? "User",
+                LastName = authenticationResult.Principal.FindFirstValue(ClaimTypes.Surname),
+                Username = (authenticationResult.Principal.FindFirstValue(ClaimTypes.Email) ??
+                           authenticationResult.Principal.FindFirstValue(ClaimTypes.MobilePhone) ??
+                           authenticationResult.Principal.FindFirstValue(ClaimTypes.OtherPhone) ??
+                           authenticationResult.Principal.FindFirstValue(ClaimTypes.HomePhone))!
             });
+
+            callbackUrl = QueryHelpers.AddQueryString(callbackUrl, new Dictionary<string, StringValues>
+            {
+                { "provider", provider.ToString() },
+                { "token", protectedForm },
+                { "requestId", Guid.NewGuid().ToString("N") }
+            });
+
+            return TypedResults.Redirect(callbackUrl);
+        }
+
+        [HttpPost("sign-in/{provider}/{token}")]
+        public async Task<Results<ValidationProblem, Ok<UserSessionModel>>> SignInWithToken([FromRoute] SignInWithProvider provider, [FromRoute] string token)
+        {
+            SignInWithProviderForm? form;
+
+            try
+            {
+                form = await _identityService.UnprotectFormAsync<SignInWithProviderForm>(token);
+            }
+            catch (Exception ex)
+            {
+                // Include provider in error
+                _logger.LogError(ex, "Failed to unprotect form for provider {Provider}.", provider);
+                return TypedResults.ValidationProblem(new Dictionary<string, string[]>(), title: $"{provider} Authentication failed.");
+            }
+            
+            return await _identityService.SignInAsync(form);
         }
 
         /// <summary>
         /// Refreshes the current user's access token.
         /// </summary>
-        /// <param name="form">The refresh token form data.</param>
-        /// <returns>The result of refreshing the current user's access token.</returns>
+        /// <param name="form">The data required to refresh the access token.</param>
+        /// <returns>The result of refreshing the access token.</returns>
         [HttpPost("refresh-token")]
         public async Task<Results<ValidationProblem, Ok<UserSessionModel>>> RefreshToken([FromBody] RefreshTokenForm form)
         {
@@ -165,8 +229,8 @@ namespace Next_Solution.WebApi.Controllers
         /// <summary>
         /// Signs out the current user.
         /// </summary>
-        /// <param name="form">The sign-out form data.</param>
-        /// <returns>The result of signing out the current user.</returns>
+        /// <param name="form">The data required to sign out the user.</param>
+        /// <returns>The result of the sign-out operation.</returns>
         [Authorize]
         [HttpPost("sign-out")]
         public async Task<Results<ValidationProblem, Ok>> SignOut([FromBody] SignOutForm form)
@@ -175,14 +239,14 @@ namespace Next_Solution.WebApi.Controllers
         }
 
         /// <summary>
-        /// Gets the current user's profile.
+        /// Retrieves the current user's profile.
         /// </summary>
-        /// <returns>The result of getting the current user's profile.</returns>
+        /// <returns>The result of retrieving the user's profile.</returns>
         [Authorize]
         [HttpGet("profile")]
-        public async Task<Results<UnauthorizedHttpResult, Ok<UserProfileModel>>> GetProfile()
+        public async Task<Results<UnauthorizedHttpResult, Ok<UserProfileModel>>> GetUserProfile()
         {
-            return await _identityService.GetProfileAsync();
+            return await _identityService.GetUserProfileAsync();
         }
     }
 }

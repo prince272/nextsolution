@@ -80,16 +80,15 @@ namespace Next_Solution.WebApi.Providers.Ngrok
 
         private ProcessStartInfo GetProcessStartInfo()
         {
-            if (string.IsNullOrEmpty(_options.CurrentValue.AuthToken))
-            {
-                throw new InvalidOperationException("An auth token is required for Ngrok to work.");
-            }
+            var authTokenArg = !string.IsNullOrEmpty(_options.CurrentValue.AuthToken)
+                ? $"--authtoken {_options.CurrentValue.AuthToken}" 
+                : throw new InvalidOperationException("An auth token is required for Ngrok to work.");
 
-            var additionalArguments = $"--authtoken {_options.CurrentValue.AuthToken}";
+            var arguments = $"start --none {authTokenArg}".Trim();
 
-            var processStartInfo = new ProcessStartInfo(
+            return new ProcessStartInfo(
                 NgrokDownloader.GetExecutableFileName(),
-                $"start --none {additionalArguments}")
+                arguments)
             {
                 CreateNoWindow = true,
                 WindowStyle = GetProcessWindowStyle(),
@@ -99,8 +98,9 @@ namespace Next_Solution.WebApi.Providers.Ngrok
                 RedirectStandardOutput = false,
                 RedirectStandardInput = false
             };
-            return processStartInfo;
         }
+
+
 
         public async Task StopAsync()
         {

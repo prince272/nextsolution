@@ -6,8 +6,12 @@ using Next_Solution.WebApi.Providers.Validation;
 
 namespace Next_Solution.WebApi.Models.Identity
 {
-    public class CreateAccountForm
+    public class SignInWithProviderForm
     {
+        public SignInWithProvider Provider { get; set; }
+
+        public string ProviderKey { get; set; } = null!;
+
         public string FirstName { get; set; } = null!;
 
         public string? LastName { get; set; }
@@ -15,6 +19,7 @@ namespace Next_Solution.WebApi.Models.Identity
         public string Username { get; set; } = null!;
 
         private ContactType? usernameType;
+
         public ContactType? UsernameType
         {
             get
@@ -24,16 +29,14 @@ namespace Next_Solution.WebApi.Models.Identity
             }
             set => usernameType = value;
         }
-
-        public string Password { get; set; } = null!;
     }
 
-    public class CreateAccountFormValidator : AbstractValidator<CreateAccountForm>
+    public class SignInWithoutPasswordFormValidator : AbstractValidator<SignInWithProviderForm>
     {
-        public CreateAccountFormValidator()
+        public SignInWithoutPasswordFormValidator()
         {
             RuleFor(_ => _.FirstName).NotEmpty().MaximumLength(256);
-            RuleFor(_ => _.LastName).MaximumLength(256);
+
             RuleFor(_ => _.Username).NotEmpty().DependentRules(() =>
             {
                 When(_ => _.UsernameType!.Value == ContactType.Email, () =>
@@ -46,18 +49,23 @@ namespace Next_Solution.WebApi.Models.Identity
                     RuleFor(_ => _.Username).PhoneNumber().WithName("Phone number");
                 });
             });
-            RuleFor(_ => _.Password).NotEmpty().Password();
         }
     }
 
-    public class CreateAccountFormProfile : Profile
+    public class SignInWithoutPasswordProfile : Profile
     {
-        public CreateAccountFormProfile()
+        public SignInWithoutPasswordProfile()
         {
-            CreateMap<CreateAccountForm, User>()
+            CreateMap<SignInForm, User>()
                 .ForMember(_ => _.UserName, _ => _.Ignore())
                 .ForMember(_ => _.Email, _ => _.Ignore())
                 .ForMember(_ => _.PhoneNumber, _ => _.Ignore());
         }
+    }
+
+    public enum SignInWithProvider
+    {
+        Google,
+        Facebook
     }
 }

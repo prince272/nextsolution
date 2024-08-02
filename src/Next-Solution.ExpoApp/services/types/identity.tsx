@@ -39,7 +39,7 @@ export type SignInForm = {
   password: string;
 };
 
-export type SignInProvider = "Google" | "Facebook";
+export type SignInWithProvider = "Google" | "Facebook";
 
 export type RefreshTokenForm = {
   refreshToken: string;

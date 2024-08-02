@@ -12,5 +12,8 @@ namespace Next_Solution.WebApi.Providers.Ngrok.Models
 
         [JsonPropertyName("proto")]
         public string Protocol { get; set; } = null!;
+
+        [JsonPropertyName("domain")]
+        public string? Domain { get; set; }
     }
 }

@@ -3,7 +3,6 @@ using Humanizer;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 using Next_Solution.WebApi.Data.Entities.Identity;
 using Next_Solution.WebApi.Models.Identity;
 using Next_Solution.WebApi.Providers.Messaging;
@@ -12,6 +11,11 @@ using Next_Solution.WebApi.Providers.JwtBearer;
 using Next_Solution.WebApi.Helpers;
 using Next_Solution.WebApi.Providers.RazorViewRender;
 using Next_Solution.WebApi.Providers.ModelValidator;
+using Microsoft.AspNetCore.DataProtection;
+using System.Text.Json;
+using System.Text;
+using System.ComponentModel;
+using IdentityAudit.Utilities;
 
 namespace Next_Solution.WebApi.Services
 {
@@ -25,6 +29,7 @@ namespace Next_Solution.WebApi.Services
         private readonly IMapper _mapper;
         private readonly UserManager<User> _userManager;
         private readonly RoleManager<Role> _roleManager;
+        private readonly IDataProtector _formProtector;
 
         public IdentityService(
             IJwtProvider jwtBearerProvider,
@@ -32,6 +37,7 @@ namespace Next_Solution.WebApi.Services
             IMessageSender messageSender,
             IRazorViewRenderer razorViewRenderer,
             IHttpContextAccessor httpContextAccessor,
+            IDataProtectionProvider dataProtectionProvider,
             IMapper mapper,
             UserManager<User> userManager,
             RoleManager<Role> roleManager)
@@ -44,13 +50,19 @@ namespace Next_Solution.WebApi.Services
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             _roleManager = roleManager ?? throw new ArgumentNullException(nameof(roleManager));
+            _formProtector = dataProtectionProvider.CreateProtector("1A114D3A52AA408FACFE89A437A9BCC4");
         }
 
         public async Task<Results<ValidationProblem, Ok>> CreateAccountAsync(CreateAccountForm form)
         {
             if (form is null) throw new ArgumentNullException(nameof(form));
+
             var formValidation = await _modelValidator.ValidateAsync(form);
-            if (!formValidation.IsValid) return TypedResults.ValidationProblem(formValidation.Errors);
+            if (!formValidation.IsValid)
+            {
+                var errors = formValidation.Errors;
+                return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
+            }
 
             var existingUser = form.UsernameType switch
             {
@@ -61,13 +73,25 @@ namespace Next_Solution.WebApi.Services
 
             if (existingUser is not null)
             {
-                if (CheckIfEmailOrPhoneNumberRequiresConfirmation(existingUser, form.UsernameType!.Value)) return TypedResults.ValidationProblem(new Dictionary<string, string[]>
-                { { nameof(form.Username), [$"'{form.UsernameType.Humanize(LetterCasing.Sentence)}' is not confirmed."] } },
-                    extensions: new Dictionary<string, object?> { { "reason", IdentityErrorReason.UsernameNotConfirmed } });
+                if (CheckIfEmailOrPhoneNumberRequiresConfirmation(existingUser, form.UsernameType!.Value))
+                {
+                    var errors = new Dictionary<string, string[]>
+                    {
+                        { nameof(form.Username), [$"'{form.UsernameType.Humanize(LetterCasing.Sentence)}' is not confirmed."] }
+                    };
 
-                return TypedResults.ValidationProblem(new Dictionary<string, string[]>
-                { { nameof(form.Username), [$"'{form.UsernameType.Humanize(LetterCasing.Sentence)}' is already taken."] } },
-                extensions: new Dictionary<string, object?> { { "reason", IdentityErrorReason.UsernameTaken } });
+                    return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
+                }
+                else
+                {
+                    var errors = new Dictionary<string, string[]>
+                    { 
+                        { nameof(form.Username), [$"'{form.UsernameType.Humanize(LetterCasing.Sentence)}' is already taken."] }
+                    };
+
+                    return TypedResults.ValidationProblem(errors, 
+                        title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
+                }
             }
 
             var newUser = _mapper.Map<User>(form);
@@ -83,18 +107,29 @@ namespace Next_Solution.WebApi.Services
 
             await SetupUserRolesAsync(newUser);
 
-            if (CheckIfEmailOrPhoneNumberRequiresConfirmation(newUser, form.UsernameType!.Value)) return TypedResults.ValidationProblem(new Dictionary<string, string[]>
-                { { nameof(form.Username), [$"'{form.UsernameType.Humanize(LetterCasing.Sentence)}' is not confirmed."] } },
-                extensions: new Dictionary<string, object?> { { "reason", IdentityErrorReason.UsernameNotConfirmed } });
+            if (CheckIfEmailOrPhoneNumberRequiresConfirmation(newUser, form.UsernameType!.Value))
+            {
+                var errors = new Dictionary<string, string[]> 
+                {
+                    { nameof(form.Username), [$"'{form.UsernameType.Humanize(LetterCasing.Sentence)}' is not confirmed."] }
+                };
+
+                return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
+            }
 
             return TypedResults.Ok();
         }
 
-        public async Task<Results<ValidationProblem, Ok>> ConfirmAccountAsync(ConfirmAccountForm form)
+        public async Task<Results<ValidationProblem, Ok>> ConfirmAccountAsync(ConfirmAccountSendCodeForm form)
         {
             if (form is null) throw new ArgumentNullException(nameof(form));
+
             var formValidation = await _modelValidator.ValidateAsync(form);
-            if (!formValidation.IsValid) return TypedResults.ValidationProblem(formValidation.Errors);
+            if (!formValidation.IsValid)
+            {
+                var errors = formValidation.Errors;
+                return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
+            }
 
             var user = form.UsernameType switch
             {
@@ -103,67 +138,115 @@ namespace Next_Solution.WebApi.Services
                 _ => throw new InvalidOperationException("Invalid username type.")
             };
 
-            if (user is null) return TypedResults.ValidationProblem(new Dictionary<string, string[]>
-            { { nameof(form.Username), [$"'{form.UsernameType.Humanize(LetterCasing.Sentence)}' does not exist."] } },
-            extensions: new Dictionary<string, object?> { { "reason", IdentityErrorReason.UsernameNotFound } });
-
-            if (form.SendCode)
+            if (user is null)
             {
-                var code = form.UsernameType switch
+                var errors = new Dictionary<string, string[]>
                 {
-                    ContactType.Email => await _userManager.GenerateChangeEmailTokenAsync(user, user.Email!),
-                    ContactType.PhoneNumber => await _userManager.GenerateChangePhoneNumberTokenAsync(user, user.PhoneNumber!),
-                    _ => throw new InvalidOperationException("Invalid username type.")
+                    { nameof(form.Username), [$"'{form.UsernameType.Humanize(LetterCasing.Sentence)}' does not exist."] }
                 };
 
-                var message = form.UsernameType switch
-                {
-                    ContactType.Email => new Message
-                    {
-                        Subject = "Confirm Your Email Address",
-                        Body = await _razorViewRenderer.RenderAsync("/Templates/Email/ConfirmAccount", (user, code)),
-                        Recipients = new[] { user.Email! },
-                    },
-                    ContactType.PhoneNumber => new Message
-                    {
-                        Subject = "Confirm Your Phone Number",
-                        Body = await _razorViewRenderer.RenderAsync("/Templates/Text/ConfirmAccount", (user, code)),
-                        Recipients = new[] { user.PhoneNumber! },
-                    },
-                    _ => throw new InvalidOperationException("Invalid username type.")
-                };
-
-                var messageChannel = form.UsernameType switch
-                {
-                    ContactType.Email => MessageChannel.Email,
-                    ContactType.PhoneNumber => MessageChannel.Sms,
-                    _ => throw new InvalidOperationException("Invalid username type.")
-                };
-
-                await _messageSender.SendAsync(messageChannel, message);
+                return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
             }
-            else
+
+
+            var code = form.UsernameType switch
             {
-                var result = form.UsernameType switch
-                {
-                    ContactType.Email => await _userManager.ChangeEmailAsync(user, user.Email!, form.Code),
-                    ContactType.PhoneNumber => await _userManager.ChangePhoneNumberAsync(user, user.PhoneNumber!, form.Code),
-                    _ => throw new InvalidOperationException("Invalid username type.")
-                };
+                ContactType.Email => await _userManager.GenerateChangeEmailTokenAsync(user, user.Email!),
+                ContactType.PhoneNumber => await _userManager.GenerateChangePhoneNumberTokenAsync(user, user.PhoneNumber!),
+                _ => throw new InvalidOperationException("Invalid username type.")
+            };
 
-                if (!result.Succeeded) return TypedResults.ValidationProblem(new Dictionary<string, string[]>
-                { { nameof(form.Code), [$"'{nameof(form.Code).Humanize(LetterCasing.Sentence)}' is not valid."] } });
-            }
+            var message = form.UsernameType switch
+            {
+                ContactType.Email => new Message
+                {
+                    Subject = "Confirm Your Email Address",
+                    Body = await _razorViewRenderer.RenderAsync("/Templates/Email/ConfirmAccount", (user, code)),
+                    Recipients = new[] { user.Email! },
+                },
+                ContactType.PhoneNumber => new Message
+                {
+                    Subject = "Confirm Your Phone Number",
+                    Body = await _razorViewRenderer.RenderAsync("/Templates/Text/ConfirmAccount", (user, code)),
+                    Recipients = new[] { user.PhoneNumber! },
+                },
+                _ => throw new InvalidOperationException("Invalid username type.")
+            };
+
+            var messageChannel = form.UsernameType switch
+            {
+                ContactType.Email => MessageChannel.Email,
+                ContactType.PhoneNumber => MessageChannel.Sms,
+                _ => throw new InvalidOperationException("Invalid username type.")
+            };
+
+            await _messageSender.SendAsync(messageChannel, message);
 
             return TypedResults.Ok();
 
         }
 
-        public async Task<Results<ValidationProblem, UnauthorizedHttpResult, Ok>> ChangeAccountAsync(ChangeAccountForm form)
+        public async Task<Results<ValidationProblem, Ok>> ConfirmAccountAsync(ConfirmAccountVerifyCodeForm form)
         {
             if (form is null) throw new ArgumentNullException(nameof(form));
+
             var formValidation = await _modelValidator.ValidateAsync(form);
-            if (!formValidation.IsValid) return TypedResults.ValidationProblem(formValidation.Errors);
+            if (!formValidation.IsValid)
+            {
+                var errors = formValidation.Errors;
+                return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
+            }
+
+            var user = form.UsernameType switch
+            {
+                ContactType.Email => await _userManager.FindByEmailAsync(form.Username = ValidationHelper.NormalizeEmail(form.Username)),
+                ContactType.PhoneNumber => await _userManager.FindByPhoneNumberAsync(form.Username = ValidationHelper.NormalizePhoneNumber(form.Username)),
+                _ => throw new InvalidOperationException("Invalid username type.")
+            };
+
+            if (user is null)
+            {
+                var errors = new Dictionary<string, string[]>
+                {
+                    { nameof(form.Username), [$"'{form.UsernameType.Humanize(LetterCasing.Sentence)}' does not exist."] }
+                };
+
+                return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
+            }
+
+
+            var result = form.UsernameType switch
+            {
+                ContactType.Email => await _userManager.ChangeEmailAsync(user, user.Email!, form.Code),
+                ContactType.PhoneNumber => await _userManager.ChangePhoneNumberAsync(user, user.PhoneNumber!, form.Code),
+                _ => throw new InvalidOperationException("Invalid username type.")
+            };
+
+            if (!result.Succeeded)
+            {
+                var errors = new Dictionary<string, string[]>
+                    {
+                        { nameof(form.Code), [$"'{nameof(form.Code).Humanize(LetterCasing.Sentence)}' is not valid."] }
+                    };
+
+                return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
+            }
+
+
+            return TypedResults.Ok();
+
+        }
+
+        public async Task<Results<ValidationProblem, UnauthorizedHttpResult, Ok>> ChangeAccountAsync(ChangeAccountSendCodeForm form)
+        {
+            if (form is null) throw new ArgumentNullException(nameof(form));
+
+            var formValidation = await _modelValidator.ValidateAsync(form);
+            if (!formValidation.IsValid)
+            {
+                var errors = formValidation.Errors;
+                return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
+            }
 
             var currentUserId = _httpContextAccessor.HttpContext != null ? _userManager.GetUserId(_httpContextAccessor.HttpContext.User) : null;
             var currentUser = currentUserId != null ? await _userManager.FindByIdAsync(currentUserId) : null;
@@ -172,75 +255,139 @@ namespace Next_Solution.WebApi.Services
             if (form.NewUsernameType == ContactType.Email)
             {
                 if (!string.IsNullOrEmpty(currentUser.Email) && string.Equals(ValidationHelper.NormalizeEmail(form.NewUsername), currentUser.Email, StringComparison.OrdinalIgnoreCase))
-                    return TypedResults.ValidationProblem(new Dictionary<string, string[]>
-                { { nameof(form.NewUsername), [$"'{form.NewUsernameType.Humanize(LetterCasing.Sentence)}' is the same as the current email."] } });
+                {
+                    var errors = new Dictionary<string, string[]>
+                    {
+                        { nameof(form.NewUsername), [$"'{form.NewUsernameType.Humanize(LetterCasing.Sentence)}' is the same as the current email."] }
+                    };
+
+                    return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
+                }
             }
             else if (form.NewUsernameType == ContactType.PhoneNumber)
             {
                 if (!string.IsNullOrEmpty(currentUser.PhoneNumber) && string.Equals(ValidationHelper.NormalizePhoneNumber(form.NewUsername), currentUser.PhoneNumber, StringComparison.OrdinalIgnoreCase))
-                    return TypedResults.ValidationProblem(new Dictionary<string, string[]>
-                    { { nameof(form.NewUsername), [$"'{form.NewUsernameType.Humanize(LetterCasing.Sentence)}' is the same as the current phone number."] } });
+                {
+                    var errors = new Dictionary<string, string[]>
+                    {
+                        { nameof(form.NewUsername), [$"'{form.NewUsernameType.Humanize(LetterCasing.Sentence)}' is the same as the current phone number."] }
+                    };
+
+                    return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
+                }
             }
             else throw new InvalidOperationException("Invalid new username type.");
 
-            if (form.SendCode)
+
+            var code = form.NewUsernameType switch
             {
-                var code = form.NewUsernameType switch
-                {
-                    ContactType.Email => await _userManager.GenerateChangeEmailTokenAsync(currentUser, form.NewUsername),
-                    ContactType.PhoneNumber => await _userManager.GenerateChangePhoneNumberTokenAsync(currentUser, form.NewUsername),
-                    _ => throw new InvalidOperationException("Invalid username type.")
-                };
+                ContactType.Email => await _userManager.GenerateChangeEmailTokenAsync(currentUser, form.NewUsername),
+                ContactType.PhoneNumber => await _userManager.GenerateChangePhoneNumberTokenAsync(currentUser, form.NewUsername),
+                _ => throw new InvalidOperationException("Invalid username type.")
+            };
 
-                var message = form.NewUsernameType switch
-                {
-                    ContactType.Email => new Message
-                    {
-                        Subject = "Change Your Email Address",
-                        Body = await _razorViewRenderer.RenderAsync("/Templates/Email/ChangeAccount", (currentUser, code)),
-                        Recipients = new[] { currentUser.Email! },
-                    },
-                    ContactType.PhoneNumber => new Message
-                    {
-                        Subject = "Change Your Phone Number",
-                        Body = await _razorViewRenderer.RenderAsync("/Templates/Text/ChangeAccount", (currentUser, code)),
-                        Recipients = new[] { currentUser.PhoneNumber! },
-                    },
-                    _ => throw new InvalidOperationException("Invalid username type.")
-                };
-
-                var messageChannel = form.NewUsernameType switch
-                {
-                    ContactType.Email => MessageChannel.Email,
-                    ContactType.PhoneNumber => MessageChannel.Sms,
-                    _ => throw new InvalidOperationException("Invalid username type.")
-                };
-
-                await _messageSender.SendAsync(messageChannel, message);
-
-                return TypedResults.Ok();
-            }
-            else
+            var message = form.NewUsernameType switch
             {
-                var result = form.NewUsernameType switch
+                ContactType.Email => new Message
                 {
-                    ContactType.Email => await _userManager.ChangeEmailAsync(currentUser, form.NewUsername, form.Code),
-                    ContactType.PhoneNumber => await _userManager.ChangePhoneNumberAsync(currentUser, form.NewUsername, form.Code),
-                    _ => throw new InvalidOperationException("Invalid username type.")
-                };
+                    Subject = "Change Your Email Address",
+                    Body = await _razorViewRenderer.RenderAsync("/Templates/Email/ChangeAccount", (currentUser, code)),
+                    Recipients = new[] { currentUser.Email! },
+                },
+                ContactType.PhoneNumber => new Message
+                {
+                    Subject = "Change Your Phone Number",
+                    Body = await _razorViewRenderer.RenderAsync("/Templates/Text/ChangeAccount", (currentUser, code)),
+                    Recipients = new[] { currentUser.PhoneNumber! },
+                },
+                _ => throw new InvalidOperationException("Invalid username type.")
+            };
 
-                if (!result.Succeeded) return TypedResults.ValidationProblem(new Dictionary<string, string[]>
-                { { nameof(form.Code), [$"'{nameof(form.Code).Humanize(LetterCasing.Sentence)}' is not valid."] } });
+            var messageChannel = form.NewUsernameType switch
+            {
+                ContactType.Email => MessageChannel.Email,
+                ContactType.PhoneNumber => MessageChannel.Sms,
+                _ => throw new InvalidOperationException("Invalid username type.")
+            };
 
-                return TypedResults.Ok();
+            await _messageSender.SendAsync(messageChannel, message);
+
+            return TypedResults.Ok();
+        }
+
+        public async Task<Results<ValidationProblem, UnauthorizedHttpResult, Ok>> ChangeAccountAsync(ChangeAccountVerifyCodeForm form)
+        {
+            if (form is null) throw new ArgumentNullException(nameof(form));
+
+            var formValidation = await _modelValidator.ValidateAsync(form);
+            if (!formValidation.IsValid)
+            {
+                var errors = formValidation.Errors;
+                return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
             }
+
+            var currentUserId = _httpContextAccessor.HttpContext != null ? _userManager.GetUserId(_httpContextAccessor.HttpContext.User) : null;
+            var currentUser = currentUserId != null ? await _userManager.FindByIdAsync(currentUserId) : null;
+            if (currentUser is null) return TypedResults.Unauthorized();
+
+            if (form.NewUsernameType == ContactType.Email)
+            {
+                if (!string.IsNullOrEmpty(currentUser.Email) && string.Equals(ValidationHelper.NormalizeEmail(form.NewUsername), currentUser.Email, StringComparison.OrdinalIgnoreCase))
+                {
+                    var errors = new Dictionary<string, string[]>
+                    {
+                        { nameof(form.NewUsername), [$"'{form.NewUsernameType.Humanize(LetterCasing.Sentence)}' is the same as the current email."] }
+                    };
+
+                    return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
+                }
+            }
+            else if (form.NewUsernameType == ContactType.PhoneNumber)
+            {
+                if (!string.IsNullOrEmpty(currentUser.PhoneNumber) && string.Equals(ValidationHelper.NormalizePhoneNumber(form.NewUsername), currentUser.PhoneNumber, StringComparison.OrdinalIgnoreCase))
+                {
+                    var errors = new Dictionary<string, string[]>
+                    {
+                        { nameof(form.NewUsername), [$"'{form.NewUsernameType.Humanize(LetterCasing.Sentence)}' is the same as the current phone number."] }
+                    };
+
+                    return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
+                }
+            }
+            else throw new InvalidOperationException("Invalid new username type.");
+
+
+            var result = form.NewUsernameType switch
+            {
+                ContactType.Email => await _userManager.ChangeEmailAsync(currentUser, form.NewUsername, form.Code),
+                ContactType.PhoneNumber => await _userManager.ChangePhoneNumberAsync(currentUser, form.NewUsername, form.Code),
+                _ => throw new InvalidOperationException("Invalid username type.")
+            };
+
+            if (!result.Succeeded)
+            {
+                var errors = new Dictionary<string, string[]>
+                    {
+                        { nameof(form.Code), [$"'{nameof(form.Code).Humanize(LetterCasing.Sentence)}' is not valid."] }
+                    };
+
+                return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
+            }
+
+            return TypedResults.Ok();
+
         }
 
         public async Task<Results<ValidationProblem, UnauthorizedHttpResult, Ok>> ChangePasswordAsync(ChangePasswordForm form)
         {
             if (form is null) throw new ArgumentNullException(nameof(form));
+
             var formValidation = await _modelValidator.ValidateAsync(form);
-            if (!formValidation.IsValid) return TypedResults.ValidationProblem(formValidation.Errors);
+            if (!formValidation.IsValid)
+            {
+                var errors = formValidation.Errors;
+                return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
+            }
 
             var currentUserId = _httpContextAccessor.HttpContext != null ? _userManager.GetUserId(_httpContextAccessor.HttpContext.User) : null;
             var currentUser = currentUserId != null ? await _userManager.FindByIdAsync(currentUserId) : null;
@@ -249,12 +396,25 @@ namespace Next_Solution.WebApi.Services
             if (currentUser.PasswordConfigured)
             {
                 if (string.IsNullOrWhiteSpace(form.OldPassword))
-                    return TypedResults.ValidationProblem(new Dictionary<string, string[]>
-                    { { nameof(form.OldPassword), [$"'{form.OldPassword.Humanize(LetterCasing.Sentence)}' must not be empty."] } });
+                {
+                    var errors = new Dictionary<string, string[]>
+                    {
+                        { nameof(form.OldPassword), [$"'{form.OldPassword.Humanize(LetterCasing.Sentence)}' must not be empty."] } 
+                    };
+
+                    return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
+                }
 
                 if (!await _userManager.CheckPasswordAsync(currentUser, form.OldPassword))
-                    return TypedResults.ValidationProblem(new Dictionary<string, string[]>
-                    { { nameof(form.OldPassword), [$"'{form.OldPassword.Humanize(LetterCasing.Sentence)}' is incorrect."] } });
+                {
+                    var errors = new Dictionary<string, string[]>
+                    {
+                        { nameof(form.OldPassword), [$"'{form.OldPassword.Humanize(LetterCasing.Sentence)}' is incorrect."] }
+                    };
+
+                    return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
+                }
+                    
             }
 
             var removePasswordResult = await _userManager.RemovePasswordAsync(currentUser);
@@ -266,11 +426,16 @@ namespace Next_Solution.WebApi.Services
             return TypedResults.Ok();
         }
 
-        public async Task<Results<ValidationProblem, Ok>> ResetPasswordAsync(ResetPasswordForm form)
+        public async Task<Results<ValidationProblem, Ok>> ResetPasswordAsync(ResetPasswordSendCodeForm form)
         {
             if (form is null) throw new ArgumentNullException(nameof(form));
+
             var formValidation = await _modelValidator.ValidateAsync(form);
-            if (!formValidation.IsValid) return TypedResults.ValidationProblem(formValidation.Errors);
+            if (!formValidation.IsValid)
+            {
+                var errors = formValidation.Errors;
+                return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
+            }
 
             var user = form.UsernameType switch
             {
@@ -279,46 +444,86 @@ namespace Next_Solution.WebApi.Services
                 _ => throw new InvalidOperationException("Invalid username type.")
             };
 
-            if (user is null) return TypedResults.ValidationProblem(new Dictionary<string, string[]>
-            { { nameof(form.Username), [$"'{form.UsernameType.Humanize(LetterCasing.Sentence)}' does not exist."] } },
-                       extensions: new Dictionary<string, object?> { { "reason", IdentityErrorReason.UsernameNotFound } });
-
-            if (form.SendCode)
+            if (user is null)
             {
-                var code = await _userManager.GeneratePasswordResetTokenAsync(user);
-
-                var message = form.UsernameType switch
+                var errors = new Dictionary<string, string[]>
                 {
-                    ContactType.Email => new Message
-                    {
-                        Subject = "Reset Your Password",
-                        Body = await _razorViewRenderer.RenderAsync("/Templates/Email/ResetPassword", (user, code)),
-                        Recipients = new[] { user.Email! },
-                    },
-                    ContactType.PhoneNumber => new Message
-                    {
-                        Subject = "Reset Your Password",
-                        Body = await _razorViewRenderer.RenderAsync("/Templates/Text/ResetPassword", (user, code)),
-                        Recipients = new[] { user.PhoneNumber! },
-                    },
-                    _ => throw new InvalidOperationException("Invalid username type.")
+                    { nameof(form.Username), [$"'{form.UsernameType.Humanize(LetterCasing.Sentence)}' does not exist."] }
                 };
 
-                var messageChannel = form.UsernameType switch
-                {
-                    ContactType.Email => MessageChannel.Email,
-                    ContactType.PhoneNumber => MessageChannel.Sms,
-                    _ => throw new InvalidOperationException("Invalid username type.")
-                };
-
-                await _messageSender.SendAsync(messageChannel, message);
+                return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
             }
-            else
-            {
-                var result = await _userManager.ResetPasswordAsync(user, form.Code, form.NewPassword);
 
-                if (!result.Succeeded) return TypedResults.ValidationProblem(new Dictionary<string, string[]>
-                { { nameof(form.Code), [$"'{nameof(form.Code).Humanize(LetterCasing.Sentence)}' is not valid."] } });
+
+            var code = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+            var message = form.UsernameType switch
+            {
+                ContactType.Email => new Message
+                {
+                    Subject = "Reset Your Password",
+                    Body = await _razorViewRenderer.RenderAsync("/Templates/Email/ResetPassword", (user, code)),
+                    Recipients = new[] { user.Email! },
+                },
+                ContactType.PhoneNumber => new Message
+                {
+                    Subject = "Reset Your Password",
+                    Body = await _razorViewRenderer.RenderAsync("/Templates/Text/ResetPassword", (user, code)),
+                    Recipients = new[] { user.PhoneNumber! },
+                },
+                _ => throw new InvalidOperationException("Invalid username type.")
+            };
+
+            var messageChannel = form.UsernameType switch
+            {
+                ContactType.Email => MessageChannel.Email,
+                ContactType.PhoneNumber => MessageChannel.Sms,
+                _ => throw new InvalidOperationException("Invalid username type.")
+            };
+
+            await _messageSender.SendAsync(messageChannel, message);
+
+            return TypedResults.Ok();
+        }
+
+        public async Task<Results<ValidationProblem, Ok>> ResetPasswordAsync(ResetPasswordVerifyCodeForm form)
+        {
+            if (form is null) throw new ArgumentNullException(nameof(form));
+
+            var formValidation = await _modelValidator.ValidateAsync(form);
+            if (!formValidation.IsValid)
+            {
+                var errors = formValidation.Errors;
+                return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
+            }
+
+            var user = form.UsernameType switch
+            {
+                ContactType.Email => await _userManager.FindByEmailAsync(form.Username = ValidationHelper.NormalizeEmail(form.Username)),
+                ContactType.PhoneNumber => await _userManager.FindByPhoneNumberAsync(form.Username = ValidationHelper.NormalizePhoneNumber(form.Username)),
+                _ => throw new InvalidOperationException("Invalid username type.")
+            };
+
+            if (user is null)
+            {
+                var errors = new Dictionary<string, string[]>
+                {
+                    { nameof(form.Username), [$"'{form.UsernameType.Humanize(LetterCasing.Sentence)}' does not exist."] }
+                };
+
+                return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
+            }
+
+            var result = await _userManager.ResetPasswordAsync(user, form.Code, form.NewPassword);
+
+            if (!result.Succeeded)
+            {
+                var errors = new Dictionary<string, string[]>
+                    {
+                        { nameof(form.Code), [$"'{nameof(form.Code).Humanize(LetterCasing.Sentence)}' is not valid."] }
+                    };
+
+                return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
             }
 
             return TypedResults.Ok();
@@ -328,8 +533,13 @@ namespace Next_Solution.WebApi.Services
         public async Task<Results<ValidationProblem, Ok<UserSessionModel>>> SignInAsync(SignInForm form)
         {
             if (form is null) throw new ArgumentNullException(nameof(form));
+
             var formValidation = await _modelValidator.ValidateAsync(form);
-            if (!formValidation.IsValid) return TypedResults.ValidationProblem(formValidation.Errors);
+            if (!formValidation.IsValid)
+            {
+                var errors = formValidation.Errors;
+                return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
+            }
 
             var user = form.UsernameType switch
             {
@@ -338,97 +548,119 @@ namespace Next_Solution.WebApi.Services
                 _ => throw new InvalidOperationException("Invalid username type.")
             };
 
-            if (user is null) return TypedResults.ValidationProblem(new Dictionary<string, string[]>
-            { { nameof(form.Username), [$"'{form.UsernameType.Humanize(LetterCasing.Sentence)}' does not exist."] } },
-            extensions: new Dictionary<string, object?> { { "reason", IdentityErrorReason.UsernameNotConfirmed } });
+            if (user is null)
+            {
+                var errors = new Dictionary<string, string[]> {
+                    { nameof(form.Username), [$"'{form.UsernameType.Humanize(LetterCasing.Sentence)}' does not exist."] } 
+                };
+
+                return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
+            }
 
             var checkPassword = await _userManager.CheckPasswordAsync(user, form.Password);
-            if (!checkPassword) return TypedResults.ValidationProblem(new Dictionary<string, string[]>
-            { { nameof(form.Password), [$"'{form.Password.Humanize(LetterCasing.Sentence)}' is incorrect."] } },
-            extensions: new Dictionary<string, object?> { { "reason", IdentityErrorReason.PasswordIncorrect } });
 
-            if (CheckIfEmailOrPhoneNumberRequiresConfirmation(user, form.UsernameType!.Value)) return TypedResults.ValidationProblem(new Dictionary<string, string[]>
-            { { nameof(form.Username), [$"'{form.UsernameType.Humanize(LetterCasing.Sentence)}' is not confirmed."] } },
-            extensions: new Dictionary<string, object?> { { "reason", IdentityErrorReason.UsernameNotConfirmed } });
+            if (!checkPassword)
+            {
+                var errors = new Dictionary<string, string[]>
+                {
+                    { nameof(form.Password), [$"'{form.Password.Humanize(LetterCasing.Sentence)}' is incorrect."] }
+                };
+
+                return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
+            }
+
+            if (CheckIfEmailOrPhoneNumberRequiresConfirmation(user, form.UsernameType!.Value))
+            {
+                var errors = new Dictionary<string, string[]>
+                {
+                    { nameof(form.Username), [$"'{form.UsernameType.Humanize(LetterCasing.Sentence)}' is not confirmed."] }
+                };
+
+                return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
+            }
 
             await _jwtProvider.InvalidateTokensAsync(user, allowMultipleTokens: true);
             var userSession = await GenerateUserSessionAsync(user);
             return TypedResults.Ok(userSession);
         }
 
-        public async Task<Results<ValidationProblem, Ok<UserSessionModel>>> SignInWithAsync(SignInWithForm form)
+        public async Task<Results<ValidationProblem, Ok<UserSessionModel>>> SignInAsync(SignInWithProviderForm form)
         {
             if (form is null) throw new ArgumentNullException(nameof(form));
+
             var formValidation = await _modelValidator.ValidateAsync(form);
-            if (!formValidation.IsValid) return TypedResults.ValidationProblem(formValidation.Errors);
-
-            var firstName = form.Principal.FindFirstValue(ClaimTypes.GivenName) ?? "Unknown";
-            var lastName = form.Principal.FindFirstValue(ClaimTypes.Surname);
-
-            var username =
-                (form.Principal.FindFirstValue(ClaimTypes.Email) ??
-                form.Principal.FindFirstValue(ClaimTypes.MobilePhone) ??
-                form.Principal.FindFirstValue(ClaimTypes.OtherPhone) ??
-                form.Principal.FindFirstValue(ClaimTypes.HomePhone))!;
-
-            var usernameType = ValidationHelper.DetermineContactType(username);
-
-            if (usernameType == ContactType.Email && !ValidationHelper.TryParseEmail(username, out var _))
-                return TypedResults.ValidationProblem(new Dictionary<string, string[]>(),
-                    title: $"{form.Provider} authentication failed.", detail: $"The email associated with your {form.Provider} account is either not found or invalid..");
-
-            else if (usernameType == ContactType.PhoneNumber && !ValidationHelper.TryParsePhoneNumber(username, out var _))
-                return TypedResults.ValidationProblem(new Dictionary<string, string[]>(),
-                    title: $"{form.Provider} authentication failed.", detail: $"The phone number associated with your {form.Provider} account is either not found or invalid.");
-
-            var user = usernameType switch
+            if (!formValidation.IsValid)
             {
-                ContactType.Email => await _userManager.FindByEmailAsync(username = ValidationHelper.NormalizeEmail(username)),
-                ContactType.PhoneNumber => await _userManager.FindByPhoneNumberAsync(username = ValidationHelper.NormalizePhoneNumber(username)),
+                var errors = formValidation.Errors;
+                return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
+            }
+
+            var user = form.UsernameType switch
+            {
+                ContactType.Email => await _userManager.FindByEmailAsync(form.Username = ValidationHelper.NormalizeEmail(form.Username)),
+                ContactType.PhoneNumber => await _userManager.FindByPhoneNumberAsync(form.Username = ValidationHelper.NormalizePhoneNumber(form.Username)),
                 _ => throw new InvalidOperationException("Invalid username type.")
             };
 
             if (user is null)
             {
-                if (CheckIfEmailOrPhoneNumberRequiresConfirmation(usernameType)) return TypedResults.ValidationProblem(new Dictionary<string, string[]>(),
-                    title: $"{form.Provider} authentication failed.", detail: $"Only users with a confirmed account can sign in using {form.Provider}.");
+                user = new User
+                {
+                    UserName = await GenerateUserNameAsync(form.FirstName, form.LastName),
+                    Email = form.UsernameType == ContactType.Email ? form.Username : null,
+                    EmailConfirmed = form.UsernameType == ContactType.Email,
+                    PhoneNumber = form.UsernameType == ContactType.PhoneNumber ? form.Username : null,
+                    PhoneNumberConfirmed = form.UsernameType == ContactType.PhoneNumber,
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    LastActiveAt = DateTimeOffset.UtcNow,
+                    PasswordConfigured = false
+                };
 
-                user = new User();
-                user.UserName = await GenerateUserNameAsync(firstName, lastName);
-                user.Email = usernameType == ContactType.Email ? username : null;
-                user.PhoneNumber = usernameType == ContactType.PhoneNumber ? username : null;
-                user.CreatedAt = DateTimeOffset.UtcNow;
-                user.LastActiveAt = DateTimeOffset.UtcNow;
-
-                user.PasswordConfigured = false;
                 var createUserResult = await _userManager.CreateAsync(user);
-                if (!createUserResult.Succeeded) throw new InvalidOperationException(createUserResult.Errors.GetMessage());
+
+                if (!createUserResult.Succeeded)
+                {
+                    throw new InvalidOperationException(createUserResult.Errors.GetMessage());
+                }
 
                 await SetupUserRolesAsync(user);
             }
-            else
-            {
-                if (CheckIfEmailOrPhoneNumberRequiresConfirmation(user, usernameType)) return TypedResults.ValidationProblem(new Dictionary<string, string[]>(),
-                    title: $"{form.Provider} authentication failed.", detail: $"Only users with a confirmed account can sign in using {form.Provider}.");
-            }
 
-            await _userManager.RemoveLoginAsync(user, form.Provider.ToString(), form.ProviderKey);
-            await _userManager.AddLoginAsync(user, new UserLoginInfo(form.Provider.ToString(), form.ProviderKey, form.ProviderDisplayName));
+            var providerName = form.Provider.ToString();
+            var providerKey = form.ProviderKey;
+            var providerDisplayName = form.Provider.GetEnumDisplayName();
+
+            await _userManager.RemoveLoginAsync(user, providerName, providerKey);
+            await _userManager.AddLoginAsync(user, new UserLoginInfo(providerName, providerKey, providerDisplayName));
 
             await _jwtProvider.InvalidateTokensAsync(user, allowMultipleTokens: true);
             var userSession = await GenerateUserSessionAsync(user);
             return TypedResults.Ok(userSession);
         }
 
+
         public async Task<Results<ValidationProblem, Ok<UserSessionModel>>> RefreshTokenAsync(RefreshTokenForm form)
         {
             if (form is null) throw new ArgumentNullException(nameof(form));
+
             var formValidation = await _modelValidator.ValidateAsync(form);
-            if (!formValidation.IsValid) return TypedResults.ValidationProblem(formValidation.Errors);
+            if (!formValidation.IsValid)
+            {
+                var errors = formValidation.Errors;
+                return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
+            }
 
             var user = await _jwtProvider.FindUserByRefreshTokenAsync(form.RefreshToken);
-            if (user is null) return TypedResults.ValidationProblem(new Dictionary<string, string[]>
-            { { nameof(form.RefreshToken), [$"'{form.RefreshToken.Humanize(LetterCasing.Sentence)}' is invalid."] } });
+
+            if (user is null)
+            {
+                var errors = new Dictionary<string, string[]>
+                {
+                    { nameof(form.RefreshToken), [$"'{form.RefreshToken.Humanize(LetterCasing.Sentence)}' is invalid."] }
+                };
+
+                return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
+            }
 
             await _jwtProvider.InvalidateTokensAsync(user, form.RefreshToken);
 
@@ -438,6 +670,14 @@ namespace Next_Solution.WebApi.Services
 
         public async Task<Results<ValidationProblem, Ok>> SignOutAsync(SignOutForm form)
         {
+            var formValidation = await _modelValidator.ValidateAsync(form);
+
+            if (!formValidation.IsValid)
+            {
+                var errors = formValidation.Errors;
+                return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
+            }
+
             var currentUserId = _httpContextAccessor.HttpContext != null ? _userManager.GetUserId(_httpContextAccessor.HttpContext.User) : null;
             var currentUser = currentUserId != null ? await _userManager.FindByIdAsync(currentUserId) : null;
 
@@ -446,7 +686,24 @@ namespace Next_Solution.WebApi.Services
             return TypedResults.Ok();
         }
 
-        public async Task<Results<UnauthorizedHttpResult, Ok<UserProfileModel>>> GetProfileAsync()
+        public async Task<string> ProtectFormAsync<TForm>(TForm unprotectedForm) where TForm : class
+        {
+            using var stream = new MemoryStream();
+            await JsonSerializer.SerializeAsync(stream, unprotectedForm);
+            stream.Position = 0;
+            var protectedSession = _formProtector.Protect(Encoding.UTF8.GetString(stream.ToArray()));
+            return protectedSession;
+        }
+
+        public async Task<TForm> UnprotectFormAsync<TForm>(string protectedForm) where TForm : class
+        {
+            var formData = _formProtector.Unprotect(protectedForm);
+            using var stream = new MemoryStream(Encoding.UTF8.GetBytes(formData));
+            var form = await JsonSerializer.DeserializeAsync<TForm>(stream);
+            return form!;
+        }
+
+        public async Task<Results<UnauthorizedHttpResult, Ok<UserProfileModel>>> GetUserProfileAsync()
         {
             var currentUserId = _httpContextAccessor.HttpContext != null ? _userManager.GetUserId(_httpContextAccessor.HttpContext.User) : null;
             var currentUser = currentUserId != null ? await _userManager.FindByIdAsync(currentUserId) : null;
@@ -522,49 +779,39 @@ namespace Next_Solution.WebApi.Services
             // Return true if any of the above conditions are met
             return emailRequiresConfirmation || phoneRequiresConfirmation;
         }
-
-        private bool CheckIfEmailOrPhoneNumberRequiresConfirmation(ContactType usernameType)
-        {
-            // Check if the user needs to confirm their email
-            bool emailRequiresConfirmation = _userManager.Options.SignIn.RequireConfirmedEmail && usernameType == ContactType.Email;
-
-            // Check if the user needs to confirm their phone number
-            bool phoneRequiresConfirmation = _userManager.Options.SignIn.RequireConfirmedPhoneNumber && usernameType == ContactType.PhoneNumber;
-
-            // Return true if any of the above conditions are met
-            return emailRequiresConfirmation || phoneRequiresConfirmation;
-        }
     }
 
     public interface IIdentityService
     {
         Task<Results<ValidationProblem, Ok>> CreateAccountAsync(CreateAccountForm form);
 
-        Task<Results<ValidationProblem, Ok>> ConfirmAccountAsync(ConfirmAccountForm form);
+        Task<Results<ValidationProblem, Ok>> ConfirmAccountAsync(ConfirmAccountSendCodeForm form);
 
-        Task<Results<ValidationProblem, UnauthorizedHttpResult, Ok>> ChangeAccountAsync(ChangeAccountForm form);
+        Task<Results<ValidationProblem, Ok>> ConfirmAccountAsync(ConfirmAccountVerifyCodeForm form);
+
+        Task<Results<ValidationProblem, UnauthorizedHttpResult, Ok>> ChangeAccountAsync(ChangeAccountSendCodeForm form);
+
+        Task<Results<ValidationProblem, UnauthorizedHttpResult, Ok>> ChangeAccountAsync(ChangeAccountVerifyCodeForm form);
 
         Task<Results<ValidationProblem, UnauthorizedHttpResult, Ok>> ChangePasswordAsync(ChangePasswordForm form);
 
-        Task<Results<ValidationProblem, Ok>> ResetPasswordAsync(ResetPasswordForm form);
+        Task<Results<ValidationProblem, Ok>> ResetPasswordAsync(ResetPasswordSendCodeForm form);
+
+        Task<Results<ValidationProblem, Ok>> ResetPasswordAsync(ResetPasswordVerifyCodeForm form);
 
         Task<Results<ValidationProblem, Ok<UserSessionModel>>> SignInAsync(SignInForm form);
 
-        Task<Results<ValidationProblem, Ok<UserSessionModel>>> SignInWithAsync(SignInWithForm form);
+        Task<Results<ValidationProblem, Ok<UserSessionModel>>> SignInAsync(SignInWithProviderForm form);
+
+        Task<string> ProtectFormAsync<TForm>(TForm unprotectedForm) where TForm : class;
+
+        Task<TForm> UnprotectFormAsync<TForm>(string protectedForm) where TForm : class;
 
         Task<Results<ValidationProblem, Ok<UserSessionModel>>> RefreshTokenAsync(RefreshTokenForm form);
 
         Task<Results<ValidationProblem, Ok>> SignOutAsync(SignOutForm form);
 
-        Task<Results<UnauthorizedHttpResult, Ok<UserProfileModel>>> GetProfileAsync();
-    }
-
-    public enum IdentityErrorReason
-    {
-        UsernameTaken,
-        UsernameNotConfirmed,
-        UsernameNotFound,
-        PasswordIncorrect,
+        Task<Results<UnauthorizedHttpResult, Ok<UserProfileModel>>> GetUserProfileAsync();
     }
 
     public static class IdentityExtensions

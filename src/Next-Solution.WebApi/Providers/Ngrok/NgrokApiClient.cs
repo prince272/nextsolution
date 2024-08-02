@@ -72,6 +72,7 @@ namespace Next_Solution.WebApi.Providers.Ngrok
         public async Task<TunnelResponse> CreateTunnelAsync(
             string projectName,
             Uri address,
+            string? domain,
             CancellationToken cancellationToken)
         {
             while (!cancellationToken.IsCancellationRequested)
@@ -80,7 +81,8 @@ namespace Next_Solution.WebApi.Providers.Ngrok
                 {
                     Name = projectName,
                     Address = address.Port.ToString(CultureInfo.InvariantCulture),
-                    Protocol = address.Scheme
+                    Protocol = address.Scheme,
+                    Domain = domain,
                 };
 
                 _logger.LogInformation("Creating tunnel {TunnelName}", projectName);

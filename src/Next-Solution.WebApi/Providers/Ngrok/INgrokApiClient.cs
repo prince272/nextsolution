@@ -7,6 +7,7 @@ namespace Next_Solution.WebApi.Providers.Ngrok
         Task<TunnelResponse> CreateTunnelAsync(
             string projectName,
             Uri address,
+            string? doamin,
             CancellationToken cancellationToken);
 
         Task<TunnelResponse[]> GetTunnelsAsync(CancellationToken cancellationToken);

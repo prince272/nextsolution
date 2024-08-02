@@ -12,7 +12,7 @@ export class Result {
   constructor(
     public statusCode: number,
     public status: string,
-    public reason: string
+    public message: string
   ) {}
 
   get success() {
@@ -24,8 +24,6 @@ export class Result {
       const response = await request;
       return new Succeeded(HttpStatusCode.Ok, response.statusText, response.data) as T;
     } catch (error) {
-      console.warn(error);
-
       if (isAxiosError(error) && error.response) {
         const response = error.response;
         switch (response.status) {

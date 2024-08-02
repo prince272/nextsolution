@@ -1,12 +1,10 @@
 ﻿using FluentValidation;
-using System.Diagnostics.CodeAnalysis;
-using System.Text.Json.Serialization;
 using Next_Solution.WebApi.Providers.Validation;
 using Next_Solution.WebApi.Providers.ModelValidator;
 
 namespace Next_Solution.WebApi.Models.Identity
 {
-    public class ResetPasswordForm
+    public class ResetPasswordSendCodeForm
     {
         public string Username { get; set; } = null!;
 
@@ -15,27 +13,42 @@ namespace Next_Solution.WebApi.Models.Identity
         {
             get
             {
-                usernameType ??= ValidationHelper.DetermineContactType(Username);
-                return usernameType.Value;
+                usernameType ??= (!string.IsNullOrWhiteSpace(Username) ? ValidationHelper.DetermineContactType(Username) : null);
+                return usernameType;
             }
             set => usernameType = value;
         }
 
-        public string? Code { get; set; }
-
-        [JsonIgnore]
-        [MemberNotNullWhen(false, nameof(Code))]
-        [MemberNotNullWhen(false, nameof(NewPassword))]
-        public bool SendCode => Process == ResetPasswordProcess.SendCode;
-
-        public string? NewPassword { get; set; }
-
-        public ResetPasswordProcess Process { get; set; }
+        public string NewPassword { get; set; } = null!;
     }
 
-    public class ResetPasswordFormValidator : AbstractValidator<ResetPasswordForm>
+    public class ResetPasswordVerifyCodeForm : ResetPasswordSendCodeForm
     {
-        public ResetPasswordFormValidator()
+        public string Code { get; set; } = null!;
+    }
+
+    public class ResetPasswordSendCodeFormValidator : AbstractValidator<ResetPasswordSendCodeForm>
+    {
+        public ResetPasswordSendCodeFormValidator()
+        {
+            RuleFor(_ => _.Username).NotEmpty().DependentRules(() =>
+            {
+                When(_ => _.UsernameType!.Value == ContactType.Email, () =>
+                {
+                    RuleFor(_ => _.Username).Email().WithName("Email");
+                });
+
+                When(_ => _.UsernameType!.Value == ContactType.PhoneNumber, () =>
+                {
+                    RuleFor(_ => _.Username).PhoneNumber().WithName("Phone number");
+                });
+            });
+        }
+    }
+
+    public class ResetPasswordVerifyCodeFormValidator : AbstractValidator<ResetPasswordVerifyCodeForm>
+    {
+        public ResetPasswordVerifyCodeFormValidator()
         {
             RuleFor(_ => _.Username).NotEmpty().DependentRules(() =>
             {
@@ -50,15 +63,7 @@ namespace Next_Solution.WebApi.Models.Identity
                 });
             });
 
-            RuleFor(_ => _.Code).NotEmpty().When(_ => !_.SendCode);
-
-            RuleFor(_ => _.NewPassword!).NotEmpty().Password().When(_ => !_.SendCode);
+            RuleFor(_ => _.Code).NotEmpty();
         }
-    }
-
-    public enum ResetPasswordProcess
-    {
-        SendCode,
-        VerifyCode
     }
 }

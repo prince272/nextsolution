@@ -1,13 +1,10 @@
 ﻿using FluentValidation;
-using Humanizer;
-using System.Diagnostics.CodeAnalysis;
-using System.Text.Json.Serialization;
 using Next_Solution.WebApi.Providers.Validation;
 using Next_Solution.WebApi.Providers.ModelValidator;
 
 namespace Next_Solution.WebApi.Models.Identity
 {
-    public class ConfirmAccountForm
+    public class ConfirmAccountSendCodeForm
     {
         public string Username { get; set; } = null!;
 
@@ -16,24 +13,53 @@ namespace Next_Solution.WebApi.Models.Identity
         {
             get
             {
-                usernameType ??= ValidationHelper.DetermineContactType(Username);
-                return usernameType.Value;
+                usernameType ??= (!string.IsNullOrWhiteSpace(Username) ? ValidationHelper.DetermineContactType(Username) : null);
+                return usernameType;
+            }
+            set => usernameType = value;
+        }
+    }
+
+    public class ConfirmAccountVerifyCodeForm 
+    {
+        public string Username { get; set; } = null!;
+
+        private ContactType? usernameType;
+        public ContactType? UsernameType
+        {
+            get
+            {
+                usernameType ??= (!string.IsNullOrWhiteSpace(Username) ? ValidationHelper.DetermineContactType(Username) : null);
+                return usernameType;
             }
             set => usernameType = value;
         }
 
-        public string? Code { get; set; }
-
-        [JsonIgnore]
-        [MemberNotNullWhen(false, nameof(Code))]
-        public bool SendCode => Process == ConfirmAccountProcess.SendCode;
-
-        public ConfirmAccountProcess Process { get; set; }
+        public string Code { get; set; } = null!;
     }
 
-    public class ConfirmAccountFormValidator : AbstractValidator<ConfirmAccountForm>
+    public class ConfirmAccountSendCodeFormValidator : AbstractValidator<ConfirmAccountSendCodeForm>
     {
-        public ConfirmAccountFormValidator()
+        public ConfirmAccountSendCodeFormValidator()
+        {
+            RuleFor(_ => _.Username).NotEmpty().DependentRules(() =>
+            {
+                When(_ => _.UsernameType!.Value == ContactType.Email, () =>
+                {
+                    RuleFor(_ => _.Username).Email().WithName("Email");
+                });
+
+                When(_ => _.UsernameType!.Value == ContactType.PhoneNumber, () =>
+                {
+                    RuleFor(_ => _.Username).PhoneNumber().WithName("Phone number");
+                });
+            });
+        }
+    }
+
+    public class ConfirmAccountVerifyCodeFormValidator : AbstractValidator<ConfirmAccountVerifyCodeForm>
+    {
+        public ConfirmAccountVerifyCodeFormValidator()
         {
             RuleFor(_ => _.Username).NotEmpty().DependentRules(() =>
             {
@@ -48,13 +74,7 @@ namespace Next_Solution.WebApi.Models.Identity
                 });
             });
 
-            RuleFor(_ => _.Code).NotEmpty().When(_ => !_.SendCode);
+            RuleFor(_ => _.Code).NotEmpty();
         }
-    }
-
-    public enum ConfirmAccountProcess
-    {
-        SendCode,
-        VerifyCode
     }
 }

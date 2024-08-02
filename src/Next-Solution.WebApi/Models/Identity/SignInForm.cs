@@ -16,8 +16,8 @@ namespace Next_Solution.WebApi.Models.Identity
         {
             get
             {
-                usernameType ??= ValidationHelper.DetermineContactType(Username);
-                return usernameType.Value;
+                usernameType ??= (!string.IsNullOrWhiteSpace(Username) ? ValidationHelper.DetermineContactType(Username) : null);
+                return usernameType;
             }
             set => usernameType = value;
         }
@@ -54,11 +54,5 @@ namespace Next_Solution.WebApi.Models.Identity
                 .ForMember(_ => _.Email, _ => _.Ignore())
                 .ForMember(_ => _.PhoneNumber, _ => _.Ignore());
         }
-    }
-
-    public enum SignInProvider
-    {
-        Google,
-        Facebook
     }
 }
