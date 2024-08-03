@@ -1,0 +1,1 @@
+export { PaperProvider } from "react-native-paper";

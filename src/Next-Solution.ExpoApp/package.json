@@ -14,6 +14,7 @@
     "@react-native-async-storage/async-storage": "^1.24.0",
     "axios": "^1.7.3",
     "expo": "~51.0.24",
+    "expo-font": "~12.0.9",
     "expo-splash-screen": "~0.27.5",
     "expo-status-bar": "~1.12.1",
     "lodash": "^4.17.21",
@@ -22,8 +23,8 @@
     "react": "18.2.0",
     "react-native": "0.74.3",
     "react-native-reanimated": "~3.10.1",
-    "zustand": "^4.5.4",
-    "expo-font": "~12.0.9"
+    "react-native-safe-area-context": "^4.10.8",
+    "zustand": "^4.5.4"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

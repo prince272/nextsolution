@@ -3,12 +3,12 @@ import { useCallback, useEffect, useState } from "react";
 import { Text, View } from "react-native";
 import * as SplashScreen from "expo-splash-screen";
 import { useHydration } from "./states";
+import { AppProvider } from "./components/provider";
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
 
 export default function App() {
-
   const [loaded, setLoaded] = useState(false);
   const hydrated = useHydration();
 
@@ -47,8 +47,10 @@ export default function App() {
   }
 
   return (
-    <View className="flex flex-1 items-center justify-center" onLayout={hideSplashScreen}>
-      <Text>Your app goes here</Text>
-    </View>
+    <AppProvider>
+      <View className="flex flex-1 items-center justify-center" onLayout={hideSplashScreen}>
+        <Text>Your app goes here</Text>
+      </View>
+    </AppProvider>
   );
 }
