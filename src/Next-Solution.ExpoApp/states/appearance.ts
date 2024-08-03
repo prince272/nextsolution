@@ -13,7 +13,7 @@ export interface AppearanceState {
 export interface AppearanceActions {
   setTheme: (theme: AppearanceState["theme"]) => void;
   setSystemTheme: (systemTheme: Theme) => void;
-  addSystemThemeChanged: () => { remove: () => void };
+  addSystemThemeChangeListener: () => { remove: () => void };
 }
 
 export interface AppearanceSlice {
@@ -62,7 +62,7 @@ export const createAppearanceSlice: StateCreator<AppearanceSlice, [], [], Appear
           },
         }));
       },
-      addSystemThemeChanged: () => {
+      addSystemThemeChangeListener: () => {
         const subscription = Appearance.addChangeListener(({ colorScheme: systemTheme }) => {
           if (systemTheme) get().appearance.setSystemTheme(systemTheme as Theme);
         });
