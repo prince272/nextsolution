@@ -12,10 +12,12 @@
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^1.24.0",
+    "axios": "^1.7.3",
     "expo": "~51.0.24",
     "expo-status-bar": "~1.12.1",
     "lodash": "^4.17.21",
     "nativewind": "^4.0.36",
+    "query-string": "^9.1.0",
     "react": "18.2.0",
     "react-native": "0.74.3",
     "react-native-reanimated": "~3.10.1",
