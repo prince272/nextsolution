@@ -1,4 +1,4 @@
-module.exports = function (api) {
+const config = function (api) {
   api.cache(true);
   return {
     presets: [
@@ -7,3 +7,5 @@ module.exports = function (api) {
     ],
   };
 };
+
+module.exports = config;
