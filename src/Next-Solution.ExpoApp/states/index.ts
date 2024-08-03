@@ -3,7 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { merge } from "lodash";
 import { create, StoreApi, UseBoundStore } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import { ApplicationSlice, createApplicationSlice } from "./application";
+import { AppearanceSlice, createAppearanceSlice } from "./appearance";
 
 type WithSelectors<S> = S extends { getState: () => infer T } ? S & { state: { [K in keyof T]: () => T[K] } } : never;
 
@@ -18,13 +18,13 @@ const createSelectors = <S extends UseBoundStore<StoreApi<object>>>(_store: S) =
 };
 
 
-export type AppStoreType = ApplicationSlice;
+export type AppStoreType = AppearanceSlice;
 
 export const useAppStore = createSelectors(
   create<AppStoreType>()(
     persist(
       (...a) => ({
-        ...createApplicationSlice(...a),
+        ...createAppearanceSlice(...a),
       }),
       {
         name: "Next-Solution.Storage-1A114D3A52AA408FACFE89A437A9BCC4",
