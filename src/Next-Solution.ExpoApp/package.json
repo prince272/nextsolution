@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "expo/AppEntry.js",
   "scripts": {
-    "start": "expo start",
+    "start": "expo start --clear",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
@@ -13,8 +13,11 @@
   "dependencies": {
     "expo": "~51.0.24",
     "expo-status-bar": "~1.12.1",
+    "nativewind": "^4.0.36",
     "react": "18.2.0",
-    "react-native": "0.74.3"
+    "react-native": "0.74.3",
+    "react-native-reanimated": "~3.10.1",
+    "tailwindcss": "^3.4.7"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
