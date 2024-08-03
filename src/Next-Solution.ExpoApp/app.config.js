@@ -29,7 +29,10 @@ const config = (context) => {
     web: {
       favicon: "./assets/favicon.png",
       bundler: "metro"
-    }
+    },
+    plugins: [
+      "expo-font"
+    ]
   };
 };
 

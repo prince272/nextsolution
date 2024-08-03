@@ -39,7 +39,7 @@ export const useAppStore = createSelectors(
   )
 );
 
-export const useAppHydration = () => {
+export const useHydration = () => {
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
