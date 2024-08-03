@@ -24,7 +24,7 @@ function Header({ navigation, route, options, back }: NativeStackHeaderProps) {
   return (
     <Appbar.Header mode="small">
       {back ? <Appbar.BackAction onPress={navigation.goBack} /> : null}
-      <Appbar.Content title={title} titleStyle={{ fontWeight: 700 }} />
+      <Appbar.Content title={title} />
     </Appbar.Header>
   );
 }
