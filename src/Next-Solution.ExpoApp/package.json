@@ -11,16 +11,20 @@
     "format": "prettier --write ."
   },
   "dependencies": {
+    "@react-native-async-storage/async-storage": "^1.24.0",
     "expo": "~51.0.24",
     "expo-status-bar": "~1.12.1",
+    "lodash": "^4.17.21",
     "nativewind": "^4.0.36",
     "react": "18.2.0",
     "react-native": "0.74.3",
-    "react-native-reanimated": "~3.10.1"
+    "react-native-reanimated": "~3.10.1",
+    "zustand": "^4.5.4"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
     "@ianvs/prettier-plugin-sort-imports": "^4.3.1",
+    "@types/lodash": "^4.17.7",
     "@types/react": "~18.2.45",
     "prettier": "3.3.3",
     "tailwindcss": "^3.4.7",
