@@ -5,7 +5,9 @@ import { create, StoreApi, UseBoundStore } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { AppearanceSlice, createAppearanceSlice } from "./appearance";
 
-type WithSelectors<S> = S extends { getState: () => infer T } ? S & { state: { [K in keyof T]: () => T[K] } } : never;
+type WithSelectors<S> = S extends { getState: () => infer T }
+  ? S & { state: { [K in keyof T]: () => T[K] } }
+  : never;
 
 const createSelectors = <S extends UseBoundStore<StoreApi<object>>>(_store: S) => {
   let store = _store as WithSelectors<typeof _store>;
@@ -17,14 +19,13 @@ const createSelectors = <S extends UseBoundStore<StoreApi<object>>>(_store: S) =
   return store;
 };
 
-
 export type AppStoreType = AppearanceSlice;
 
 export const useAppStore = createSelectors(
   create<AppStoreType>()(
     persist(
       (...a) => ({
-        ...createAppearanceSlice(...a),
+        ...createAppearanceSlice(...a)
       }),
       {
         name: "Next-Solution.Storage-1A114D3A52AA408FACFE89A437A9BCC4",

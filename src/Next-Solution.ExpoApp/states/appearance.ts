@@ -27,11 +27,18 @@ export const createAppearanceSlice: StateCreator<AppearanceSlice, [], [], Appear
   const getActiveTheme = (theme: Theme | "system", systemTheme: Theme): Theme =>
     theme === "system" ? systemTheme : theme;
 
-  const getInverseTheme = (theme: Theme | "system", systemTheme: Theme): Theme => 
-    theme === "system" ? (systemTheme === "light" ? "dark" : "light") : theme === "light" ? "dark" : "light";
-  
+  const getInverseTheme = (theme: Theme | "system", systemTheme: Theme): Theme =>
+    theme === "system"
+      ? systemTheme === "light"
+        ? "dark"
+        : "light"
+      : theme === "light"
+        ? "dark"
+        : "light";
+
   const initialTheme = "system" as AppearanceState["theme"];
-  const initialSystemTheme = Appearance.getColorScheme() ?? (initialTheme === "system" ? "light" : initialTheme);
+  const initialSystemTheme =
+    Appearance.getColorScheme() ?? (initialTheme === "system" ? "light" : initialTheme);
   const initialActiveTheme = getActiveTheme(initialTheme, initialSystemTheme);
   const initialInverseTheme = getInverseTheme(initialTheme, initialSystemTheme);
 
@@ -47,8 +54,8 @@ export const createAppearanceSlice: StateCreator<AppearanceSlice, [], [], Appear
             ...state.appearance,
             theme,
             activeTheme: getActiveTheme(theme, state.appearance.systemScheme),
-            inverseTheme: getInverseTheme(theme, state.appearance.systemScheme),
-          },
+            inverseTheme: getInverseTheme(theme, state.appearance.systemScheme)
+          }
         }));
         Appearance.setColorScheme(theme === "system" ? get().appearance.systemScheme : theme);
       },
@@ -58,8 +65,8 @@ export const createAppearanceSlice: StateCreator<AppearanceSlice, [], [], Appear
             ...state.appearance,
             systemScheme: systemTheme,
             activeTheme: getActiveTheme(state.appearance.theme, systemTheme),
-            inverseTheme: getInverseTheme(state.appearance.theme, systemTheme),
-          },
+            inverseTheme: getInverseTheme(state.appearance.theme, systemTheme)
+          }
         }));
       },
       addSystemThemeChangeListener: () => {
@@ -67,9 +74,9 @@ export const createAppearanceSlice: StateCreator<AppearanceSlice, [], [], Appear
           if (systemTheme) get().appearance.setSystemTheme(systemTheme as Theme);
         });
         return {
-          remove: subscription.remove,
+          remove: subscription.remove
         };
-      },
+      }
     }
   };
 };
