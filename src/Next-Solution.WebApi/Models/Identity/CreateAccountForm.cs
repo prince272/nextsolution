@@ -26,6 +26,8 @@ namespace Next_Solution.WebApi.Models.Identity
         }
 
         public string Password { get; set; } = null!;
+
+        public bool ValidateOnly { get; set; }
     }
 
     public class CreateAccountFormValidator : AbstractValidator<CreateAccountForm>

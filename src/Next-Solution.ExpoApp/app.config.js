@@ -19,13 +19,15 @@ const config = (context) => {
       backgroundColor: "#ffffff"
     },
     ios: {
-      supportsTablet: true
+      supportsTablet: true,
+      jsEngine: "hermes"
     },
     android: {
       adaptiveIcon: {
         foregroundImage: "./assets/images/adaptive-icon.png",
         backgroundColor: "#ffffff"
-      }
+      },
+      jsEngine: "hermes"
     },
     web: {
       favicon: "./assets/images/favicon.png",

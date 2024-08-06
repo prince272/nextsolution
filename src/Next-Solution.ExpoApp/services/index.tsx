@@ -6,7 +6,8 @@ const api = axios.create({
   withCredentials: true
 });
 
-console.info(`Setting up API with server URL: ${api.defaults.baseURL}`);
+if (api.defaults.baseURL) console.info(`Setting up API with server URL: ${api.defaults.baseURL}`);
+else console.warn("No server URL found in environment variables");
 
 const identityService = new IdentityService(api);
 

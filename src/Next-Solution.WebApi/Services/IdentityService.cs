@@ -94,6 +94,8 @@ namespace Next_Solution.WebApi.Services
                 }
             }
 
+            if (form.ValidateOnly) return TypedResults.Ok();
+
             var newUser = _mapper.Map<User>(form);
             newUser.UserName = await GenerateUserNameAsync(form.FirstName, form.LastName);
             newUser.Email = form.UsernameType == ContactType.Email ? form.Username : null;
@@ -106,16 +108,6 @@ namespace Next_Solution.WebApi.Services
             if (!createUserResult.Succeeded) throw new InvalidOperationException(createUserResult.Errors.GetMessage());
 
             await SetupUserRolesAsync(newUser);
-
-            if (CheckIfEmailOrPhoneNumberRequiresConfirmation(newUser, form.UsernameType!.Value))
-            {
-                var errors = new Dictionary<string, string[]> 
-                {
-                    { nameof(form.Username), [$"'{form.UsernameType.Humanize(LetterCasing.Sentence)}' is not confirmed."] }
-                };
-
-                return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
-            }
 
             return TypedResults.Ok();
         }

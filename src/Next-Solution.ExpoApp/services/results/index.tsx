@@ -72,9 +72,9 @@ export class Result {
     } else if (statusCode >= 300 && statusCode < 400) {
       return "You'll be redirected to a new location shortly.";
     } else if (statusCode >= 400 && statusCode < 500) {
-      return "There was an issue with your request. Please check and try again.";
+      return "There was an issue with your request.";
     } else if (statusCode >= 500 && statusCode < 600) {
-      return "Oops! Something went wrong on our end. Please try again later.";
+      return "Oops! Something went wrong on our end.";
     } else {
       return "An unexpected error occurred. Please try again later.";
     }

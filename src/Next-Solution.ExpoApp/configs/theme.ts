@@ -8,7 +8,7 @@ import {
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import { merge } from "lodash";
-import { adaptNavigationTheme, MD3DarkTheme, MD3LightTheme } from "react-native-paper";
+import { adaptNavigationTheme, MD3DarkTheme, MD3LightTheme, MD3Theme } from "react-native-paper";
 
 const { LightTheme: NavigationLightTheme, DarkTheme: NavigationDarkTheme } = adaptNavigationTheme({
   reactNavigationLight: NativeNavigationLightTheme,
@@ -17,13 +17,15 @@ const { LightTheme: NavigationLightTheme, DarkTheme: NavigationDarkTheme } = ada
 
 const themes = {
   Light: merge({}, NavigationLightTheme, MD3LightTheme, {
+    animation: { defaultAnimationDuration: 0 },
     colors: merge({}, MD3LightTheme.colors, colors.light),
     fonts
-  }),
+  } as MD3Theme),
   Dark: merge({}, NavigationDarkTheme, MD3DarkTheme, {
+    animation: { defaultAnimationDuration: 0 },
     colors: merge({}, MD3DarkTheme.colors, colors.dark),
     fonts
-  })
+  } as MD3Theme)
 };
 
 export function useThemeConfig() {
