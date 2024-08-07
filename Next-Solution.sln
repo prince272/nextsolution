@@ -7,8 +7,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{2FB2C163-490
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Next-Solution.WebApi", "src\Next-Solution.WebApi\Next-Solution.WebApi.csproj", "{30F7BA30-3D17-4820-A7A9-FE1D023D7D5F}"
 EndProject
+#if (includeExpoProject)
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "Next-Solution.ExpoApp", "src\Next-Solution.ExpoApp\Next-Solution.ExpoApp.esproj", "{7AD26BE3-903D-4787-A48C-84A8227BB3F7}"
 EndProject
+#endif
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

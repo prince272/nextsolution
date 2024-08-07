@@ -1,8 +1,10 @@
 import axios from "axios";
 import { IdentityService } from "./identity-service";
+import { prefix } from "@/utils";
+
 
 const api = axios.create({
-  baseURL: process.env.EXPO_PUBLIC_SERVER_URL,
+  baseURL: prefix("https://", process.env.EXPO_PUBLIC_SERVER_URL)!,
   withCredentials: true
 });
 

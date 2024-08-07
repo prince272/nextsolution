@@ -17,12 +17,10 @@ const { LightTheme: NavigationLightTheme, DarkTheme: NavigationDarkTheme } = ada
 
 const themes = {
   Light: merge({}, NavigationLightTheme, MD3LightTheme, {
-    animation: { defaultAnimationDuration: 0 },
     colors: merge({}, MD3LightTheme.colors, colors.light),
     fonts
   } as MD3Theme),
   Dark: merge({}, NavigationDarkTheme, MD3DarkTheme, {
-    animation: { defaultAnimationDuration: 0 },
     colors: merge({}, MD3DarkTheme.colors, colors.dark),
     fonts
   } as MD3Theme)
