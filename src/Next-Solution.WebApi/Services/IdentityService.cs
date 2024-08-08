@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Humanizer;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Next_Solution.WebApi.Data.Entities.Identity;
 using Next_Solution.WebApi.Models.Identity;
@@ -14,8 +13,10 @@ using Next_Solution.WebApi.Providers.ModelValidator;
 using Microsoft.AspNetCore.DataProtection;
 using System.Text.Json;
 using System.Text;
-using System.ComponentModel;
 using IdentityAudit.Utilities;
+using Microsoft.Extensions.Options;
+using Next_Solution.WebApi.Options;
+using Microsoft.AspNetCore.Identity;
 
 namespace Next_Solution.WebApi.Services
 {
@@ -39,6 +40,7 @@ namespace Next_Solution.WebApi.Services
             IHttpContextAccessor httpContextAccessor,
             IDataProtectionProvider dataProtectionProvider,
             IMapper mapper,
+            IOptions<IdentityServiceOptions> identityServiceOptions,
             UserManager<User> userManager,
             RoleManager<Role> roleManager)
         {
@@ -50,7 +52,7 @@ namespace Next_Solution.WebApi.Services
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             _roleManager = roleManager ?? throw new ArgumentNullException(nameof(roleManager));
-            _formProtector = dataProtectionProvider.CreateProtector("1A114D3A52AA408FACFE89A437A9BCC4");
+            _formProtector = dataProtectionProvider.CreateProtector(identityServiceOptions.Value.FormProtectorKey);
         }
 
         public async Task<Results<ValidationProblem, Ok>> CreateAccountAsync(CreateAccountForm form)

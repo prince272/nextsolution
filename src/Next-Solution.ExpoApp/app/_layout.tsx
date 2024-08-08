@@ -44,7 +44,11 @@ export default function RootLayout() {
                     animation: "fade_from_bottom",
                     headerShown: false
                   }}
-                />
+                >
+                  <Stack.Screen name="(app)" />
+                  <Stack.Screen name="(sign-up)" />
+                  <Stack.Screen name="+not-found" />
+                </Stack>
                 {snackbarMessages.map((snackbarMessage) => (
                   <Snackbar
                     key={snackbarMessage.key}

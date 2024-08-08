@@ -7,6 +7,8 @@ export default function Layout() {
         animation: "fade_from_bottom",
         headerShown: false,
       }}
-    />
+    >
+      <Stack.Screen name="index" />
+    </Stack>
   );
 }

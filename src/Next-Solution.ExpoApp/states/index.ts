@@ -28,7 +28,7 @@ export const useAppStore = createSelectors(
         ...createAppearanceSlice(...a)
       }),
       {
-        name: "Next-Solution.Storage-1A114D3A52AA408FACFE89A437A9BCC4",
+        name: "Next-Solution.Storage-1A114D3A-52AA-408F-ACFE-89A437A9BCC4",
         storage: createJSONStorage(() => AsyncStorage),
         // zustand persist - actions inside nested object are undefined on rehydration
         // fix: https://github.com/pmndrs/zustand/issues/457

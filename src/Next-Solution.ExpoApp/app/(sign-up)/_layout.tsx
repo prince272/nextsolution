@@ -18,7 +18,9 @@ export default function Layout() {
             );
           }
         }}
-      />
+      >
+        <Stack.Screen name="sign-up/index" />
+      </Stack>
     </FormProvider>
   );
 }
