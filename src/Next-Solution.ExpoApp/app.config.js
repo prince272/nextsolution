@@ -6,7 +6,7 @@ const config = (context) => {
   const { config } = context;
   return {
     ...config,
-    name: "NextSolution",
+    name: "Next_Solution",
     slug: "next_solution",
     version: "1.0.0",
     orientation: "portrait",

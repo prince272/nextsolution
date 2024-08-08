@@ -35,7 +35,7 @@ const AuthScreen = ({ className, ...props }: AuthenticationMethodsScreenProps) =
           source={require("@/assets/images/right-arrow-256x256.png")}
         />
         <Text className="self-center mb-1 font-bold" variant="titleLarge">
-          Welcome to NextSolution
+          Welcome to Next Solution
         </Text>
         <Text className="self-center text-on-surface-variant" variant="bodyMedium">
           Kickstart your mobile app with our template
@@ -264,7 +264,7 @@ const createSignUpScreen = (step: "enter-personal-details" | "enter-credentials"
                   handleSubmit(true);
                 }}
               >
-                {!formSubmitting && "Continue"}
+                {!formSubmitting ? "Continue" : " "}
               </Button>
             </View>
           </>
@@ -322,7 +322,7 @@ const createSignUpScreen = (step: "enter-personal-details" | "enter-credentials"
                   handleSubmit();
                 }}
               >
-                {!formSubmitting && "Create account"}
+                {!formSubmitting ? "Create account" : " "}
               </Button>
             </View>
           </>

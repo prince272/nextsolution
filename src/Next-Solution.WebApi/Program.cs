@@ -25,6 +25,8 @@ using Next_Solution.WebApi.Providers.ModelValidator;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
+using Next_Solution.WebApi.Options;
+
 #if (configureNgrok)
 using Next_Solution.WebApi.Providers.Ngrok;
 #endif
@@ -122,8 +124,6 @@ try
         .AddDefaultTokenProviders()
         .AddClaimsPrincipalFactory<UserClaimsPrincipalFactory<User, Role>>();
 
-    // Add domain services and providers to the container
-    builder.Services.AddScoped<IIdentityService, IdentityService>();
     builder.Services.AddAutoMapper(appAssemblies);
     builder.Services.AddModelValidator(appAssemblies);
     builder.Services.AddRazorViewRenderer(appAssemblies);
@@ -200,8 +200,15 @@ try
 
     // Configure Swagger/OpenAPI
     builder.Services.AddEndpointsApiExplorer();
+
     builder.Services.ConfigureOptions<ConfigureSwaggerGenOptions>();
     builder.Services.AddSwaggerGen();
+
+    builder.Services.Configure<IdentityServiceOptions>(options =>
+    {
+        options.FormProtectorKey = Guid.NewGuid().ToString("N");
+    });
+    builder.Services.AddScoped<IIdentityService, IdentityService>();
 
 #if (configureNgrok)
     // Configure Ngrok

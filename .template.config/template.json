@@ -8,6 +8,12 @@
   "shortName": "nextsoln",
   "sourceName": "Next-Solution",
   "preferNameDirectory": true,
+  "guids": [
+    "1A114D3A-52AA-408F-ACFE-89A437A9BCC4",
+    "24FBFF44-2F91-4C05-BBDE-6FB7E43EF1B3",
+    "7C1DFC8B-EF4C-40D4-892B-211656690A13",
+    "6744E9B2-AAB0-445E-BF30-EB4274386BD8"
+  ],
   "tags": {
     "type": "solution",
     "language": "C#"
@@ -80,14 +86,6 @@
       "displayName": "Configure Ngrok for Web API Tunneling",
       "description": "Enables Ngrok for tunneling the Web API.",
       "defaultValue": "true"
-    },
-    "uniqueKey": {
-      "type": "generated",
-      "generator": "guid",
-      "parameters": {
-        "defaultFormat": "N"
-      },
-      "replaces": "1A114D3A52AA408FACFE89A437A9BCC4"
     },
     "httpPort": {
       "type": "generated",

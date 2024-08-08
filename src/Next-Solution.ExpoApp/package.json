@@ -4,9 +4,9 @@
   "main": "expo-router/entry",
   "scripts": {
     "start": "expo start --clear",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web",
+    "start:android": "expo start --android",
+    "start:ios": "expo start --ios",
+    "start:web": "expo start --web",
     "format:check": "prettier --check .",
     "format": "prettier --write ."
   },
