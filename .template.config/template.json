@@ -87,14 +87,6 @@
       "description": "Enables Ngrok for tunneling the Web API.",
       "defaultValue": "true"
     },
-    "uniqueKey": {
-      "type": "generated",
-      "generator": "guid",
-      "parameters": {
-        "defaultFormat": "N"
-      },
-      "replaces": "1A114D3A52AA408FACFE89A437A9BCC4"
-    },
     "httpPort": {
       "type": "generated",
       "generator": "port",
