@@ -18,7 +18,10 @@ export default function Layout() {
             );
           }
         }}
-      />
+      >
+        <Stack.Screen name="sign-up" />
+        <Stack.Screen name="sign-up-enter-credentials" />
+      </Stack>
     </FormProvider>
   );
 }

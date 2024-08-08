@@ -162,7 +162,7 @@ const createSignUpScreen = (step: "enter-personal-details" | "enter-credentials"
             if (errorFields.length > 0) return;
 
             if (step == "enter-personal-details") {
-              router.push("/sign-up/enter-credentials");
+              router.push("/sign-up-enter-credentials");
               return;
             }
           } else {
