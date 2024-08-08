@@ -37,9 +37,6 @@ const config = (context) => {
       bundler: "metro"
     },
     plugins: ["expo-font"],
-    experiments: {
-      typedRoutes: true
-    },
     extra: {
       eas: {
         projectId: "6744e9b2-aab0-445e-bf30-eb4274386bd8"
