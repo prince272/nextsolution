@@ -26,7 +26,6 @@ using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Next_Solution.WebApi.Options;
-
 #if (configureNgrok)
 using Next_Solution.WebApi.Providers.Ngrok;
 #endif

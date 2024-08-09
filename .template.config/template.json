@@ -1,7 +1,7 @@
 {
   "$schema": "http://json.schemastore.org/template",
   "author": "@prince272",
-  "classifications": [ "Web", "ASP.NET" ],
+  "classifications": ["Web", "ASP.NET"],
   "identity": "NextSolution.Template",
   "name": "Next Solution (ASP.NET API)",
   "description": "A starter solution template for rapidly creating a modern, efficient codebase for your upcoming application.",
@@ -10,9 +10,7 @@
   "preferNameDirectory": true,
   "guids": [
     "1A114D3A-52AA-408F-ACFE-89A437A9BCC4",
-    "24FBFF44-2F91-4C05-BBDE-6FB7E43EF1B3",
-    "7C1DFC8B-EF4C-40D4-892B-211656690A13",
-    "6744E9B2-AAB0-445E-BF30-EB4274386BD8"
+    "24FBFF44-2F91-4C05-BBDE-6FB7E43EF1B3"
   ],
   "tags": {
     "type": "solution",
@@ -55,17 +53,28 @@
       "modifiers": [
         {
           "condition": "(!includeExpoProject)",
-          "exclude": [ "src/Next-Solution.ExpoApp/**/*" ]
+          "exclude": ["src/Next-Solution.ExpoApp/**/*"]
         },
         {
           "condition": "(!includeNextProject)",
-          "exclude": [ "src/Next-Solution.NextApp/**/*" ]
+          "exclude": ["src/Next-Solution.NextApp/**/*"]
         }
-
       ]
     }
   ],
   "symbols": {
+    "title": {
+      "type": "derived",
+      "valueSource": "name",
+      "valueTransform": "title",
+      "replaces": "Next Solution"
+    },
+    "slug": {
+      "type": "derived",
+      "valueSource": "name",
+      "valueTransform": "slug",
+      "replaces": "next-solution"
+    },
     "includeExpoProject": {
       "type": "parameter",
       "datatype": "bool",
@@ -87,14 +96,6 @@
       "description": "Enables Ngrok for tunneling the Web API.",
       "defaultValue": "true"
     },
-    "uniqueKey": {
-      "type": "generated",
-      "generator": "guid",
-      "parameters": {
-        "defaultFormat": "N"
-      },
-      "replaces": "1A114D3A52AA408FACFE89A437A9BCC4"
-    },
     "httpPort": {
       "type": "generated",
       "generator": "port",
@@ -112,6 +113,32 @@
         "high": 7400
       },
       "replaces": "7135"
+    }
+  },
+  "forms": {
+    "slug": {
+      "identifier": "chain",
+      "steps": ["hyphenReplace", "lowerCase"]
+    },
+    "title": {
+      "identifier": "chain",
+      "steps": ["titleCase", "spaceReplace"]
+    },
+    "lowerCase": {
+      "identifier": "lowerCase"
+    },
+    "titleCase": {
+      "identifier": "titleCase"
+    },
+    "spaceReplace": {
+      "identifier": "replace",
+      "pattern": "[-_+~]",
+      "replacement": " "
+    },
+    "hyphenReplace": {
+      "identifier": "replace",
+      "pattern": "([a-z0-9])([A-Z])|[^a-zA-Z0-9]+",
+      "replacement": "$1-$2"
     }
   }
 }

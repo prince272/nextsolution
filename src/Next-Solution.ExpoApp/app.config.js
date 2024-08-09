@@ -6,13 +6,13 @@ const config = (context) => {
   const { config } = context;
   return {
     ...config,
-    name: "Next_Solution",
-    slug: "next_solution",
+    name: "Next Solution",
+    slug: "next-solution",
     version: "1.0.0",
-    owner: "princeowusu",
+    owner: "oprince15799",
     orientation: "portrait",
     icon: "./assets/images/icon.png",
-    scheme: "next_solution",
+    scheme: "next-solution",
     userInterfaceStyle: "light",
     splash: {
       image: "./assets/images/splash.png",
@@ -29,7 +29,7 @@ const config = (context) => {
         backgroundColor: "#ffffff"
       },
       jsEngine: "hermes",
-      package: "com.yourcompany.next_solution",
+      package: "com.yourcompany.next-solution",
       versionCode: 1
     },
     web: {
@@ -39,7 +39,7 @@ const config = (context) => {
     plugins: ["expo-font"],
     extra: {
       eas: {
-        projectId: "6744e9b2-aab0-445e-bf30-eb4274386bd8"
+        projectId: "9ecced41-d88e-488e-a37c-bb456b3f9286"
       }
     }
   };

@@ -45,8 +45,7 @@ export default function RootLayout() {
                     headerShown: false
                   }}
                 >
-                  <Stack.Screen name="(app)" />
-                  <Stack.Screen name="(sign-up)" />
+                  <Stack.Screen name="index" />
                   <Stack.Screen name="+not-found" />
                 </Stack>
                 {snackbarMessages.map((snackbarMessage) => (
