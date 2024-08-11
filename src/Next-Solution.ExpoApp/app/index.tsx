@@ -1,5 +1,3 @@
-import { AuthScreen } from "@/screens/auth-screen";
+import { WelcomeScreen } from "@/screens/welcome-screen";
 
-export default function Screen() {
-  return <AuthScreen />;
-}
+export default WelcomeScreen;

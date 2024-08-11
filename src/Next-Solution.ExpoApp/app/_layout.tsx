@@ -4,7 +4,7 @@ import { SnackbarProvider } from "@/components";
 import { useThemeConfig } from "@/configs/theme";
 import { useHydration } from "@/states";
 import { ThemeProvider } from "@react-navigation/native";
-import { Slot, Stack } from "expo-router";
+import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { PaperProvider, Snackbar } from "react-native-paper";
@@ -46,6 +46,8 @@ export default function RootLayout() {
                   }}
                 >
                   <Stack.Screen name="index" />
+                  <Stack.Screen name="(sign-in)" />
+                  <Stack.Screen name="(sign-up)" />
                   <Stack.Screen name="+not-found" />
                 </Stack>
                 {snackbarMessages.map((snackbarMessage) => (

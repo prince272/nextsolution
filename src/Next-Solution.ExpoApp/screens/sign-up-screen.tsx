@@ -2,135 +2,21 @@ import React, { ComponentProps, useEffect, useRef, useState } from "react";
 import { ScrollView } from "react-native";
 import FacebookColorIcon from "@/assets/icons/facebook-round-color-icon.svg";
 import GoogleColorIcon from "@/assets/icons/google-color-icon.svg";
-import {
-  Button,
-  Divider,
-  HelperText,
-  Image,
-  Text,
-  TextInput,
-  useSnackbar,
-  View
-} from "@/components";
+import { Button, HelperText, Image, Text, TextInput, useSnackbar, View } from "@/components";
 import { useMemoizedValue } from "@/hooks";
 import { identityService } from "@/services";
+import { useAppStore } from "@/states";
 import { useKeyboard } from "@react-native-community/hooks";
 import { router } from "expo-router";
 import { cssInterop } from "nativewind";
 import { Controller, useFormContext } from "react-hook-form";
-import { TouchableRipple, useTheme } from "react-native-paper";
 import { ValidationProblem } from "@/services/results";
 import { CreateAccountForm } from "@/services/types";
 
-export type AuthenticationMethodsScreenProps = ComponentProps<typeof View> & {};
-
-const AuthScreen = ({ className, ...props }: AuthenticationMethodsScreenProps) => {
-  const themeConfig = useTheme();
-
-  return (
-    <View safeArea {...props} className="flex-1">
-      <View className="px-6 pt-24 pb-6">
-        <Image
-          className="w-20 h-20 self-center mb-6"
-          source={require("@/assets/images/right-arrow-256x256.png")}
-        />
-        <Text className="self-center mb-1 font-bold" variant="titleLarge">
-          Welcome to Next Solution
-        </Text>
-        <Text className="self-center text-on-surface-variant" variant="bodyMedium">
-          Kickstart your mobile app with our template
-        </Text>
-      </View>
-      <View className="px-6 flex-1">
-        <Button className="mb-3" mode="contained" onPress={() => {}}>
-          Sign in with email or phone
-        </Button>
-        <View className="rounded-full">
-          <TouchableRipple
-            className="p-3 rounded-full"
-            borderless
-            onPress={() => {
-              router.push("/sign-up");
-            }}
-          >
-            <Text className="text-center">
-              Don't have an account? <Text className="text-primary font-bold">Create one</Text>
-            </Text>
-          </TouchableRipple>
-        </View>
-        <Divider className="pt-1" alignment="center">
-          <Text className="w-12 text-center" variant="bodyMedium">
-            or
-          </Text>
-        </Divider>
-        <Button
-          className="mb-6"
-          mode="elevated"
-          icon={() => <GoogleColorIcon width={24} height={24} />}
-          onPress={() => {}}
-          buttonColor={themeConfig.colors.surfaceVariant}
-          textColor={themeConfig.colors.onBackground}
-          style={{
-            shadowColor: "transparent"
-          }}
-          contentStyle={{
-            justifyContent: "space-between"
-          }}
-          labelStyle={{
-            justifyContent: "center",
-            flex: 1
-          }}
-        >
-          Continue with Google
-        </Button>
-        <Button
-          mode="elevated"
-          icon={() => <FacebookColorIcon width={24} height={24} />}
-          buttonColor={themeConfig.colors.surfaceVariant}
-          textColor={themeConfig.colors.onBackground}
-          onPress={() => {}}
-          style={{
-            shadowColor: "transparent"
-          }}
-          contentStyle={{
-            justifyContent: "space-between"
-          }}
-          labelStyle={{
-            justifyContent: "center",
-            flex: 1
-          }}
-        >
-          Continue with Facebook
-        </Button>
-      </View>
-      <View className="px-6 pt-4 pb-6">
-        <Text className="text-center text-on-surface-variant" variant="bodySmall">
-          By signing in, you agree to our{" "}
-          <Text
-            className="text-primary font-bold underline"
-            pressedClassName="text-on-primary-container"
-            variant="bodySmall"
-          >
-            Terms of Service
-          </Text>{" "}
-          and{" "}
-          <Text
-            className="text-primary font-bold underline"
-            pressedClassName="text-on-primary-container"
-            variant="bodySmall"
-          >
-            Privacy Policy.
-          </Text>
-        </Text>
-      </View>
-    </View>
-  );
-};
-
-export type EnterPersonalDetailsScreenProps = ComponentProps<typeof View> & {};
+export type SignUpScreenProps = ComponentProps<typeof View> & {};
 
 const createSignUpScreen = (step: "enter-personal-details" | "enter-credentials") => {
-  return ({ className, ...props }: EnterPersonalDetailsScreenProps) => {
+  return ({ className, ...props }: SignUpScreenProps) => {
     const snackbar = useSnackbar();
     const { keyboardShown } = useKeyboard();
     const scrollRef = useRef<ScrollView>(null);
@@ -139,7 +25,9 @@ const createSignUpScreen = (step: "enter-personal-details" | "enter-credentials"
     const [formSubmitting, setFormSubmitting] = useState(false);
     const formErrors = useMemoizedValue(form.formState.errors, !formSubmitting);
 
-    const handleSubmit = async (validateOnly?: boolean) => {
+    const { setUser: setCurrentUser } = useAppStore((state) => state.authentication);
+
+    const handleSignUp = async (validateOnly?: boolean) => {
       setFormSubmitting(true);
       return form.handleSubmit(async (inputs) => {
         const response = await identityService.createAccountAsync({ ...inputs, validateOnly });
@@ -162,14 +50,20 @@ const createSignUpScreen = (step: "enter-personal-details" | "enter-credentials"
             if (errorFields.length > 0) return;
 
             if (step == "enter-personal-details") {
-              router.push("/sign-up/enter-credentials");
+              router.push("/sign-up/credentials");
               return;
             }
+
+            snackbar.show(response.message);
+            return;
           } else {
             snackbar.show(response.message);
             return;
           }
         }
+
+        setCurrentUser(response.data);
+        router.replace("/");
       })();
     };
 
@@ -192,20 +86,20 @@ const createSignUpScreen = (step: "enter-personal-details" | "enter-credentials"
     }, [keyboardShown]);
 
     const HeaderView = (
-      <View className="px-6 pb-3">
+      <View className="px-6 pb-6">
         <Image
           className="w-16 h-16 self-center mb-3"
           source={require("@/assets/images/right-arrow-256x256.png")}
         />
         <Text className="self-center mb-1 font-bold" variant="titleLarge">
           {step === "enter-personal-details"
-            ? "Enter your personal details"
-            : "Enter your new credentials"}
+            ? "Create your new account"
+            : "Set up your credentials"}
         </Text>
-        <Text className="self-center text-on-surface-variant" variant="bodyMedium">
-          {step == "enter-personal-details"
-            ? "Let's get to know you better"
-            : "We'll keep your account secure"}
+        <Text className="self-center text-gray-600" variant="bodyMedium">
+          {step === "enter-personal-details"
+            ? "Enter your personal details to continue"
+            : "Enter your credentials to create your account"}
         </Text>
       </View>
     );
@@ -230,7 +124,9 @@ const createSignUpScreen = (step: "enter-personal-details" | "enter-credentials"
                           onChangeText={onChange}
                           value={value}
                         />
-                        <HelperText type="error" padding="none">{formErrors.firstName?.message ?? " "}</HelperText>
+                        <HelperText type="error" padding="none">
+                          {formErrors.firstName?.message ?? " "}
+                        </HelperText>
                       </>
                     )}
                     name="firstName"
@@ -261,10 +157,10 @@ const createSignUpScreen = (step: "enter-personal-details" | "enter-credentials"
                 mode="contained"
                 loading={formSubmitting}
                 onPress={() => {
-                  handleSubmit(true);
+                  handleSignUp(true);
                 }}
               >
-                {!formSubmitting && "Continue"}
+                {!formSubmitting ? "Continue" : " "}
               </Button>
             </View>
           </>
@@ -319,10 +215,10 @@ const createSignUpScreen = (step: "enter-personal-details" | "enter-credentials"
                 mode="contained"
                 loading={formSubmitting}
                 onPress={() => {
-                  handleSubmit();
+                  handleSignUp();
                 }}
               >
-                {!formSubmitting && "Create account"}
+                {!formSubmitting ? "Create account" : " "}
               </Button>
             </View>
           </>
@@ -333,5 +229,9 @@ const createSignUpScreen = (step: "enter-personal-details" | "enter-credentials"
 };
 
 cssInterop(GoogleColorIcon, { className: "style" });
+cssInterop(FacebookColorIcon, { className: "style" });
 
-export { AuthScreen, createSignUpScreen };
+const SignUpEnterPersonalDetailsScreen = createSignUpScreen("enter-personal-details");
+const SignUpEnterCredentialsScreen = createSignUpScreen("enter-credentials");
+
+export { SignUpEnterPersonalDetailsScreen, SignUpEnterCredentialsScreen };

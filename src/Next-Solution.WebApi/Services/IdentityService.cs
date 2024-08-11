@@ -99,6 +99,8 @@ namespace Next_Solution.WebApi.Services
             if (form.ValidateOnly) return TypedResults.Ok();
 
             var newUser = _mapper.Map<User>(form);
+            newUser.FirstName = form.FirstName;
+            newUser.LastName = form.LastName;
             newUser.UserName = await GenerateUserNameAsync(form.FirstName, form.LastName);
             newUser.Email = form.UsernameType == ContactType.Email ? form.Username : null;
             newUser.PhoneNumber = form.UsernameType == ContactType.PhoneNumber ? form.Username : null;
@@ -557,7 +559,7 @@ namespace Next_Solution.WebApi.Services
             {
                 var errors = new Dictionary<string, string[]>
                 {
-                    { nameof(form.Password), [$"'{form.Password.Humanize(LetterCasing.Sentence)}' is incorrect."] }
+                    { nameof(form.Password), [$"'{nameof(form.Password).Humanize(LetterCasing.Sentence)}' is incorrect."] }
                 };
 
                 return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
@@ -600,6 +602,8 @@ namespace Next_Solution.WebApi.Services
             {
                 user = new User
                 {
+                    FirstName = form.FirstName,
+                    LastName = form.LastName,
                     UserName = await GenerateUserNameAsync(form.FirstName, form.LastName),
                     Email = form.UsernameType == ContactType.Email ? form.Username : null,
                     EmailConfirmed = form.UsernameType == ContactType.Email,

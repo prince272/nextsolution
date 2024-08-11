@@ -39,7 +39,8 @@
     "react-native-screens": "3.31.1",
     "react-native-svg": "15.2.0",
     "tailwind-merge": "^2.4.0",
-    "zustand": "^4.5.4"
+    "zustand": "^4.5.4",
+    "expo-web-browser": "~13.0.3"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
