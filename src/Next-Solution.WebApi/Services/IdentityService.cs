@@ -96,8 +96,6 @@ namespace Next_Solution.WebApi.Services
                 }
             }
 
-            if (form.ValidateOnly) return TypedResults.Ok();
-
             var newUser = _mapper.Map<User>(form);
             newUser.FirstName = form.FirstName;
             newUser.LastName = form.LastName;
@@ -116,7 +114,7 @@ namespace Next_Solution.WebApi.Services
             return TypedResults.Ok();
         }
 
-        public async Task<Results<ValidationProblem, Ok>> ConfirmAccountAsync(ConfirmAccountSendCodeForm form)
+        public async Task<Results<ValidationProblem, Ok>> ConfirmAccountAsync(SendConfirmAccountCodeForm form)
         {
             if (form is null) throw new ArgumentNullException(nameof(form));
 
@@ -182,7 +180,7 @@ namespace Next_Solution.WebApi.Services
 
         }
 
-        public async Task<Results<ValidationProblem, Ok>> ConfirmAccountAsync(ConfirmAccountVerifyCodeForm form)
+        public async Task<Results<ValidationProblem, Ok>> ConfirmAccountAsync(ConfirmAccountForm form)
         {
             if (form is null) throw new ArgumentNullException(nameof(form));
 
@@ -233,7 +231,7 @@ namespace Next_Solution.WebApi.Services
 
         }
 
-        public async Task<Results<ValidationProblem, UnauthorizedHttpResult, Ok>> ChangeAccountAsync(ChangeAccountSendCodeForm form)
+        public async Task<Results<ValidationProblem, UnauthorizedHttpResult, Ok>> ChangeAccountAsync(SendChangeAccountCodeForm form)
         {
             if (form is null) throw new ArgumentNullException(nameof(form));
 
@@ -311,7 +309,7 @@ namespace Next_Solution.WebApi.Services
             return TypedResults.Ok();
         }
 
-        public async Task<Results<ValidationProblem, UnauthorizedHttpResult, Ok>> ChangeAccountAsync(ChangeAccountVerifyCodeForm form)
+        public async Task<Results<ValidationProblem, UnauthorizedHttpResult, Ok>> ChangeAccountAsync(ChangeAccountForm form)
         {
             if (form is null) throw new ArgumentNullException(nameof(form));
 
@@ -351,7 +349,6 @@ namespace Next_Solution.WebApi.Services
                 }
             }
             else throw new InvalidOperationException("Invalid new username type.");
-
 
             var result = form.NewUsernameType switch
             {
@@ -422,7 +419,7 @@ namespace Next_Solution.WebApi.Services
             return TypedResults.Ok();
         }
 
-        public async Task<Results<ValidationProblem, Ok>> ResetPasswordAsync(ResetPasswordSendCodeForm form)
+        public async Task<Results<ValidationProblem, Ok>> ResetPasswordAsync(SendResetPasswordCodeForm form)
         {
             if (form is null) throw new ArgumentNullException(nameof(form));
 
@@ -482,7 +479,7 @@ namespace Next_Solution.WebApi.Services
             return TypedResults.Ok();
         }
 
-        public async Task<Results<ValidationProblem, Ok>> ResetPasswordAsync(ResetPasswordVerifyCodeForm form)
+        public async Task<Results<ValidationProblem, Ok>> ResetPasswordAsync(ResetPasswordForm form)
         {
             if (form is null) throw new ArgumentNullException(nameof(form));
 
@@ -510,19 +507,38 @@ namespace Next_Solution.WebApi.Services
                 return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
             }
 
-            var result = await _userManager.ResetPasswordAsync(user, form.Code, form.NewPassword);
-
-            if (!result.Succeeded)
+            if (form.ValidateOnly)
             {
-                var errors = new Dictionary<string, string[]>
+                var verifyResetPasswordResult = await _userManager.VerifyResetPasswordAsync(user, form.Code);
+
+                if (!verifyResetPasswordResult)
+                {
+                    var errors = new Dictionary<string, string[]>
                     {
                         { nameof(form.Code), [$"'{nameof(form.Code).Humanize(LetterCasing.Sentence)}' is not valid."] }
                     };
 
-                return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
+                    return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
+                }
+                else
+                    return TypedResults.Ok();
             }
+            else
+            {
+                var resetPasswordResult = await _userManager.ResetPasswordAsync(user, form.Code, form.NewPassword);
 
-            return TypedResults.Ok();
+                if (!resetPasswordResult.Succeeded)
+                {
+                    var errors = new Dictionary<string, string[]>
+                    {
+                        { nameof(form.Code), [$"'{nameof(form.Code).Humanize(LetterCasing.Sentence)}' is not valid."] }
+                    };
+
+                    return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
+                }
+
+                return TypedResults.Ok();
+            }
 
         }
 
@@ -783,19 +799,19 @@ namespace Next_Solution.WebApi.Services
     {
         Task<Results<ValidationProblem, Ok>> CreateAccountAsync(CreateAccountForm form);
 
-        Task<Results<ValidationProblem, Ok>> ConfirmAccountAsync(ConfirmAccountSendCodeForm form);
+        Task<Results<ValidationProblem, Ok>> ConfirmAccountAsync(SendConfirmAccountCodeForm form);
 
-        Task<Results<ValidationProblem, Ok>> ConfirmAccountAsync(ConfirmAccountVerifyCodeForm form);
+        Task<Results<ValidationProblem, Ok>> ConfirmAccountAsync(ConfirmAccountForm form);
 
-        Task<Results<ValidationProblem, UnauthorizedHttpResult, Ok>> ChangeAccountAsync(ChangeAccountSendCodeForm form);
+        Task<Results<ValidationProblem, UnauthorizedHttpResult, Ok>> ChangeAccountAsync(SendChangeAccountCodeForm form);
 
-        Task<Results<ValidationProblem, UnauthorizedHttpResult, Ok>> ChangeAccountAsync(ChangeAccountVerifyCodeForm form);
+        Task<Results<ValidationProblem, UnauthorizedHttpResult, Ok>> ChangeAccountAsync(ChangeAccountForm form);
 
         Task<Results<ValidationProblem, UnauthorizedHttpResult, Ok>> ChangePasswordAsync(ChangePasswordForm form);
 
-        Task<Results<ValidationProblem, Ok>> ResetPasswordAsync(ResetPasswordSendCodeForm form);
+        Task<Results<ValidationProblem, Ok>> ResetPasswordAsync(SendResetPasswordCodeForm form);
 
-        Task<Results<ValidationProblem, Ok>> ResetPasswordAsync(ResetPasswordVerifyCodeForm form);
+        Task<Results<ValidationProblem, Ok>> ResetPasswordAsync(ResetPasswordForm form);
 
         Task<Results<ValidationProblem, Ok<UserSessionModel>>> SignInAsync(SignInForm form);
 
@@ -821,6 +837,14 @@ namespace Next_Solution.WebApi.Services
             if (phoneNumber is null) throw new ArgumentNullException(nameof(phoneNumber));
 
             return userManager.Users.FirstOrDefaultAsync(_ => _.PhoneNumber == phoneNumber);
+        }
+
+        public static async Task<bool> VerifyResetPasswordAsync<TUser>(this UserManager<TUser> userManager, TUser user, string token)
+            where TUser : IdentityUser<string>
+        {
+            if (userManager is null) throw new ArgumentNullException(nameof(userManager));
+            if (user is null) throw new ArgumentNullException(nameof(user));
+            return await userManager.VerifyUserTokenAsync(user, userManager.Options.Tokens.PasswordResetTokenProvider, "ResetPassword", token);
         }
 
         public static string GetMessage(this IEnumerable<IdentityError> errors)

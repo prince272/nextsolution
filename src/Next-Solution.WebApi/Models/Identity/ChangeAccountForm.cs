@@ -4,7 +4,7 @@ using Next_Solution.WebApi.Providers.ModelValidator;
 
 namespace Next_Solution.WebApi.Models.Identity
 {
-    public class ChangeAccountSendCodeForm
+    public class SendChangeAccountCodeForm
     {
         private ContactType? newUsernameType;
         public ContactType? NewUsernameType
@@ -20,7 +20,7 @@ namespace Next_Solution.WebApi.Models.Identity
         public string NewUsername { get; set; } = null!;
     }
 
-    public class ChangeAccountVerifyCodeForm
+    public class ChangeAccountForm
     {
         private ContactType? newUsernameType;
         public ContactType? NewUsernameType
@@ -38,11 +38,11 @@ namespace Next_Solution.WebApi.Models.Identity
         public string Code { get; set; } = null!;
     }
 
-    public class ChangeAccountSendCodeFormValidator : AbstractValidator<ChangeAccountSendCodeForm>
+    public class SendChangeAccountCodeFormValidator : AbstractValidator<SendChangeAccountCodeForm>
     {
-        public ChangeAccountSendCodeFormValidator()
+        public SendChangeAccountCodeFormValidator()
         {
-            RuleFor(_ => _.NewUsername).NotEmpty().DependentRules(() =>
+            RuleFor(_ => _.NewUsername).NotEmpty().WithName("New email or phone number").DependentRules(() =>
             {
                 When(_ => _.NewUsernameType!.Value == ContactType.Email, () =>
                 {
@@ -57,11 +57,11 @@ namespace Next_Solution.WebApi.Models.Identity
         }
     }
 
-    public class ChangeAccountVerifyCodeFormValidator : AbstractValidator<ChangeAccountVerifyCodeForm>
+    public class ChangeAccountFormValidator : AbstractValidator<ChangeAccountForm>
     {
-        public ChangeAccountVerifyCodeFormValidator()
+        public ChangeAccountFormValidator()
         {
-            RuleFor(_ => _.NewUsername).NotEmpty().DependentRules(() =>
+            RuleFor(_ => _.NewUsername).NotEmpty().WithName("New email or phone number").DependentRules(() =>
             {
                 When(_ => _.NewUsernameType!.Value == ContactType.Email, () =>
                 {

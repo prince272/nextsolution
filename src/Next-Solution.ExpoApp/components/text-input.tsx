@@ -6,8 +6,9 @@ export interface TextInputProps extends ComponentProps<typeof BaseTextInput> {
   className?: string;
 }
 
+export type TextInputRef = ComponentRef<typeof RNTextInput>;
 
-const TextInput = forwardRef<RNTextInput, TextInputProps>(({ className, ...props }, ref) => {
+const TextInput = forwardRef<TextInputRef, TextInputProps>(({ ...props }, ref) => {
   return <BaseTextInput ref={ref} {...props} />;
 });
 

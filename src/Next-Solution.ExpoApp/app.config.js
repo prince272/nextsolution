@@ -29,7 +29,7 @@ const config = (context) => {
         backgroundColor: "#ffffff"
       },
       jsEngine: "hermes",
-      package: "com.yourcompany.next-solution",
+      package: "com.yourcompany.next_solution",
       versionCode: 1
     },
     web: {

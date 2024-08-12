@@ -15,7 +15,13 @@ import { CreateAccountForm } from "@/services/types";
 
 export type SignUpScreenProps = ComponentProps<typeof View> & {};
 
-const createSignUpScreen = (step: "enter-personal-details" | "enter-credentials") => {
+const steps = ["enter-personal-details", "enter-credentials"] as const;
+
+export type SignUpScreenSteps = (typeof steps)[number];
+
+export type SignUpScreenStepFields = { [key in SignUpScreenSteps]: (keyof CreateAccountForm)[] };
+
+const createSignUpScreen = (step: SignUpScreenSteps) => {
   return ({ className, ...props }: SignUpScreenProps) => {
     const snackbar = useSnackbar();
     const { keyboardShown } = useKeyboard();
@@ -24,23 +30,29 @@ const createSignUpScreen = (step: "enter-personal-details" | "enter-credentials"
     const form = useFormContext<CreateAccountForm>();
     const [formSubmitting, setFormSubmitting] = useState(false);
     const formErrors = useMemoizedValue(form.formState.errors, !formSubmitting);
+    const formFields = useRef(
+      (
+        {
+          "enter-personal-details": ["firstName", "lastName"],
+          "enter-credentials": ["username", "password"]
+        } as SignUpScreenStepFields
+      )[step]
+    ).current;
+    const stepIndex = steps.indexOf(step);
+    const nextStep = stepIndex !== -1 && stepIndex < steps.length - 1 ? steps[stepIndex + 1] : null;
 
     const { setUser: setCurrentUser } = useAppStore((state) => state.authentication);
 
-    const handleSignUp = async (validateOnly?: boolean) => {
+    const handleSignUp = async () => {
       setFormSubmitting(true);
       return form.handleSubmit(async (inputs) => {
-        const response = await identityService.createAccountAsync({ ...inputs, validateOnly });
+        const response = await identityService.createAccountAsync({ ...inputs });
         setFormSubmitting(false);
 
         if (!response.success) {
           if (response instanceof ValidationProblem) {
-            const errorFields = Object.entries<string[]>(response.errors || []).filter(
-              (errorField) =>
-                ({
-                  "enter-personal-details": ["firstName", "lastName"],
-                  "enter-credentials": ["username", "password"]
-                })[step].includes(errorField[0])
+            const errorFields = Object.entries(response.errors || {}).filter((errorField) =>
+              formFields.includes(errorField[0] as keyof CreateAccountForm)
             );
 
             errorFields.forEach(([name, message]) => {
@@ -49,8 +61,8 @@ const createSignUpScreen = (step: "enter-personal-details" | "enter-credentials"
 
             if (errorFields.length > 0) return;
 
-            if (step == "enter-personal-details") {
-              router.push("/sign-up/credentials");
+            if (nextStep) {
+              router.push(`/sign-up/${nextStep}`);
               return;
             }
 
@@ -69,13 +81,9 @@ const createSignUpScreen = (step: "enter-personal-details" | "enter-credentials"
 
     useEffect(() => {
       return () => {
-        if (step === "enter-personal-details") {
-          form.resetField("firstName");
-          form.resetField("lastName");
-        } else if (step === "enter-credentials") {
-          form.resetField("username");
-          form.resetField("password");
-        }
+        formFields.forEach((field) => {
+          form.resetField(field);
+        });
       };
     }, []);
 
@@ -92,14 +100,20 @@ const createSignUpScreen = (step: "enter-personal-details" | "enter-credentials"
           source={require("@/assets/images/right-arrow-256x256.png")}
         />
         <Text className="self-center mb-1 font-bold" variant="titleLarge">
-          {step === "enter-personal-details"
-            ? "Create your new account"
-            : "Set up your credentials"}
+          {
+            {
+              "enter-personal-details": "Create Your New Account",
+              "enter-credentials": "Set up Your Credentials"
+            }[step]
+          }
         </Text>
         <Text className="self-center text-gray-600" variant="bodyMedium">
-          {step === "enter-personal-details"
-            ? "Enter your personal details to continue"
-            : "Enter your credentials to create your account"}
+          {
+            {
+              "enter-personal-details": "Enter your personal details to continue",
+              "enter-credentials": "Enter your credentials to create your account"
+            }[step]
+          }
         </Text>
       </View>
     );
@@ -139,7 +153,7 @@ const createSignUpScreen = (step: "enter-personal-details" | "enter-credentials"
                       <>
                         <TextInput
                           mode="outlined"
-                          label="Last name"
+                          label="Last name (optional)"
                           onBlur={onBlur}
                           onChangeText={onChange}
                           value={value}
@@ -157,7 +171,7 @@ const createSignUpScreen = (step: "enter-personal-details" | "enter-credentials"
                 mode="contained"
                 loading={formSubmitting}
                 onPress={() => {
-                  handleSignUp(true);
+                  handleSignUp();
                 }}
               >
                 {!formSubmitting ? "Continue" : " "}
@@ -178,7 +192,7 @@ const createSignUpScreen = (step: "enter-personal-details" | "enter-credentials"
                         <TextInput
                           mode="outlined"
                           autoFocus
-                          label="Email or phone"
+                          label="Email or phone number"
                           onBlur={onBlur}
                           onChangeText={onChange}
                           value={value}
@@ -210,7 +224,7 @@ const createSignUpScreen = (step: "enter-personal-details" | "enter-credentials"
                 </View>
               </View>
             </ScrollView>
-            <View className="px-6 pt-3 pb-6">
+            <View className="px-6 pt-3 pb-3">
               <Button
                 mode="contained"
                 loading={formSubmitting}
@@ -231,7 +245,7 @@ const createSignUpScreen = (step: "enter-personal-details" | "enter-credentials"
 cssInterop(GoogleColorIcon, { className: "style" });
 cssInterop(FacebookColorIcon, { className: "style" });
 
-const SignUpEnterPersonalDetailsScreen = createSignUpScreen("enter-personal-details");
-const SignUpEnterCredentialsScreen = createSignUpScreen("enter-credentials");
+const EnterPersonalDetailsScreen = createSignUpScreen("enter-personal-details");
+const EnterCredentialsScreen = createSignUpScreen("enter-credentials");
 
-export { SignUpEnterPersonalDetailsScreen, SignUpEnterCredentialsScreen };
+export { EnterPersonalDetailsScreen, EnterCredentialsScreen };

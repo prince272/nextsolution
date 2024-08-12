@@ -63,7 +63,7 @@ namespace Next_Solution.WebApi.Controllers
         /// <param name="form">The data required to send the confirmation code.</param>
         /// <returns>The result of sending the confirmation code.</returns>
         [HttpPost("confirm/send-code")]
-        public async Task<Results<ValidationProblem, Ok>> ConfirmAccount([FromBody] ConfirmAccountSendCodeForm form)
+        public async Task<Results<ValidationProblem, Ok>> ConfirmAccount([FromBody] SendConfirmAccountCodeForm form)
         {
             return await _identityService.ConfirmAccountAsync(form);
         }
@@ -74,7 +74,7 @@ namespace Next_Solution.WebApi.Controllers
         /// <param name="form">The data required to confirm the account using the confirmation code.</param>
         /// <returns>The result of confirming the user account.</returns>
         [HttpPost("confirm")]
-        public async Task<Results<ValidationProblem, Ok>> ConfirmAccount([FromBody] ConfirmAccountVerifyCodeForm form)
+        public async Task<Results<ValidationProblem, Ok>> ConfirmAccount([FromBody] ConfirmAccountForm form)
         {
             return await _identityService.ConfirmAccountAsync(form);
         }
@@ -86,7 +86,7 @@ namespace Next_Solution.WebApi.Controllers
         /// <returns>The result of requesting the change code.</returns>
         [Authorize]
         [HttpPost("change/send-code")]
-        public async Task<Results<ValidationProblem, UnauthorizedHttpResult, Ok>> ChangeAccount([FromBody] ChangeAccountSendCodeForm form)
+        public async Task<Results<ValidationProblem, UnauthorizedHttpResult, Ok>> ChangeAccount([FromBody] SendChangeAccountCodeForm form)
         {
             return await _identityService.ChangeAccountAsync(form);
         }
@@ -98,7 +98,7 @@ namespace Next_Solution.WebApi.Controllers
         /// <returns>The result of changing the account details.</returns>
         [Authorize]
         [HttpPost("change")]
-        public async Task<Results<ValidationProblem, UnauthorizedHttpResult, Ok>> ChangeAccount([FromBody] ChangeAccountVerifyCodeForm form)
+        public async Task<Results<ValidationProblem, UnauthorizedHttpResult, Ok>> ChangeAccount([FromBody] ChangeAccountForm form)
         {
             return await _identityService.ChangeAccountAsync(form);
         }
@@ -121,7 +121,7 @@ namespace Next_Solution.WebApi.Controllers
         /// <param name="form">The data required to request the password reset code.</param>
         /// <returns>The result of sending the reset code.</returns>
         [HttpPost("password/reset/send-code")]
-        public async Task<Results<ValidationProblem, Ok>> ResetPassword([FromBody] ResetPasswordSendCodeForm form)
+        public async Task<Results<ValidationProblem, Ok>> ResetPassword([FromBody] SendResetPasswordCodeForm form)
         {
             return await _identityService.ResetPasswordAsync(form);
         }
@@ -132,7 +132,7 @@ namespace Next_Solution.WebApi.Controllers
         /// <param name="form">The data required to reset the password using the confirmation code.</param>
         /// <returns>The result of resetting the password.</returns>
         [HttpPost("password/reset")]
-        public async Task<Results<ValidationProblem, Ok>> ResetPassword([FromBody] ResetPasswordVerifyCodeForm form)
+        public async Task<Results<ValidationProblem, Ok>> ResetPassword([FromBody] ResetPasswordForm form)
         {
             return await _identityService.ResetPasswordAsync(form);
         }

@@ -26,11 +26,17 @@ export type ChangePasswordForm = {
   confirmPassword: string;
 };
 
+export type SendResetPasswordCodeForm = {
+  username: string;
+  usernameType?: "email" | "phoneNumber";
+};
+
 export type ResetPasswordForm = {
   username: string;
   usernameType?: "email" | "phoneNumber";
-  code?: string;
-  process: "sendCode" | "verifyCode";
+  code: string;
+  newPassword: string;
+  confirmPassword: string;
 };
 
 export type SignInForm = {

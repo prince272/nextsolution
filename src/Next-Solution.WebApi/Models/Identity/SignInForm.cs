@@ -29,7 +29,7 @@ namespace Next_Solution.WebApi.Models.Identity
     {
         public SignInFormValidator()
         {
-            RuleFor(_ => _.Username).NotEmpty().DependentRules(() =>
+            RuleFor(_ => _.Username).NotEmpty().WithName("Email or phone number").DependentRules(() =>
             {
                 When(_ => _.UsernameType!.Value == ContactType.Email, () =>
                 {

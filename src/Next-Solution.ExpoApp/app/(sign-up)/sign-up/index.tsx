@@ -1,3 +1,3 @@
-import { SignUpEnterPersonalDetailsScreen } from "@/screens/sign-up-screen";
+import { EnterPersonalDetailsScreen } from "@/screens/sign-up-screen";
 
-export default SignUpEnterPersonalDetailsScreen;
+export default EnterPersonalDetailsScreen;

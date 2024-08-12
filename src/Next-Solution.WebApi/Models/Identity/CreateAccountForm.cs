@@ -26,8 +26,6 @@ namespace Next_Solution.WebApi.Models.Identity
         }
 
         public string Password { get; set; } = null!;
-
-        public bool ValidateOnly { get; set; }
     }
 
     public class CreateAccountFormValidator : AbstractValidator<CreateAccountForm>
@@ -36,7 +34,7 @@ namespace Next_Solution.WebApi.Models.Identity
         {
             RuleFor(_ => _.FirstName).NotEmpty().MaximumLength(256);
             RuleFor(_ => _.LastName).MaximumLength(256);
-            RuleFor(_ => _.Username).NotEmpty().DependentRules(() =>
+            RuleFor(_ => _.Username).NotEmpty().WithName("Email or phone number").DependentRules(() =>
             {
                 When(_ => _.UsernameType!.Value == ContactType.Email, () =>
                 {

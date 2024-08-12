@@ -9,7 +9,6 @@ const SignUpStack = () => {
     <FormProvider {...form}>
       <Stack
         screenOptions={{
-          animation: "fade_from_bottom",
           header: ({ navigation, back }) => {
             return (
               <Appbar.Header mode="small">
@@ -20,7 +19,7 @@ const SignUpStack = () => {
         }}
       >
         <Stack.Screen name="sign-up/index" />
-        <Stack.Screen name="sign-up/credentials" />
+        <Stack.Screen name="sign-up/enter-credentials" />
       </Stack>
     </FormProvider>
   );

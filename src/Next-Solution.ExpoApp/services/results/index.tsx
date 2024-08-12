@@ -76,7 +76,7 @@ export class Result {
     } else if (statusCode >= 500 && statusCode < 600) {
       return "Oops! Something went wrong on our end.";
     } else {
-      return "An unexpected error occurred. Please try again later.";
+      return "An unexpected client error occurred.";
     }
   }
 }

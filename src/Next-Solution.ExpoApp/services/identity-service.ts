@@ -8,6 +8,7 @@ import {
   CreateAccountForm,
   RefreshTokenForm,
   ResetPasswordForm,
+  SendResetPasswordCodeForm,
   SignInForm,
   SignInWithProvider,
   SignOutForm,
@@ -39,6 +40,12 @@ export class IdentityService {
   async changePasswordAsync<Form extends ChangePasswordForm>(form: Form) {
     return await Result.handle<ValidationProblem<Form> | Unauthorized | Succeeded>(
       this.api.post("/identity/password/change", form)
+    );
+  }
+
+  async sendResetPasswordCodeAsync<Form extends SendResetPasswordCodeForm>(form: Form) {
+    return await Result.handle<ValidationProblem<Form> | Succeeded>(
+      this.api.post("/identity/password/reset/send-code", form)
     );
   }
 

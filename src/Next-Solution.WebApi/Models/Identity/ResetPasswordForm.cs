@@ -4,7 +4,7 @@ using Next_Solution.WebApi.Providers.ModelValidator;
 
 namespace Next_Solution.WebApi.Models.Identity
 {
-    public class ResetPasswordSendCodeForm
+    public class SendResetPasswordCodeForm
     {
         public string Username { get; set; } = null!;
 
@@ -18,20 +18,24 @@ namespace Next_Solution.WebApi.Models.Identity
             }
             set => usernameType = value;
         }
+    }
 
+    public class ResetPasswordForm : SendResetPasswordCodeForm
+    {
         public string NewPassword { get; set; } = null!;
-    }
 
-    public class ResetPasswordVerifyCodeForm : ResetPasswordSendCodeForm
-    {
+        public string ConfirmPassword { get; set; } = null!;
+
         public string Code { get; set; } = null!;
+
+        public bool ValidateOnly { get; set; }
     }
 
-    public class ResetPasswordSendCodeFormValidator : AbstractValidator<ResetPasswordSendCodeForm>
+    public class SendResetPasswordCodeFormValidator : AbstractValidator<SendResetPasswordCodeForm>
     {
-        public ResetPasswordSendCodeFormValidator()
+        public SendResetPasswordCodeFormValidator()
         {
-            RuleFor(_ => _.Username).NotEmpty().DependentRules(() =>
+            RuleFor(_ => _.Username).NotEmpty().WithName("Email or phone number").DependentRules(() =>
             {
                 When(_ => _.UsernameType!.Value == ContactType.Email, () =>
                 {
@@ -46,11 +50,11 @@ namespace Next_Solution.WebApi.Models.Identity
         }
     }
 
-    public class ResetPasswordVerifyCodeFormValidator : AbstractValidator<ResetPasswordVerifyCodeForm>
+    public class ResetPasswordFormValidator : AbstractValidator<ResetPasswordForm>
     {
-        public ResetPasswordVerifyCodeFormValidator()
+        public ResetPasswordFormValidator()
         {
-            RuleFor(_ => _.Username).NotEmpty().DependentRules(() =>
+            RuleFor(_ => _.Username).NotEmpty().WithName("Email or phone number").DependentRules(() =>
             {
                 When(_ => _.UsernameType!.Value == ContactType.Email, () =>
                 {
@@ -64,6 +68,10 @@ namespace Next_Solution.WebApi.Models.Identity
             });
 
             RuleFor(_ => _.Code).NotEmpty();
+
+            RuleFor(_ => _.NewPassword).NotEmpty().Password();
+
+            RuleFor(_ => _.ConfirmPassword).NotEmpty().Equal(_ => _.NewPassword);
         }
     }
 }

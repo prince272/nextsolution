@@ -1,10 +1,10 @@
 import { Appbar } from "@/components";
 import { Stack } from "expo-router";
 import { FormProvider, useForm } from "react-hook-form";
-import { SignInForm } from "@/services/types";
+import { ResetPasswordForm } from "@/services/types";
 
-const SignInStack = () => {
-  const form = useForm<SignInForm>();
+const ResetPasswordStack = () => {
+  const form = useForm<ResetPasswordForm>();
   return (
     <FormProvider {...form}>
       <Stack
@@ -18,12 +18,14 @@ const SignInStack = () => {
           }
         }}
       >
-        <Stack.Screen name="sign-in" />
+        <Stack.Screen name="reset-password/index" />
+        <Stack.Screen name="reset-password/enter-verification-code" />
+        <Stack.Screen name="reset-password/enter-new-password" />
       </Stack>
     </FormProvider>
   );
 };
 
 export default function Layout() {
-  return <SignInStack />;
+  return <ResetPasswordStack />;
 }

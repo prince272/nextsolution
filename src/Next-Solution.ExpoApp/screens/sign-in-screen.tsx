@@ -1,8 +1,18 @@
-import React, { ComponentProps, useEffect, useRef, useState } from "react";
+import React, { ComponentProps, useCallback, useEffect, useRef, useState } from "react";
 import { ScrollView } from "react-native";
 import FacebookColorIcon from "@/assets/icons/facebook-round-color-icon.svg";
 import GoogleColorIcon from "@/assets/icons/google-color-icon.svg";
-import { Button, HelperText, Image, Text, TextInput, useSnackbar, View } from "@/components";
+import {
+  Button,
+  Divider,
+  HelperText,
+  Image,
+  Text,
+  TextInput,
+  TouchableRipple,
+  useSnackbar,
+  View
+} from "@/components";
 import { useMemoizedValue } from "@/hooks";
 import { identityService } from "@/services";
 import { useAppStore } from "@/states";
@@ -26,7 +36,7 @@ const SignInScreen = ({ className, ...props }: SignInScreenProps) => {
 
   const { setUser: setCurrentUser } = useAppStore((state) => state.authentication);
 
-  const handleSignIn = async () => {
+  const handleSignIn = useCallback(async () => {
     setFormSubmitting(true);
     return form.handleSubmit(async (inputs) => {
       const response = await identityService.signInAsync({ ...inputs });
@@ -53,7 +63,11 @@ const SignInScreen = ({ className, ...props }: SignInScreenProps) => {
       setCurrentUser(response.data);
       router.replace("/");
     })();
-  };
+  }, []);
+
+  const openResetPassword = useCallback(() => {
+    router.push("/reset-password");
+  }, []);
 
   useEffect(() => {
     if (keyboardShown) {
@@ -68,7 +82,7 @@ const SignInScreen = ({ className, ...props }: SignInScreenProps) => {
         source={require("@/assets/images/right-arrow-256x256.png")}
       />
       <Text className="self-center mb-1 font-bold" variant="titleLarge">
-        Sign into your account
+        Sign into Your Account
       </Text>
       <Text className="self-center text-on-surface-variant" variant="bodyMedium">
         Enter your credentials to access your account
@@ -90,7 +104,7 @@ const SignInScreen = ({ className, ...props }: SignInScreenProps) => {
                     <TextInput
                       mode="outlined"
                       autoFocus
-                      label="Email or phone"
+                      label="Email or phone number"
                       onBlur={onBlur}
                       onChangeText={onChange}
                       value={value}
@@ -122,7 +136,7 @@ const SignInScreen = ({ className, ...props }: SignInScreenProps) => {
             </View>
           </View>
         </ScrollView>
-        <View className="px-6 pt-3 pb-6">
+        <View className="px-6 pt-3 pb-3">
           <Button
             mode="contained"
             loading={formSubmitting}
@@ -130,8 +144,19 @@ const SignInScreen = ({ className, ...props }: SignInScreenProps) => {
               handleSignIn();
             }}
           >
-            {!formSubmitting && "Sign in"}
+            {!formSubmitting ? "Sign in" : " "}
           </Button>
+        </View>
+        <View>
+          <TouchableRipple
+            className="p-3 px-6 rounded-full self-center"
+            borderless
+            onPress={openResetPassword}
+          >
+            <Text className="text-center">
+              Forgot your password? <Text className="text-primary font-bold">Reset password</Text>
+            </Text>
+          </TouchableRipple>
         </View>
       </>
     </View>

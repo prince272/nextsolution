@@ -2,6 +2,7 @@ import React, { ComponentProps, useCallback, useEffect, useState } from "react";
 import FacebookColorIcon from "@/assets/icons/facebook-round-color-icon.svg";
 import GoogleColorIcon from "@/assets/icons/google-color-icon.svg";
 import { Button, Divider, Image, Text, useSnackbar, View } from "@/components";
+import { useDebouncedCallback, useThrottledCallback } from "@/hooks";
 import { identityService } from "@/services";
 import { useAppStore } from "@/states";
 import { sleep } from "@/utils";
@@ -50,6 +51,10 @@ const WelcomeScreen = ({ className, ...props }: WelcomeScreenProps) => {
     []
   );
 
+  const openSignUp = useCallback(() => router.push("/sign-up"), []);
+
+  const openSignIn = useCallback(() => router.push("/sign-in"), []);
+
   useEffect(() => {
     if (linkingUrl) {
       const { hostname, path, queryParams } = Linking.parse(linkingUrl);
@@ -74,28 +79,14 @@ const WelcomeScreen = ({ className, ...props }: WelcomeScreenProps) => {
         </Text>
       </View>
       <View className="px-6 flex-1">
-        <Button
-          className="mb-3"
-          mode="contained"
-          onPress={() => {
-            router.push("/(sign-in)/sign-in");
-          }}
-        >
+        <Button className="mb-3" mode="contained" onPress={openSignIn}>
           Sign in with email or phone
         </Button>
-        <View className="rounded-full">
-          <TouchableRipple
-            className="p-3 rounded-full"
-            borderless
-            onPress={() => {
-              router.push("/sign-up");
-            }}
-          >
-            <Text className="text-center">
-              Don't have an account? <Text className="text-primary font-bold">Create one</Text>
-            </Text>
-          </TouchableRipple>
-        </View>
+        <TouchableRipple className="p-3 px-6 rounded-full" borderless onPress={openSignUp}>
+          <Text className="text-center">
+            Don't have an account? <Text className="text-primary font-bold">Create account</Text>
+          </Text>
+        </TouchableRipple>
         <Divider className="pt-1" alignment="center">
           <Text className="w-12 text-center" variant="bodyMedium">
             or

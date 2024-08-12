@@ -41,13 +41,13 @@ export default function RootLayout() {
               <>
                 <Stack
                   screenOptions={{
-                    animation: "fade_from_bottom",
                     headerShown: false
                   }}
                 >
                   <Stack.Screen name="index" />
                   <Stack.Screen name="(sign-in)" />
                   <Stack.Screen name="(sign-up)" />
+                  <Stack.Screen name="(reset-password)" />
                   <Stack.Screen name="+not-found" />
                 </Stack>
                 {snackbarMessages.map((snackbarMessage) => (

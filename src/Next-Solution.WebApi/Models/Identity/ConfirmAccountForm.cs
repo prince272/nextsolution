@@ -4,7 +4,7 @@ using Next_Solution.WebApi.Providers.ModelValidator;
 
 namespace Next_Solution.WebApi.Models.Identity
 {
-    public class ConfirmAccountSendCodeForm
+    public class SendConfirmAccountCodeForm
     {
         public string Username { get; set; } = null!;
 
@@ -20,7 +20,7 @@ namespace Next_Solution.WebApi.Models.Identity
         }
     }
 
-    public class ConfirmAccountVerifyCodeForm 
+    public class ConfirmAccountForm 
     {
         public string Username { get; set; } = null!;
 
@@ -38,11 +38,11 @@ namespace Next_Solution.WebApi.Models.Identity
         public string Code { get; set; } = null!;
     }
 
-    public class ConfirmAccountSendCodeFormValidator : AbstractValidator<ConfirmAccountSendCodeForm>
+    public class SendConfirmAccountCodeFormValidator : AbstractValidator<SendConfirmAccountCodeForm>
     {
-        public ConfirmAccountSendCodeFormValidator()
+        public SendConfirmAccountCodeFormValidator()
         {
-            RuleFor(_ => _.Username).NotEmpty().DependentRules(() =>
+            RuleFor(_ => _.Username).NotEmpty().WithName("Email or phone number").DependentRules(() =>
             {
                 When(_ => _.UsernameType!.Value == ContactType.Email, () =>
                 {
@@ -57,11 +57,11 @@ namespace Next_Solution.WebApi.Models.Identity
         }
     }
 
-    public class ConfirmAccountVerifyCodeFormValidator : AbstractValidator<ConfirmAccountVerifyCodeForm>
+    public class ConfirmAccountFormValidator : AbstractValidator<ConfirmAccountForm>
     {
-        public ConfirmAccountVerifyCodeFormValidator()
+        public ConfirmAccountFormValidator()
         {
-            RuleFor(_ => _.Username).NotEmpty().DependentRules(() =>
+            RuleFor(_ => _.Username).NotEmpty().WithName("Email or phone number").DependentRules(() =>
             {
                 When(_ => _.UsernameType!.Value == ContactType.Email, () =>
                 {
