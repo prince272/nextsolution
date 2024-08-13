@@ -12,7 +12,7 @@ namespace Next_Solution.WebApi.Providers.ModelValidator
         }
 
 
-        public async Task<ValidationResult> ValidateAsync<TModel>(TModel model) where TModel : class
+        public async Task<ValidationResult> ValidateAsync<TModel>(TModel model, Func<Dictionary<string, string[]>, Task>? custom = null) where TModel : class
         {
             if (model == null) throw new ArgumentNullException(nameof(model));
 
@@ -21,16 +21,19 @@ namespace Next_Solution.WebApi.Providers.ModelValidator
                 var scopedServiceProvider = scope.ServiceProvider;
 
                 var modelValidator = scopedServiceProvider.GetService<IValidator<TModel>>();
+
                 if (modelValidator == null)
                 {
                     throw new InvalidOperationException($"No validator found for type {typeof(TModel).FullName}");
                 }
 
-                var modelValidationResult = await modelValidator.ValidateAsync(model);
-                var errors = modelValidationResult.Errors
+                var errors = (await modelValidator.ValidateAsync(model)).Errors
                                                   .GroupBy(e => e.PropertyName)
                                                   .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray());
-                var isValid = modelValidationResult.IsValid;
+
+                if (custom != null) await custom.Invoke(errors);
+
+                var isValid = errors.Count == 0;
 
                 return new ValidationResult { IsValid = isValid, Errors = errors };
             }
@@ -39,7 +42,7 @@ namespace Next_Solution.WebApi.Providers.ModelValidator
 
     public interface IModelValidator
     {
-        Task<ValidationResult> ValidateAsync<TModel>(TModel model) where TModel : class;
+        Task<ValidationResult> ValidateAsync<TModel>(TModel model, Func<Dictionary<string, string[]>, Task>? custom = null) where TModel : class;
     }
 
     public class ValidationResult

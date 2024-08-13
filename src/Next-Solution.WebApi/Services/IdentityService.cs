@@ -60,22 +60,18 @@ namespace Next_Solution.WebApi.Services
             if (form is null) throw new ArgumentNullException(nameof(form));
 
             var formValidation = await _modelValidator.ValidateAsync(form);
+
             if (!formValidation.IsValid)
             {
                 var errors = formValidation.Errors;
                 return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
             }
 
-            var existingUser = form.UsernameType switch
-            {
-                ContactType.Email => await _userManager.FindByEmailAsync(form.Username = ValidationHelper.NormalizeEmail(form.Username)),
-                ContactType.PhoneNumber => await _userManager.FindByPhoneNumberAsync(form.Username = ValidationHelper.NormalizePhoneNumber(form.Username)),
-                _ => throw new InvalidOperationException("Invalid username type.")
-            };
+            var existingUser = await _userManager.GetByUsernameAsync(form.UsernameType, form.Username);
 
             if (existingUser is not null)
             {
-                if (CheckIfEmailOrPhoneNumberRequiresConfirmation(existingUser, form.UsernameType!.Value))
+                if (CheckIfEmailOrPhoneNumberRequiresConfirmation(existingUser, form.UsernameType))
                 {
                     var errors = new Dictionary<string, string[]>
                     {
@@ -114,25 +110,21 @@ namespace Next_Solution.WebApi.Services
             return TypedResults.Ok();
         }
 
-        public async Task<Results<ValidationProblem, Ok>> ConfirmAccountAsync(SendConfirmAccountCodeForm form)
+        public async Task<Results<ValidationProblem, Ok>> SendConfirmAccountCodeAsync(SendConfirmAccountCodeForm form)
         {
             if (form is null) throw new ArgumentNullException(nameof(form));
 
             var formValidation = await _modelValidator.ValidateAsync(form);
+
             if (!formValidation.IsValid)
             {
                 var errors = formValidation.Errors;
                 return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
             }
 
-            var user = form.UsernameType switch
-            {
-                ContactType.Email => await _userManager.FindByEmailAsync(form.Username = ValidationHelper.NormalizeEmail(form.Username)),
-                ContactType.PhoneNumber => await _userManager.FindByPhoneNumberAsync(form.Username = ValidationHelper.NormalizePhoneNumber(form.Username)),
-                _ => throw new InvalidOperationException("Invalid username type.")
-            };
+            var existingUser = await _userManager.GetByUsernameAsync(form.UsernameType, form.Username);
 
-            if (user is null)
+            if (existingUser is null)
             {
                 var errors = new Dictionary<string, string[]>
                 {
@@ -142,27 +134,21 @@ namespace Next_Solution.WebApi.Services
                 return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
             }
 
-
-            var code = form.UsernameType switch
-            {
-                ContactType.Email => await _userManager.GenerateChangeEmailTokenAsync(user, user.Email!),
-                ContactType.PhoneNumber => await _userManager.GenerateChangePhoneNumberTokenAsync(user, user.PhoneNumber!),
-                _ => throw new InvalidOperationException("Invalid username type.")
-            };
+            var code = _userManager.GenerateConfirmUsernameCodeAsync(form.UsernameType, existingUser);
 
             var message = form.UsernameType switch
             {
                 ContactType.Email => new Message
                 {
                     Subject = "Confirm Your Email Address",
-                    Body = await _razorViewRenderer.RenderAsync("/Templates/Email/ConfirmAccount", (user, code)),
-                    Recipients = new[] { user.Email! },
+                    Body = await _razorViewRenderer.RenderAsync("/Templates/Email/ConfirmAccount", (existingUser, code)),
+                    Recipients = new[] { existingUser.Email! },
                 },
                 ContactType.PhoneNumber => new Message
                 {
                     Subject = "Confirm Your Phone Number",
-                    Body = await _razorViewRenderer.RenderAsync("/Templates/Text/ConfirmAccount", (user, code)),
-                    Recipients = new[] { user.PhoneNumber! },
+                    Body = await _razorViewRenderer.RenderAsync("/Templates/Text/ConfirmAccount", (existingUser, code)),
+                    Recipients = new[] { existingUser.PhoneNumber! },
                 },
                 _ => throw new InvalidOperationException("Invalid username type.")
             };
@@ -185,20 +171,16 @@ namespace Next_Solution.WebApi.Services
             if (form is null) throw new ArgumentNullException(nameof(form));
 
             var formValidation = await _modelValidator.ValidateAsync(form);
+
             if (!formValidation.IsValid)
             {
                 var errors = formValidation.Errors;
                 return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
             }
 
-            var user = form.UsernameType switch
-            {
-                ContactType.Email => await _userManager.FindByEmailAsync(form.Username = ValidationHelper.NormalizeEmail(form.Username)),
-                ContactType.PhoneNumber => await _userManager.FindByPhoneNumberAsync(form.Username = ValidationHelper.NormalizePhoneNumber(form.Username)),
-                _ => throw new InvalidOperationException("Invalid username type.")
-            };
+            var existingUser = await _userManager.GetByUsernameAsync(form.UsernameType, form.Username);
 
-            if (user is null)
+            if (existingUser is null)
             {
                 var errors = new Dictionary<string, string[]>
                 {
@@ -208,13 +190,7 @@ namespace Next_Solution.WebApi.Services
                 return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
             }
 
-
-            var result = form.UsernameType switch
-            {
-                ContactType.Email => await _userManager.ChangeEmailAsync(user, user.Email!, form.Code),
-                ContactType.PhoneNumber => await _userManager.ChangePhoneNumberAsync(user, user.PhoneNumber!, form.Code),
-                _ => throw new InvalidOperationException("Invalid username type.")
-            };
+            var result = await _userManager.ConfirmUsernameAsync(form.UsernameType, existingUser, form.Code);
 
             if (!result.Succeeded)
             {
@@ -226,16 +202,16 @@ namespace Next_Solution.WebApi.Services
                 return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
             }
 
-
             return TypedResults.Ok();
 
         }
 
-        public async Task<Results<ValidationProblem, UnauthorizedHttpResult, Ok>> ChangeAccountAsync(SendChangeAccountCodeForm form)
+        public async Task<Results<ValidationProblem, UnauthorizedHttpResult, Ok>> SendChangeAccountCodeAsync(SendChangeAccountCodeForm form)
         {
             if (form is null) throw new ArgumentNullException(nameof(form));
 
             var formValidation = await _modelValidator.ValidateAsync(form);
+
             if (!formValidation.IsValid)
             {
                 var errors = formValidation.Errors;
@@ -272,13 +248,7 @@ namespace Next_Solution.WebApi.Services
             }
             else throw new InvalidOperationException("Invalid new username type.");
 
-
-            var code = form.NewUsernameType switch
-            {
-                ContactType.Email => await _userManager.GenerateChangeEmailTokenAsync(currentUser, form.NewUsername),
-                ContactType.PhoneNumber => await _userManager.GenerateChangePhoneNumberTokenAsync(currentUser, form.NewUsername),
-                _ => throw new InvalidOperationException("Invalid username type.")
-            };
+            var code = _userManager.GenerateChangeUsernameCodeAsync(form.NewUsernameType, currentUser, form.NewUsername);
 
             var message = form.NewUsernameType switch
             {
@@ -314,6 +284,7 @@ namespace Next_Solution.WebApi.Services
             if (form is null) throw new ArgumentNullException(nameof(form));
 
             var formValidation = await _modelValidator.ValidateAsync(form);
+
             if (!formValidation.IsValid)
             {
                 var errors = formValidation.Errors;
@@ -350,12 +321,7 @@ namespace Next_Solution.WebApi.Services
             }
             else throw new InvalidOperationException("Invalid new username type.");
 
-            var result = form.NewUsernameType switch
-            {
-                ContactType.Email => await _userManager.ChangeEmailAsync(currentUser, form.NewUsername, form.Code),
-                ContactType.PhoneNumber => await _userManager.ChangePhoneNumberAsync(currentUser, form.NewUsername, form.Code),
-                _ => throw new InvalidOperationException("Invalid username type.")
-            };
+            var result = await _userManager.ChangeUsernameAsync(form.NewUsernameType, currentUser, form.NewUsername, form.Code);
 
             if (!result.Succeeded)
             {
@@ -419,7 +385,7 @@ namespace Next_Solution.WebApi.Services
             return TypedResults.Ok();
         }
 
-        public async Task<Results<ValidationProblem, Ok>> ResetPasswordAsync(SendResetPasswordCodeForm form)
+        public async Task<Results<ValidationProblem, Ok>> SendResetPasswordCodeAsync(SendResetPasswordCodeForm form)
         {
             if (form is null) throw new ArgumentNullException(nameof(form));
 
@@ -430,14 +396,9 @@ namespace Next_Solution.WebApi.Services
                 return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
             }
 
-            var user = form.UsernameType switch
-            {
-                ContactType.Email => await _userManager.FindByEmailAsync(form.Username = ValidationHelper.NormalizeEmail(form.Username)),
-                ContactType.PhoneNumber => await _userManager.FindByPhoneNumberAsync(form.Username = ValidationHelper.NormalizePhoneNumber(form.Username)),
-                _ => throw new InvalidOperationException("Invalid username type.")
-            };
+            var existingUser = await _userManager.GetByUsernameAsync(form.UsernameType, form.Username);
 
-            if (user is null)
+            if (existingUser is null)
             {
                 var errors = new Dictionary<string, string[]>
                 {
@@ -448,21 +409,21 @@ namespace Next_Solution.WebApi.Services
             }
 
 
-            var code = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var code = await _userManager.GeneratePasswordResetTokenAsync(existingUser);
 
             var message = form.UsernameType switch
             {
                 ContactType.Email => new Message
                 {
                     Subject = "Reset Your Password",
-                    Body = await _razorViewRenderer.RenderAsync("/Templates/Email/ResetPassword", (user, code)),
-                    Recipients = new[] { user.Email! },
+                    Body = await _razorViewRenderer.RenderAsync("/Templates/Email/ResetPassword", (existingUser, code)),
+                    Recipients = new[] { existingUser.Email! },
                 },
                 ContactType.PhoneNumber => new Message
                 {
                     Subject = "Reset Your Password",
-                    Body = await _razorViewRenderer.RenderAsync("/Templates/Text/ResetPassword", (user, code)),
-                    Recipients = new[] { user.PhoneNumber! },
+                    Body = await _razorViewRenderer.RenderAsync("/Templates/Text/ResetPassword", (existingUser, code)),
+                    Recipients = new[] { existingUser.PhoneNumber! },
                 },
                 _ => throw new InvalidOperationException("Invalid username type.")
             };
@@ -490,14 +451,9 @@ namespace Next_Solution.WebApi.Services
                 return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
             }
 
-            var user = form.UsernameType switch
-            {
-                ContactType.Email => await _userManager.FindByEmailAsync(form.Username = ValidationHelper.NormalizeEmail(form.Username)),
-                ContactType.PhoneNumber => await _userManager.FindByPhoneNumberAsync(form.Username = ValidationHelper.NormalizePhoneNumber(form.Username)),
-                _ => throw new InvalidOperationException("Invalid username type.")
-            };
+            var existingUser = await _userManager.GetByUsernameAsync(form.UsernameType, form.Username);
 
-            if (user is null)
+            if (existingUser is null)
             {
                 var errors = new Dictionary<string, string[]>
                 {
@@ -507,39 +463,19 @@ namespace Next_Solution.WebApi.Services
                 return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
             }
 
-            if (form.ValidateOnly)
-            {
-                var verifyResetPasswordResult = await _userManager.VerifyResetPasswordAsync(user, form.Code);
+            var resetPasswordResult = await _userManager.ResetPasswordAsync(existingUser, form.Code, form.NewPassword);
 
-                if (!verifyResetPasswordResult)
-                {
-                    var errors = new Dictionary<string, string[]>
+            if (!resetPasswordResult.Succeeded)
+            {
+                var errors = new Dictionary<string, string[]>
                     {
                         { nameof(form.Code), [$"'{nameof(form.Code).Humanize(LetterCasing.Sentence)}' is not valid."] }
                     };
 
-                    return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
-                }
-                else
-                    return TypedResults.Ok();
-            }
-            else
-            {
-                var resetPasswordResult = await _userManager.ResetPasswordAsync(user, form.Code, form.NewPassword);
-
-                if (!resetPasswordResult.Succeeded)
-                {
-                    var errors = new Dictionary<string, string[]>
-                    {
-                        { nameof(form.Code), [$"'{nameof(form.Code).Humanize(LetterCasing.Sentence)}' is not valid."] }
-                    };
-
-                    return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
-                }
-
-                return TypedResults.Ok();
+                return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
             }
 
+            return TypedResults.Ok();
         }
 
         public async Task<Results<ValidationProblem, Ok<UserSessionModel>>> SignInAsync(SignInForm form)
@@ -553,14 +489,9 @@ namespace Next_Solution.WebApi.Services
                 return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
             }
 
-            var user = form.UsernameType switch
-            {
-                ContactType.Email => await _userManager.FindByEmailAsync(form.Username = ValidationHelper.NormalizeEmail(form.Username)),
-                ContactType.PhoneNumber => await _userManager.FindByPhoneNumberAsync(form.Username = ValidationHelper.NormalizePhoneNumber(form.Username)),
-                _ => throw new InvalidOperationException("Invalid username type.")
-            };
+            var existingUser = await _userManager.GetByUsernameAsync(form.UsernameType, form.Username);
 
-            if (user is null)
+            if (existingUser is null)
             {
                 var errors = new Dictionary<string, string[]> {
                     { nameof(form.Username), [$"'{form.UsernameType.Humanize(LetterCasing.Sentence)}' does not exist."] } 
@@ -569,7 +500,7 @@ namespace Next_Solution.WebApi.Services
                 return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
             }
 
-            var checkPassword = await _userManager.CheckPasswordAsync(user, form.Password);
+            var checkPassword = await _userManager.CheckPasswordAsync(existingUser, form.Password);
 
             if (!checkPassword)
             {
@@ -581,7 +512,7 @@ namespace Next_Solution.WebApi.Services
                 return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
             }
 
-            if (CheckIfEmailOrPhoneNumberRequiresConfirmation(user, form.UsernameType!.Value))
+            if (CheckIfEmailOrPhoneNumberRequiresConfirmation(existingUser, form.UsernameType))
             {
                 var errors = new Dictionary<string, string[]>
                 {
@@ -591,8 +522,8 @@ namespace Next_Solution.WebApi.Services
                 return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
             }
 
-            await _jwtProvider.InvalidateTokensAsync(user, allowMultipleTokens: true);
-            var userSession = await GenerateUserSessionAsync(user);
+            await _jwtProvider.InvalidateTokensAsync(existingUser, allowMultipleTokens: true);
+            var userSession = await GenerateUserSessionAsync(existingUser);
             return TypedResults.Ok(userSession);
         }
 
@@ -607,16 +538,11 @@ namespace Next_Solution.WebApi.Services
                 return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
             }
 
-            var user = form.UsernameType switch
-            {
-                ContactType.Email => await _userManager.FindByEmailAsync(form.Username = ValidationHelper.NormalizeEmail(form.Username)),
-                ContactType.PhoneNumber => await _userManager.FindByPhoneNumberAsync(form.Username = ValidationHelper.NormalizePhoneNumber(form.Username)),
-                _ => throw new InvalidOperationException("Invalid username type.")
-            };
+            var existingUser = await _userManager.GetByUsernameAsync(form.UsernameType, form.Username);
 
-            if (user is null)
+            if (existingUser is null)
             {
-                user = new User
+                existingUser = new User
                 {
                     FirstName = form.FirstName,
                     LastName = form.LastName,
@@ -630,28 +556,27 @@ namespace Next_Solution.WebApi.Services
                     PasswordConfigured = false
                 };
 
-                var createUserResult = await _userManager.CreateAsync(user);
+                var createUserResult = await _userManager.CreateAsync(existingUser);
 
                 if (!createUserResult.Succeeded)
                 {
                     throw new InvalidOperationException(createUserResult.Errors.GetMessage());
                 }
 
-                await SetupUserRolesAsync(user);
+                await SetupUserRolesAsync(existingUser);
             }
 
             var providerName = form.Provider.ToString();
             var providerKey = form.ProviderKey;
             var providerDisplayName = form.Provider.GetEnumDisplayName();
 
-            await _userManager.RemoveLoginAsync(user, providerName, providerKey);
-            await _userManager.AddLoginAsync(user, new UserLoginInfo(providerName, providerKey, providerDisplayName));
+            await _userManager.RemoveLoginAsync(existingUser, providerName, providerKey);
+            await _userManager.AddLoginAsync(existingUser, new UserLoginInfo(providerName, providerKey, providerDisplayName));
 
-            await _jwtProvider.InvalidateTokensAsync(user, allowMultipleTokens: true);
-            var userSession = await GenerateUserSessionAsync(user);
+            await _jwtProvider.InvalidateTokensAsync(existingUser, allowMultipleTokens: true);
+            var userSession = await GenerateUserSessionAsync(existingUser);
             return TypedResults.Ok(userSession);
         }
-
 
         public async Task<Results<ValidationProblem, Ok<UserSessionModel>>> RefreshTokenAsync(RefreshTokenForm form)
         {
@@ -664,9 +589,9 @@ namespace Next_Solution.WebApi.Services
                 return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
             }
 
-            var user = await _jwtProvider.FindUserByRefreshTokenAsync(form.RefreshToken);
+            var existingUser = await _jwtProvider.FindUserByRefreshTokenAsync(form.RefreshToken);
 
-            if (user is null)
+            if (existingUser is null)
             {
                 var errors = new Dictionary<string, string[]>
                 {
@@ -676,9 +601,9 @@ namespace Next_Solution.WebApi.Services
                 return TypedResults.ValidationProblem(errors, title: errors.Count == 1 ? errors.First().Value.FirstOrDefault() : null);
             }
 
-            await _jwtProvider.InvalidateTokensAsync(user, form.RefreshToken);
+            await _jwtProvider.InvalidateTokensAsync(existingUser, form.RefreshToken);
 
-            var userSession = await GenerateUserSessionAsync(user);
+            var userSession = await GenerateUserSessionAsync(existingUser);
             return TypedResults.Ok(userSession);
         }
 
@@ -799,17 +724,17 @@ namespace Next_Solution.WebApi.Services
     {
         Task<Results<ValidationProblem, Ok>> CreateAccountAsync(CreateAccountForm form);
 
-        Task<Results<ValidationProblem, Ok>> ConfirmAccountAsync(SendConfirmAccountCodeForm form);
+        Task<Results<ValidationProblem, Ok>> SendConfirmAccountCodeAsync(SendConfirmAccountCodeForm form);
 
         Task<Results<ValidationProblem, Ok>> ConfirmAccountAsync(ConfirmAccountForm form);
 
-        Task<Results<ValidationProblem, UnauthorizedHttpResult, Ok>> ChangeAccountAsync(SendChangeAccountCodeForm form);
+        Task<Results<ValidationProblem, UnauthorizedHttpResult, Ok>> SendChangeAccountCodeAsync(SendChangeAccountCodeForm form);
 
         Task<Results<ValidationProblem, UnauthorizedHttpResult, Ok>> ChangeAccountAsync(ChangeAccountForm form);
 
         Task<Results<ValidationProblem, UnauthorizedHttpResult, Ok>> ChangePasswordAsync(ChangePasswordForm form);
 
-        Task<Results<ValidationProblem, Ok>> ResetPasswordAsync(SendResetPasswordCodeForm form);
+        Task<Results<ValidationProblem, Ok>> SendResetPasswordCodeAsync(SendResetPasswordCodeForm form);
 
         Task<Results<ValidationProblem, Ok>> ResetPasswordAsync(ResetPasswordForm form);
 
@@ -830,13 +755,98 @@ namespace Next_Solution.WebApi.Services
 
     public static class IdentityExtensions
     {
-        public static Task<TUser?> FindByPhoneNumberAsync<TUser>(this UserManager<TUser> userManager, string phoneNumber)
+        public static Task<TUser?> GetByEmailAsync<TUser>(this UserManager<TUser> userManager, string email)
+           where TUser : IdentityUser<string>
+        {
+            if (userManager is null) throw new ArgumentNullException(nameof(userManager));
+            if (email is null) throw new ArgumentNullException(nameof(email));
+
+            email = ValidationHelper.NormalizeEmail(email);
+            return userManager.FindByEmailAsync(email);
+        }
+
+        public static Task<TUser?> GetByPhoneNumberAsync<TUser>(this UserManager<TUser> userManager, string phoneNumber)
             where TUser : IdentityUser<string>
         {
             if (userManager is null) throw new ArgumentNullException(nameof(userManager));
             if (phoneNumber is null) throw new ArgumentNullException(nameof(phoneNumber));
 
+            phoneNumber = ValidationHelper.NormalizePhoneNumber(phoneNumber);
             return userManager.Users.FirstOrDefaultAsync(_ => _.PhoneNumber == phoneNumber);
+        }
+
+        public static Task<TUser?> GetByUsernameAsync<TUser>(this UserManager<TUser> userManager, ContactType usernameType, string username)
+            where TUser : IdentityUser<string>
+        {
+            if (userManager is null) throw new ArgumentNullException(nameof(userManager));
+            if (username is null) throw new ArgumentNullException(nameof(username));
+
+            return usernameType switch
+            {
+                ContactType.Email => userManager.GetByEmailAsync(username),
+                ContactType.PhoneNumber => userManager.GetByPhoneNumberAsync(username),
+                _ => throw new InvalidOperationException("Invalid username type.")
+            };
+        }
+
+        public static async Task<string> GenerateConfirmUsernameCodeAsync<TUser>(this UserManager<TUser> userManager, ContactType usernameType, TUser user)
+            where TUser : IdentityUser<string>
+        {
+            if (userManager is null) throw new ArgumentNullException(nameof(userManager));
+            if (user is null) throw new ArgumentNullException(nameof(user));
+
+            return usernameType switch
+            {
+                ContactType.Email => await userManager.GenerateChangeEmailTokenAsync(user, user.Email!),
+                ContactType.PhoneNumber => await userManager.GenerateChangePhoneNumberTokenAsync(user, user.PhoneNumber!),
+                _ => throw new InvalidOperationException("Invalid username type.")
+            };
+        }
+
+        public static async Task<IdentityResult> ConfirmUsernameAsync<TUser>(this UserManager<TUser> userManager, ContactType usernameType, TUser user, string code)
+            where TUser : IdentityUser<string>
+        {
+            if (userManager is null) throw new ArgumentNullException(nameof(userManager));
+            if (user is null) throw new ArgumentNullException(nameof(user));
+            if (code is null) throw new ArgumentNullException(nameof(code));
+
+            return usernameType switch
+            {
+                ContactType.Email => await userManager.ChangeEmailAsync(user, user.Email!, code),
+                ContactType.PhoneNumber => await userManager.ChangePhoneNumberAsync(user, user.PhoneNumber!, code),
+                _ => throw new InvalidOperationException("Invalid username type.")
+            };
+        }
+
+        public static async Task<string> GenerateChangeUsernameCodeAsync<TUser>(this UserManager<TUser> userManager, ContactType newUsernameType, TUser user, string newUsername)
+            where TUser : IdentityUser<string>
+        {
+            if (userManager is null) throw new ArgumentNullException(nameof(userManager));
+            if (user is null) throw new ArgumentNullException(nameof(user));
+            if (newUsername is null) throw new ArgumentNullException(nameof(newUsername));
+
+            return newUsernameType switch
+            {
+                ContactType.Email => await userManager.GenerateChangeEmailTokenAsync(user, newUsername),
+                ContactType.PhoneNumber => await userManager.GenerateChangePhoneNumberTokenAsync(user, newUsername),
+                _ => throw new InvalidOperationException("Invalid username type.")
+            };
+        }
+
+        public static async Task<IdentityResult> ChangeUsernameAsync<TUser>(this UserManager<TUser> userManager, ContactType newUsernameType, TUser user, string newUsername, string code)
+            where TUser : IdentityUser<string>
+        {
+            if (userManager is null) throw new ArgumentNullException(nameof(userManager));
+            if (user is null) throw new ArgumentNullException(nameof(user));
+            if (newUsername is null) throw new ArgumentNullException(nameof(newUsername));
+            if (code is null) throw new ArgumentNullException(nameof(code));
+
+            return newUsernameType switch
+            {
+                ContactType.Email => await userManager.ChangeEmailAsync(user, newUsername, code),
+                ContactType.PhoneNumber => await userManager.ChangePhoneNumberAsync(user, newUsername, code),
+                _ => throw new InvalidOperationException("Invalid username type.")
+            };
         }
 
         public static async Task<bool> VerifyResetPasswordAsync<TUser>(this UserManager<TUser> userManager, TUser user, string token)

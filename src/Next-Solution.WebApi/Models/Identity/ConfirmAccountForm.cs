@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using Next_Solution.WebApi.Providers.Validation;
 using Next_Solution.WebApi.Providers.ModelValidator;
+using System.Text.Json.Serialization;
 
 namespace Next_Solution.WebApi.Models.Identity
 {
@@ -8,15 +9,10 @@ namespace Next_Solution.WebApi.Models.Identity
     {
         public string Username { get; set; } = null!;
 
-        private ContactType? usernameType;
-        public ContactType? UsernameType
+        [JsonIgnore]
+        public ContactType UsernameType
         {
-            get
-            {
-                usernameType ??= (!string.IsNullOrWhiteSpace(Username) ? ValidationHelper.DetermineContactType(Username) : null);
-                return usernameType;
-            }
-            set => usernameType = value;
+            get => !string.IsNullOrWhiteSpace(Username) ? ValidationHelper.DetermineContactType(Username) : default;
         }
     }
 
@@ -24,15 +20,10 @@ namespace Next_Solution.WebApi.Models.Identity
     {
         public string Username { get; set; } = null!;
 
-        private ContactType? usernameType;
-        public ContactType? UsernameType
+        [JsonIgnore]
+        public ContactType UsernameType
         {
-            get
-            {
-                usernameType ??= (!string.IsNullOrWhiteSpace(Username) ? ValidationHelper.DetermineContactType(Username) : null);
-                return usernameType;
-            }
-            set => usernameType = value;
+            get => !string.IsNullOrWhiteSpace(Username) ? ValidationHelper.DetermineContactType(Username) : default;
         }
 
         public string Code { get; set; } = null!;
@@ -44,12 +35,12 @@ namespace Next_Solution.WebApi.Models.Identity
         {
             RuleFor(_ => _.Username).NotEmpty().WithName("Email or phone number").DependentRules(() =>
             {
-                When(_ => _.UsernameType!.Value == ContactType.Email, () =>
+                When(_ => _.UsernameType == ContactType.Email, () =>
                 {
                     RuleFor(_ => _.Username).Email().WithName("Email");
                 });
 
-                When(_ => _.UsernameType!.Value == ContactType.PhoneNumber, () =>
+                When(_ => _.UsernameType == ContactType.PhoneNumber, () =>
                 {
                     RuleFor(_ => _.Username).PhoneNumber().WithName("Phone number");
                 });
@@ -63,12 +54,12 @@ namespace Next_Solution.WebApi.Models.Identity
         {
             RuleFor(_ => _.Username).NotEmpty().WithName("Email or phone number").DependentRules(() =>
             {
-                When(_ => _.UsernameType!.Value == ContactType.Email, () =>
+                When(_ => _.UsernameType == ContactType.Email, () =>
                 {
                     RuleFor(_ => _.Username).Email().WithName("Email");
                 });
 
-                When(_ => _.UsernameType!.Value == ContactType.PhoneNumber, () =>
+                When(_ => _.UsernameType == ContactType.PhoneNumber, () =>
                 {
                     RuleFor(_ => _.Username).PhoneNumber().WithName("Phone number");
                 });

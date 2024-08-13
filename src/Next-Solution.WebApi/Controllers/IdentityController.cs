@@ -63,9 +63,9 @@ namespace Next_Solution.WebApi.Controllers
         /// <param name="form">The data required to send the confirmation code.</param>
         /// <returns>The result of sending the confirmation code.</returns>
         [HttpPost("confirm/send-code")]
-        public async Task<Results<ValidationProblem, Ok>> ConfirmAccount([FromBody] SendConfirmAccountCodeForm form)
+        public async Task<Results<ValidationProblem, Ok>> SendConfirmAccountCode([FromBody] SendConfirmAccountCodeForm form)
         {
-            return await _identityService.ConfirmAccountAsync(form);
+            return await _identityService.SendConfirmAccountCodeAsync(form);
         }
 
         /// <summary>
@@ -86,9 +86,9 @@ namespace Next_Solution.WebApi.Controllers
         /// <returns>The result of requesting the change code.</returns>
         [Authorize]
         [HttpPost("change/send-code")]
-        public async Task<Results<ValidationProblem, UnauthorizedHttpResult, Ok>> ChangeAccount([FromBody] SendChangeAccountCodeForm form)
+        public async Task<Results<ValidationProblem, UnauthorizedHttpResult, Ok>> SendChangeAccountCode([FromBody] SendChangeAccountCodeForm form)
         {
-            return await _identityService.ChangeAccountAsync(form);
+            return await _identityService.SendChangeAccountCodeAsync(form);
         }
 
         /// <summary>
@@ -123,7 +123,7 @@ namespace Next_Solution.WebApi.Controllers
         [HttpPost("password/reset/send-code")]
         public async Task<Results<ValidationProblem, Ok>> ResetPassword([FromBody] SendResetPasswordCodeForm form)
         {
-            return await _identityService.ResetPasswordAsync(form);
+            return await _identityService.SendResetPasswordCodeAsync(form);
         }
 
         /// <summary>

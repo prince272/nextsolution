@@ -10,7 +10,7 @@ import {
   useSnackbar,
   View
 } from "@/components";
-import { useMemoizedValue } from "@/hooks";
+import { useMemoizedValue, useTimer } from "@/hooks";
 import { identityService } from "@/services";
 import { useKeyboard } from "@react-native-community/hooks";
 import { router } from "expo-router";
@@ -50,36 +50,27 @@ const createResetPasswordScreen = (step: ResetPasswordScreenSteps) => {
       () => !/^[-+0-9() ]+$/.test(form.watch("username") ?? ""),
       [form.watch("username")]
     );
-    const [currentAction, setCurrentAction] = useState<
-      "sendCode" | "resendCode" | "validateOnly" | null
-    >(null);
 
     const stepIndex = steps.indexOf(step);
-    const nextStep = stepIndex !== -1 && stepIndex < steps.length - 1 ? steps[stepIndex + 1] : null;
+    const nextStep = stepIndex != -1 && stepIndex < steps.length - 1 ? steps[stepIndex + 1] : null;
 
-    const handleResetPassword = async (
-      action: "sendCode" | "resendCode" | "validateOnly" | null = null
-    ) => {
-      setFormSubmitting(true);
-      setCurrentAction(action);
+    const sendCodeTimer = useTimer({
+      timerType: "DECREMENTAL",
+      initialTime: 60,
+      endTime: 0
+    });
+
+    const sendResetPasswordCode = async (resend: boolean = false) => {
+      if (!resend) setFormSubmitting(true);
+      sendCodeTimer.start();
 
       return form.handleSubmit(async (inputs) => {
-        const response =
-          action == "sendCode" || action == "resendCode"
-            ? await identityService.sendResetPasswordCodeAsync(inputs)
-            : await identityService.resetPasswordAsync({
-                ...inputs,
-                validateOnly: action == "validateOnly"
-              });
-
-        setFormSubmitting(false);
-        setCurrentAction(null);
+        const response = await identityService.sendResetPasswordCodeAsync(inputs);
+        if (!resend) setFormSubmitting(false);
 
         if (!response.success) {
           if (response instanceof ValidationProblem) {
-            const errorFields = Object.entries(response.errors || {}).filter((errorField) =>
-              formFields.includes(errorField[0] as keyof ResetPasswordForm)
-            );
+            const errorFields = Object.entries(response.errors || {});
 
             errorFields.forEach(([name, message]) => {
               form.setError(name as keyof ResetPasswordForm, { message: message?.join("\n") });
@@ -95,27 +86,54 @@ const createResetPasswordScreen = (step: ResetPasswordScreenSteps) => {
           }
         }
 
-        switch (action) {
-          case "sendCode": {
-            snackbar.show("Verification code sent!");
-            if (nextStep) router.push(`/reset-password/${nextStep}`);
-            return;
-          }
-          case "resendCode": {
-            snackbar.show("Verification code resent!");
-            return;
-          }
-          default: {
+        snackbar.show(resend ? "Verification code resent!" : "Verification code sent!");
+
+        if (nextStep && !resend) router.push(`/reset-password/${nextStep}`);
+      })();
+    };
+
+    const handleResetPassword = async () => {
+      setFormSubmitting(true);
+
+      return form.handleSubmit(async (inputs) => {
+        const response = await identityService.resetPasswordAsync(inputs);
+        setFormSubmitting(false);
+
+        if (!response.success) {
+          if (response instanceof ValidationProblem) {
+            const errorFields = Object.entries(response.errors || {}).filter((errorField) =>
+              formFields.includes(errorField[0] as keyof ResetPasswordForm)
+            );
+
+            errorFields.forEach(([name, message]) => {
+              form.setError(name as keyof ResetPasswordForm, { message: message?.join("\n") });
+            });
+
+            if (errorFields.length > 0) return;
+
             if (nextStep) {
               router.push(`/reset-password/${nextStep}`);
               return;
             }
+
+            snackbar.show(response.message);
+            return;
+          } else {
+            snackbar.show(response.message);
+            return;
           }
         }
+
+        snackbar.show("Password reset successfully!");
+
+        router.push("/sign-in");
       })();
     };
 
     useEffect(() => {
+      if (step == "enter-verification-code") {
+        sendCodeTimer.start();
+      }
       return () => {
         formFields.forEach((field) => {
           form.resetField(field);
@@ -185,10 +203,10 @@ const createResetPasswordScreen = (step: ResetPasswordScreenSteps) => {
                 mode="contained"
                 loading={formSubmitting}
                 onPress={() => {
-                  handleResetPassword("sendCode");
+                  sendResetPasswordCode();
                 }}
               >
-                {!formSubmitting ? "Request verification code" : " "}
+                {!formSubmitting ? "Send code" : " "}
               </Button>
             </View>
           </>
@@ -222,12 +240,12 @@ const createResetPasswordScreen = (step: ResetPasswordScreenSteps) => {
             <View className="px-6 pt-3 pb-6">
               <Button
                 mode="contained"
-                loading={currentAction == "validateOnly" && formSubmitting}
+                loading={formSubmitting}
                 onPress={() => {
-                  handleResetPassword("validateOnly");
+                  handleResetPassword();
                 }}
               >
-                {!(currentAction == "validateOnly" && formSubmitting) ? "Continue" : " "}
+                {!formSubmitting ? "Continue" : " "}
               </Button>
             </View>
             <View>
@@ -235,13 +253,22 @@ const createResetPasswordScreen = (step: ResetPasswordScreenSteps) => {
                 className="p-3 px-6 rounded-full self-center"
                 borderless
                 onPress={() => {
-                  handleResetPassword("resendCode");
+                  sendResetPasswordCode(true);
                 }}
-                disabled={currentAction == "resendCode"}
+                disabled={sendCodeTimer.isRunning}
               >
-                <Text className="text-center">
-                  Didn't get the code? <Text className="text-primary font-bold">Resend code</Text>
-                </Text>
+                <>
+                  {sendCodeTimer.isRunning ? (
+                    <Text className="text-center">
+                      Didn't get the code? Try again in {sendCodeTimer.time}s
+                    </Text>
+                  ) : (
+                    <Text className="text-center">
+                      Didn't get the code?{" "}
+                      <Text className="text-primary font-bold">Resend code</Text>
+                    </Text>
+                  )}
+                </>
               </TouchableRipple>
             </View>
           </>
