@@ -1,7 +1,6 @@
+import { prefix } from "@/utils";
 import axios from "axios";
 import { IdentityService } from "./identity-service";
-import { prefix } from "@/utils";
-
 
 const api = axios.create({
   baseURL: prefix("https://", process.env.EXPO_PUBLIC_SERVER_URL)!,

@@ -1,7 +1,7 @@
-﻿using Next_Solution.WebApi.Helpers;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
+using Next_Solution.WebApi.Helpers;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Reflection;
 

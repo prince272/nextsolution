@@ -3,10 +3,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using Next_Solution.WebApi.Data.Entities.Identity;
-using Next_Solution.WebApi.Services;
 using System.Security.Claims;
+using System.Text;
 
 namespace Next_Solution.WebApi.Providers.JwtBearer
 {

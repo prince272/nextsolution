@@ -3,7 +3,7 @@ import { Stack } from "expo-router";
 import { FormProvider, useForm } from "react-hook-form";
 import { SignInForm } from "@/services/types";
 
-const SignInStack = () => {
+export default function Layout() {
   const form = useForm<SignInForm>();
   return (
     <FormProvider {...form}>
@@ -22,8 +22,4 @@ const SignInStack = () => {
       </Stack>
     </FormProvider>
   );
-};
-
-export default function Layout() {
-  return <SignInStack />;
 }

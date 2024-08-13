@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -130,7 +127,7 @@ namespace IdentityAudit.Utilities
             where TAttributeType : Attribute
         {
             var memeber = GetMember(action);
-            return memeber != null ? GetMemberAttribute(memeber, predicate): null;
+            return memeber != null ? GetMemberAttribute(memeber, predicate) : null;
         }
 
         public static bool HasMemberAttribute<TType, TAttributeType>(Expression<Func<TType, object>> action, Func<TAttributeType, bool>? predicate = null) where TAttributeType : Attribute

@@ -3,7 +3,7 @@ import { Stack } from "expo-router";
 import { FormProvider, useForm } from "react-hook-form";
 import { CreateAccountForm } from "@/services/types";
 
-const SignUpStack = () => {
+export default function Layout() {
   const form = useForm<CreateAccountForm>();
   return (
     <FormProvider {...form}>
@@ -23,8 +23,4 @@ const SignUpStack = () => {
       </Stack>
     </FormProvider>
   );
-};
-
-export default function Layout() {
-  return <SignUpStack />;
 }

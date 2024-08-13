@@ -2,9 +2,8 @@ import React, { ComponentProps, useCallback, useEffect, useState } from "react";
 import FacebookColorIcon from "@/assets/icons/facebook-round-color-icon.svg";
 import GoogleColorIcon from "@/assets/icons/google-color-icon.svg";
 import { Button, Divider, Image, Text, useSnackbar, View } from "@/components";
-import { useDebouncedCallback, useThrottledCallback } from "@/hooks";
 import { identityService } from "@/services";
-import { useAppStore } from "@/states";
+import { useAuthentication } from "@/states";
 import { sleep } from "@/utils";
 import * as Linking from "expo-linking";
 import { router } from "expo-router";
@@ -19,7 +18,7 @@ const WelcomeScreen = ({ className, ...props }: WelcomeScreenProps) => {
   const themeConfig = useTheme();
   const snackbar = useSnackbar();
 
-  const { setUser: setCurrentUser } = useAppStore((state) => state.authentication);
+  const { setUser: setCurrentUser } = useAuthentication();
   const linkingUrl = Linking.useURL();
 
   const handleSignInWith = useCallback(async (provider: SignInWithProvider) => {

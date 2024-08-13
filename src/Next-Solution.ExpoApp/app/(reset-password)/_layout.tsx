@@ -3,7 +3,7 @@ import { Stack } from "expo-router";
 import { FormProvider, useForm } from "react-hook-form";
 import { ResetPasswordForm } from "@/services/types";
 
-const ResetPasswordStack = () => {
+export default function Layout() {
   const form = useForm<ResetPasswordForm>();
   return (
     <FormProvider {...form}>
@@ -24,8 +24,4 @@ const ResetPasswordStack = () => {
       </Stack>
     </FormProvider>
   );
-};
-
-export default function Layout() {
-  return <ResetPasswordStack />;
 }

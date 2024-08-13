@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection.Extensions;
-using Next_Solution.WebApi.Providers.Messaging;
 
 namespace Next_Solution.WebApi.Providers.Messaging.Twilio
 {

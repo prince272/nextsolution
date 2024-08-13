@@ -1,7 +1,6 @@
-﻿using System.Diagnostics;
+﻿using Microsoft.Extensions.Options;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Next_Solution.WebApi.Providers.Ngrok
 {
@@ -81,7 +80,7 @@ namespace Next_Solution.WebApi.Providers.Ngrok
         private ProcessStartInfo GetProcessStartInfo()
         {
             var authTokenArg = !string.IsNullOrEmpty(_options.CurrentValue.AuthToken)
-                ? $"--authtoken {_options.CurrentValue.AuthToken}" 
+                ? $"--authtoken {_options.CurrentValue.AuthToken}"
                 : throw new InvalidOperationException("An auth token is required for Ngrok to work.");
 
             var arguments = $"start --none {authTokenArg}".Trim();

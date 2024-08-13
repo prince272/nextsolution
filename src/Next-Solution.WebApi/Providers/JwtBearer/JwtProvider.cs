@@ -2,13 +2,13 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Next_Solution.WebApi.Data;
+using Next_Solution.WebApi.Data.Entities.Identity;
+using Next_Solution.WebApi.Helpers;
 using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Next_Solution.WebApi.Data.Entities.Identity;
-using Next_Solution.WebApi.Data;
-using Next_Solution.WebApi.Helpers;
 
 namespace Next_Solution.WebApi.Providers.JwtBearer
 {

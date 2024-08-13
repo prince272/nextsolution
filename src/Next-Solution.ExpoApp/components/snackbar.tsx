@@ -1,6 +1,14 @@
-import { cssInterop } from 'nativewind';
-import React, { createContext, useContext, useState, useCallback, ReactNode, useRef, useEffect } from 'react';
-import { Snackbar } from 'react-native-paper';
+import React, {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState
+} from "react";
+import { cssInterop } from "nativewind";
+import { Snackbar } from "react-native-paper";
 
 cssInterop(Snackbar, { className: "style" });
 
@@ -25,7 +33,9 @@ interface SnackbarContextType {
 
 const SnackbarContext = createContext<SnackbarContextType | undefined>(undefined);
 
-const SnackbarProvider: React.FC<{ children: (context: SnackbarContextType) => ReactNode }> = ({ children }) => {
+const SnackbarProvider: React.FC<{ children: (context: SnackbarContextType) => ReactNode }> = ({
+  children
+}) => {
   const [snackbarMessages, setSnackbarMessages] = useState<SnackbarMessage[]>([]);
   const [queue, setQueue] = useState<SnackbarMessage[]>([]);
   const [isShowing, setIsShowing] = useState<boolean>(false);
@@ -37,26 +47,26 @@ const SnackbarProvider: React.FC<{ children: (context: SnackbarContextType) => R
 
     const newMessage = { key, content, options, visible: true, duration };
 
-    setQueue(prevQueue => [...prevQueue, newMessage]);
+    setQueue((prevQueue) => [...prevQueue, newMessage]);
 
     return key; // Return the key
   }, []);
 
   const hide = useCallback((key: string) => {
-    setSnackbarMessages(prevMessages => {
+    setSnackbarMessages((prevMessages) => {
       // Clear the timeout for the key if it exists
       if (timeoutsRef.current.has(key)) {
         clearTimeout(timeoutsRef.current.get(key)!);
         timeoutsRef.current.delete(key);
       }
 
-      const updatedMessages = prevMessages.map(snack =>
+      const updatedMessages = prevMessages.map((snack) =>
         snack.key === key ? { ...snack, visible: false } : snack
       );
 
       // Remove the snackbar message after 1 second
       setTimeout(() => {
-        setSnackbarMessages(prevMessages => prevMessages.filter(snack => snack.key !== key));
+        setSnackbarMessages((prevMessages) => prevMessages.filter((snack) => snack.key !== key));
       }, 1000); // Delay to allow fade-out effect
 
       return updatedMessages;
@@ -70,7 +80,7 @@ const SnackbarProvider: React.FC<{ children: (context: SnackbarContextType) => R
     setQueue(restQueue);
     setIsShowing(true);
 
-    setSnackbarMessages(prevMessages => [...prevMessages, nextMessage]);
+    setSnackbarMessages((prevMessages) => [...prevMessages, nextMessage]);
 
     const timeoutId = setTimeout(() => {
       hide(nextMessage.key);
@@ -97,7 +107,7 @@ const SnackbarProvider: React.FC<{ children: (context: SnackbarContextType) => R
 const useSnackbar = () => {
   const context = useContext(SnackbarContext);
   if (!context) {
-    throw new Error('useSnackbar must be used within a SnackbarProvider');
+    throw new Error("useSnackbar must be used within a SnackbarProvider");
   }
   return context;
 };

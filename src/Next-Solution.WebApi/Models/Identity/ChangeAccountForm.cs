@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
-using Next_Solution.WebApi.Providers.Validation;
 using Next_Solution.WebApi.Providers.ModelValidator;
+using Next_Solution.WebApi.Providers.Validation;
 using System.Text.Json.Serialization;
 
 namespace Next_Solution.WebApi.Models.Identity

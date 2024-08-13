@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
 using Humanizer;
-using System.Reflection;
 using Next_Solution.WebApi.Helpers;
+using System.Reflection;
 
 namespace Next_Solution.WebApi.Providers.ModelValidator
 {

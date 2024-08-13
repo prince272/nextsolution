@@ -2,7 +2,7 @@
 {
     public class NgrokOptions
     {
-        public bool ShowNgrokWindow { get; set; } 
+        public bool ShowNgrokWindow { get; set; }
 
         public string AuthToken { get; set; } = null!;
 

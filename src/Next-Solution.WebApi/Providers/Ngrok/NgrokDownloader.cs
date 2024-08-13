@@ -2,10 +2,9 @@
 // See the LICENSE file in the project root for more information.
 // Copyright (c) 2019 Kevin Gysberg
 
+using CliWrap;
 using System.IO.Compression;
 using System.Runtime.InteropServices;
-using CliWrap;
-using Microsoft.Extensions.Logging;
 
 namespace Next_Solution.WebApi.Providers.Ngrok
 {

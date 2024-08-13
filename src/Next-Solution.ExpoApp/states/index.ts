@@ -22,7 +22,7 @@ const createSelectors = <S extends UseBoundStore<StoreApi<object>>>(_store: S) =
 
 export type AppStoreType = AppearanceSlice & AuthenticationSlice;
 
-export const useAppStore = createSelectors(
+const useAppStore = createSelectors(
   create<AppStoreType>()(
     persist(
       (...a) => ({
@@ -41,6 +41,10 @@ export const useAppStore = createSelectors(
     )
   )
 );
+
+export const useAppearance = useAppStore.state.appearance;
+
+export const useAuthentication = useAppStore.state.authentication;
 
 export const useHydration = () => {
   const [hydrated, setHydrated] = useState(false);

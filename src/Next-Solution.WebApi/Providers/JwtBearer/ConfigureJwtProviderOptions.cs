@@ -1,7 +1,7 @@
 ﻿using DeviceId;
 using Microsoft.Extensions.Options;
-using System.Reflection;
 using Next_Solution.WebApi.Helpers;
+using System.Reflection;
 
 namespace Next_Solution.WebApi.Providers.JwtBearer
 {

@@ -15,7 +15,7 @@ import {
 } from "@/components";
 import { useMemoizedValue } from "@/hooks";
 import { identityService } from "@/services";
-import { useAppStore } from "@/states";
+import { useAuthentication } from "@/states";
 import { useKeyboard } from "@react-native-community/hooks";
 import { router } from "expo-router";
 import { cssInterop } from "nativewind";
@@ -34,7 +34,7 @@ const SignInScreen = ({ className, ...props }: SignInScreenProps) => {
   const [formSubmitting, setFormSubmitting] = useState(false);
   const formErrors = useMemoizedValue(form.formState.errors, !formSubmitting);
 
-  const { setUser: setCurrentUser } = useAppStore((state) => state.authentication);
+  const { setUser: setCurrentUser } = useAuthentication();
 
   const handleSignIn = useCallback(async () => {
     setFormSubmitting(true);

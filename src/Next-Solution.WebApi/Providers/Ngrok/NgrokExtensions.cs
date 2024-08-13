@@ -1,7 +1,4 @@
-﻿using System.Net.Http.Headers;
-using Flurl.Http.Configuration;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Flurl.Http.Configuration;
 using Microsoft.Extensions.Options;
 
 namespace Next_Solution.WebApi.Providers.Ngrok

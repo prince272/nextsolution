@@ -5,7 +5,7 @@ import GoogleColorIcon from "@/assets/icons/google-color-icon.svg";
 import { Button, HelperText, Image, Text, TextInput, useSnackbar, View } from "@/components";
 import { useMemoizedValue } from "@/hooks";
 import { identityService } from "@/services";
-import { useAppStore } from "@/states";
+import { useAuthentication } from "@/states";
 import { useKeyboard } from "@react-native-community/hooks";
 import { router } from "expo-router";
 import { cssInterop } from "nativewind";
@@ -41,7 +41,7 @@ const createSignUpScreen = (step: SignUpScreenSteps) => {
     const stepIndex = steps.indexOf(step);
     const nextStep = stepIndex !== -1 && stepIndex < steps.length - 1 ? steps[stepIndex + 1] : null;
 
-    const { setUser: setCurrentUser } = useAppStore((state) => state.authentication);
+    const { setUser: setCurrentUser } = useAuthentication();
 
     const handleSignUp = async () => {
       setFormSubmitting(true);

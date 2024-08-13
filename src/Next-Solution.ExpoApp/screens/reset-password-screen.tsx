@@ -42,7 +42,7 @@ const createResetPasswordScreen = (step: ResetPasswordScreenSteps) => {
         {
           "enter-username": ["username"],
           "enter-verification-code": ["code"],
-          "enter-new-password": ["newPassword"]
+          "enter-new-password": ["newPassword", "confirmPassword"]
         } as ResetPasswordScreenStepFields
       )[step]
     ).current;
@@ -286,6 +286,7 @@ const createResetPasswordScreen = (step: ResetPasswordScreenSteps) => {
                         <TextInput
                           mode="outlined"
                           autoFocus
+                          secureTextEntry
                           label="New password"
                           onBlur={onBlur}
                           onChangeText={onChange}
@@ -306,6 +307,7 @@ const createResetPasswordScreen = (step: ResetPasswordScreenSteps) => {
                       <>
                         <TextInput
                           mode="outlined"
+                          secureTextEntry
                           label="Confirm password"
                           onBlur={onBlur}
                           onChangeText={onChange}
@@ -329,7 +331,7 @@ const createResetPasswordScreen = (step: ResetPasswordScreenSteps) => {
                   handleResetPassword();
                 }}
               >
-                {!formSubmitting ? "Request verification code" : " "}
+                {!formSubmitting ? "Reset password" : " "}
               </Button>
             </View>
           </>

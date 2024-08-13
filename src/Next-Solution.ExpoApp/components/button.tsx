@@ -1,5 +1,5 @@
-import { cssInterop } from "nativewind";
 import React, { ComponentProps, ComponentRef, forwardRef } from "react";
+import { cssInterop } from "nativewind";
 import { Button as BaseButton } from "react-native-paper";
 
 cssInterop(BaseButton, { className: "style" });

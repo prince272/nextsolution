@@ -1,7 +1,7 @@
 import { ComponentProps, ForwardedRef, forwardRef } from "react";
-import { Text as PaperText, HelperText } from "react-native-paper";
 import { cn } from "@/utils";
 import { cssInterop } from "nativewind";
+import { HelperText, Text as PaperText } from "react-native-paper";
 
 const BaseText = PaperText;
 
@@ -13,7 +13,10 @@ export interface TextProps extends ComponentProps<typeof BaseText> {
 }
 
 const Text = forwardRef<TextProps["ref"], TextProps>(
-  ({ children, className, pressedClassName, ...props }: TextProps, ref: ForwardedRef<TextProps["ref"]>) => {
+  (
+    { children, className, pressedClassName, ...props }: TextProps,
+    ref: ForwardedRef<TextProps["ref"]>
+  ) => {
     const appliedClassName = cn(className);
 
     return (

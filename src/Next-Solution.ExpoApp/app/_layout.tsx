@@ -44,7 +44,7 @@ export default function RootLayout() {
                     headerShown: false
                   }}
                 >
-                  <Stack.Screen name="index" />
+                  <Stack.Screen name="(app)" />
                   <Stack.Screen name="(sign-in)" />
                   <Stack.Screen name="(sign-up)" />
                   <Stack.Screen name="(reset-password)" />

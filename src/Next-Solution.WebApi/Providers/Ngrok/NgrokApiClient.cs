@@ -1,11 +1,8 @@
-﻿using System.Globalization;
-using System.Net.Http.Headers;
-using System.Text.Json;
-using Flurl.Http;
+﻿using Flurl.Http;
 using Flurl.Http.Configuration;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Next_Solution.WebApi.Providers.Ngrok.Models;
+using System.Globalization;
+using System.Text.Json;
 
 namespace Next_Solution.WebApi.Providers.Ngrok
 {

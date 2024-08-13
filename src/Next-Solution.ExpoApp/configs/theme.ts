@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from "react";
 import { colors } from "@/configs/colors";
 import { fonts } from "@/configs/fonts";
-import { useAppStore } from "@/states";
+import { useAppearance } from "@/states";
 import {
   DarkTheme as NativeNavigationDarkTheme,
   DefaultTheme as NativeNavigationLightTheme
@@ -27,9 +27,7 @@ const themes = {
 };
 
 export function useThemeConfig() {
-  const { activeTheme, inverseTheme, addSystemThemeChangeListener } = useAppStore(
-    (state) => state.appearance
-  );
+  const { activeTheme, inverseTheme, addSystemThemeChangeListener } = useAppearance();
 
   const themeConfig = useMemo(
     () => (activeTheme === "dark" ? themes.Dark : themes.Light),

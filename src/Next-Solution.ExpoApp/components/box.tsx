@@ -1,7 +1,7 @@
 import { ElementType, forwardRef } from "react";
 import { StyleProp, TextStyle, View, ViewStyle } from "react-native";
-import { PolymorphicProps } from "@/types/polymorphic-type";
 import { cssInterop } from "nativewind";
+import { PolymorphicProps } from "@/types/polymorphic-type";
 
 export type BoxProps<T extends ElementType> = PolymorphicProps<
   { children?: React.ReactNode; style?: StyleProp<ViewStyle | TextStyle> },

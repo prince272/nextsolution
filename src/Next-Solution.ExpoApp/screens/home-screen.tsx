@@ -5,4 +5,4 @@ export type HomeScreenProps = ComponentProps<typeof View> & {};
 
 export const HomeScreen = (props: HomeScreenProps) => {
   return <View {...props}></View>;
-}
+};

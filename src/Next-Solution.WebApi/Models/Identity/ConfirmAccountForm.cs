@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
-using Next_Solution.WebApi.Providers.Validation;
 using Next_Solution.WebApi.Providers.ModelValidator;
+using Next_Solution.WebApi.Providers.Validation;
 using System.Text.Json.Serialization;
 
 namespace Next_Solution.WebApi.Models.Identity
@@ -16,7 +16,7 @@ namespace Next_Solution.WebApi.Models.Identity
         }
     }
 
-    public class ConfirmAccountForm 
+    public class ConfirmAccountForm
     {
         public string Username { get; set; } = null!;
 

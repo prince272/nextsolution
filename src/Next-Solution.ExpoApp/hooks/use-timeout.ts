@@ -2,7 +2,11 @@ import { MutableRefObject, useEffect, useMemo, useRef } from "react";
 
 const MAX_DELAY_MS = 2 ** 31 - 1;
 
-const setChainedTimeout = (handleRef: MutableRefObject<any>, fn: () => void, timeoutAtMs: number) => {
+const setChainedTimeout = (
+  handleRef: MutableRefObject<any>,
+  fn: () => void,
+  timeoutAtMs: number
+) => {
   const delayMs = timeoutAtMs - Date.now();
 
   handleRef.current =

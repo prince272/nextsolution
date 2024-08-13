@@ -1,8 +1,5 @@
 ﻿using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Next_Solution.WebApi.Providers.Ngrok;
 
 namespace Next_Solution.WebApi.Providers.Ngrok
 {

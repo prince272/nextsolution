@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using Next_Solution.WebApi.Providers.Ngrok.Models;
 
 namespace Next_Solution.WebApi.Providers.Ngrok

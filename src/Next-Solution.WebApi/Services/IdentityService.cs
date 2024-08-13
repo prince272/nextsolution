@@ -1,22 +1,22 @@
 ﻿using AutoMapper;
 using Humanizer;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.EntityFrameworkCore;
-using Next_Solution.WebApi.Data.Entities.Identity;
-using Next_Solution.WebApi.Models.Identity;
-using Next_Solution.WebApi.Providers.Messaging;
-using Next_Solution.WebApi.Providers.Validation;
-using Next_Solution.WebApi.Providers.JwtBearer;
-using Next_Solution.WebApi.Helpers;
-using Next_Solution.WebApi.Providers.RazorViewRender;
-using Next_Solution.WebApi.Providers.ModelValidator;
-using Microsoft.AspNetCore.DataProtection;
-using System.Text.Json;
-using System.Text;
 using IdentityAudit.Utilities;
-using Microsoft.Extensions.Options;
-using Next_Solution.WebApi.Options;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Next_Solution.WebApi.Data.Entities.Identity;
+using Next_Solution.WebApi.Helpers;
+using Next_Solution.WebApi.Models.Identity;
+using Next_Solution.WebApi.Options;
+using Next_Solution.WebApi.Providers.JwtBearer;
+using Next_Solution.WebApi.Providers.Messaging;
+using Next_Solution.WebApi.Providers.ModelValidator;
+using Next_Solution.WebApi.Providers.RazorViewRender;
+using Next_Solution.WebApi.Providers.Validation;
+using System.Text;
+using System.Text.Json;
 
 namespace Next_Solution.WebApi.Services
 {

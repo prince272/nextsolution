@@ -1,26 +1,14 @@
-﻿using Humanizer;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Next_Solution.WebApi.Models.Identity;
-using Next_Solution.WebApi.Data.Entities.Identity;
-using Next_Solution.WebApi.Services;
-using System.Net.Mime;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.DataProtection;
-using System.Text.Json;
 using Microsoft.AspNetCore.WebUtilities;
-using Next_Solution.WebApi.Options;
 using Microsoft.Extensions.Primitives;
-using Next_Solution.WebApi.Providers.Validation;
-using System.Security.Claims;
+using Next_Solution.WebApi.Data.Entities.Identity;
+using Next_Solution.WebApi.Models.Identity;
+using Next_Solution.WebApi.Services;
 using Swashbuckle.AspNetCore.Annotations;
+using System.Security.Claims;
 
 namespace Next_Solution.WebApi.Controllers
 {
@@ -211,7 +199,7 @@ namespace Next_Solution.WebApi.Controllers
                 _logger.LogError(ex, "Failed to unprotect form for provider {Provider}.", provider);
                 return TypedResults.ValidationProblem(new Dictionary<string, string[]>(), title: $"{provider} Authentication failed.");
             }
-            
+
             return await _identityService.SignInWithAsync(form);
         }
 

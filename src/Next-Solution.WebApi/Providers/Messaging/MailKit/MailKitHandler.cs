@@ -2,7 +2,6 @@
 using MailKit.Security;
 using Microsoft.Extensions.Options;
 using MimeKit;
-using Next_Solution.WebApi.Providers.Messaging;
 
 namespace Next_Solution.WebApi.Providers.Messaging.MailKit
 {
