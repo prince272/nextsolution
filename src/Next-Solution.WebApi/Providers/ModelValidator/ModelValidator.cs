@@ -35,7 +35,16 @@ namespace Next_Solution.WebApi.Providers.ModelValidator
 
                 var isValid = errors.Count == 0;
 
-                return new ValidationResult { IsValid = isValid, Errors = errors };
+                return new ValidationResult
+                {
+                    IsValid = isValid,
+                    Errors = errors,
+                    Message = isValid switch
+                    {
+                        true => "Validation successful.",
+                        false => errors.Count == 1 ? errors.First().Value.FirstOrDefault() ?? "One or more errors occurred." : "One or more errors occurred."
+                    }
+                };
             }
         }
     }

@@ -212,7 +212,7 @@ namespace Next_Solution.WebApi.Controllers
                 return TypedResults.ValidationProblem(new Dictionary<string, string[]>(), title: $"{provider} Authentication failed.");
             }
             
-            return await _identityService.SignInAsync(form);
+            return await _identityService.SignInWithAsync(form);
         }
 
         /// <summary>
