@@ -1,10 +1,10 @@
 {
   "$schema": "http://json.schemastore.org/template",
   "author": "@prince272",
-  "classifications": ["Web", "ASP.NET"],
+  "classifications": ["C#", "Mobile", "IOS", "Android", "Web", "API", "Expo"],
   "identity": "NextSolution.Template",
-  "name": "Next Solution (ASP.NET API)",
-  "description": "A starter solution template for rapidly creating a modern, efficient codebase for your upcoming application.",
+  "name": "Next Solution",
+  "description": "A starter solution template for rapidly creating a modern and efficient applications.",
   "shortName": "nextsoln",
   "sourceName": "Next-Solution",
   "preferNameDirectory": true,

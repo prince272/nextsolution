@@ -16,8 +16,8 @@ const config = (context) => {
     userInterfaceStyle: "light",
     splash: {
       image: "./assets/images/splash.png",
-      resizeMode: "contain",
-      backgroundColor: "#ffffff"
+      resizeMode: "cover",
+      backgroundColor: "#ffffff",
     },
     ios: {
       supportsTablet: true,

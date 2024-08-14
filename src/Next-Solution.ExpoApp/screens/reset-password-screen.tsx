@@ -151,7 +151,7 @@ const createResetPasswordScreen = (step: ResetPasswordScreenSteps) => {
       <View className="px-6 pb-6">
         <Image
           className="w-16 h-16 self-center mb-3"
-          source={require("@/assets/images/right-arrow-256x256.png")}
+          source={require("@/assets/images/app-logo-256x256.png")}
         />
         <Text className="self-center mb-1 font-bold" variant="titleLarge">
           {{

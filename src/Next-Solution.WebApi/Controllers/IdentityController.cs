@@ -175,15 +175,21 @@ namespace Next_Solution.WebApi.Controllers
             });
 
             callbackUrl = QueryHelpers.AddQueryString(callbackUrl, new Dictionary<string, StringValues>
-            {
-                { "provider", provider.ToString() },
-                { "token", protectedForm },
-                { "requestId", Guid.NewGuid().ToString("N") }
-            });
+        {
+            { "provider", provider.ToString() },
+            { "token", protectedForm },
+            { "requestId", Guid.NewGuid().ToString("N") }
+        });
 
             return TypedResults.Redirect(callbackUrl);
         }
 
+        /// <summary>
+        /// Signs in with an external provider using a token.
+        /// </summary>
+        /// <param name="provider">The external sign-in provider.</param>
+        /// <param name="token">The token to use for sign-in.</param>
+        /// <returns>The result of the sign-in operation.</returns>
         [HttpPost("sign-in/{provider}/{token}")]
         public async Task<Results<ValidationProblem, Ok<UserSessionModel>>> SignInWithToken([FromRoute] SignInWithProvider provider, [FromRoute] string token)
         {
