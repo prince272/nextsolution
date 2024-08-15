@@ -151,6 +151,16 @@ namespace Next_Solution.WebApi.Controllers
             return TypedResults.Challenge(authenticationProperties, new[] { provider.ToString() });
         }
 
+        /// <summary>
+        /// Handles the callback from an external sign-in provider after the user has authenticated.
+        /// </summary>
+        /// <param name="signInManager">The sign-in manager service used to retrieve external login information.</param>
+        /// <param name="provider">The name of the external sign-in provider used for authentication.</param>
+        /// <param name="callbackUrl">The URL to redirect the user to after processing the callback.</param>
+        /// <returns>A redirect response that directs the user to the specified callback URL with a token for further processing.</returns>
+        /// <remarks>
+        /// This method processes the external login information received from the sign-in provider. If authentication information is successfully retrieved, it generates a token to protect user information and appends it to the callback URL. If the authentication result is null, the user is redirected to the original callback URL without a token.
+        /// </remarks>
         [SwaggerIgnore]
         [HttpGet("sign-in/{provider}/callback")]
         public async Task<Results<RedirectHttpResult, Ok>> SignInWithCallback([FromServices] SignInManager<User> signInManager, SignInWithProvider provider, [FromQuery] string callbackUrl)
