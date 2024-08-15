@@ -8,12 +8,15 @@
 
 </div>
 
+## Demo
+
+![Next Solution Template Demo](https://raw.githubusercontent.com/othneildrew/Best-README-Template/main/images/screenshot.png)
+
 ## Tools, Frameworks & Libraries
 
 This template was built using a variety of powerful frameworks and tools, including those listed below and many others:
 
 [![.NET](https://img.shields.io/badge/.NET-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/) [![Ngrok](https://img.shields.io/badge/ngrok-003F5C?style=for-the-badge&logo=ngrok&logoColor=white)](https://ngrok.com/) [![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=json-web-tokens&logoColor=white)](https://jwt.io/) [![Entity Framework](https://img.shields.io/badge/Entity_Framework-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)](https://docs.microsoft.com/en-us/ef/) [![AutoMapper](https://img.shields.io/badge/AutoMapper-000000?style=for-the-badge&logo=automapper&logoColor=white)](https://automapper.org/) [![FluentValidation](https://img.shields.io/badge/FluentValidation-000000?style=for-the-badge&logo=fluentvalidation&logoColor=white)](https://fluentvalidation.net/) [![Flurl](https://img.shields.io/badge/Flurl-000000?style=for-the-badge&logo=flurl&logoColor=white)](https://flurl.dev/) [![Humanizer](https://img.shields.io/badge/Humanizer-000000?style=for-the-badge&logo=humanizer&logoColor=white)](https://github.com/Humanizr/Humanizer) [![libphonenumber-csharp](https://img.shields.io/badge/libphonenumber--csharp-000000?style=for-the-badge&logo=libphonenumber&logoColor=white)](https://github.com/libphonenumber/libphonenumber-csharp) [![MailKit](https://img.shields.io/badge/MailKit-00B9F2?style=for-the-badge&logo=mailkit&logoColor=white)](https://github.com/jstedfast/MailKit) [![OAuth](https://img.shields.io/badge/OAuth-000000?style=for-the-badge&logo=oauth&logoColor=white)](https://oauth.net/) [![Serilog](https://img.shields.io/badge/Serilog-2F2F2F?style=for-the-badge&logo=serilog&logoColor=white)](https://serilog.net/) [![Twilio](https://img.shields.io/badge/Twilio-000000?style=for-the-badge&logo=twilio&logoColor=white)](https://www.twilio.com/) [![Swagger](https://img.shields.io/badge/Swagger-85EA2D?style=for-the-badge&logo=swagger&logoColor=black)](https://swagger.io/) [![React.js](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/) [![React Native](https://img.shields.io/badge/React_Native-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactnative.dev/) [![React Navigation](https://img.shields.io/badge/React_Navigation-000000?style=for-the-badge&logo=reactnavigation&logoColor=white)](https://reactnavigation.org/) [![Axios](https://img.shields.io/badge/Axios-5A29E3?style=for-the-badge&logo=axios&logoColor=white)](https://axios-http.com/) [![Expo Dev](https://img.shields.io/badge/Expo_Dev-000020?style=for-the-badge&logo=expo&logoColor=white)](https://expo.dev/) [![lodash](https://img.shields.io/badge/Lodash-3492F2?style=for-the-badge&logo=lodash&logoColor=white)](https://lodash.com/) [![nativewind](https://img.shields.io/badge/NativeWind-000000?style=for-the-badge&logo=nativewind&logoColor=white)](https://nativewind.dev/) [![react-hook-form](https://img.shields.io/badge/React_Hook_Form-ECF5F6?style=for-the-badge&logo=reacthookform&logoColor=000000)](https://react-hook-form.com/) [![zustand](https://img.shields.io/badge/Zustand-FF4C60?style=for-the-badge&logo=zustand&logoColor=white)](https://github.com/pmndrs/zustand) [![Visual Studio Code](https://img.shields.io/badge/Visual_Studio_Code-007ACC?style=for-the-badge&logo=visualstudiocode&logoColor=white)](https://code.visualstudio.com/) [![Visual Studio](https://img.shields.io/badge/Visual_Studio-5C2D91?style=for-the-badge&logo=visualstudio&logoColor=white)](https://visualstudio.microsoft.com/) [![Android Studio](https://img.shields.io/badge/Android_Studio-3DDC84?style=for-the-badge&logo=androidstudio&logoColor=white)](https://developer.android.com/studio) [![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)](https://git-scm.com/) [![GitHub Copilot](https://img.shields.io/badge/GitHub_Copilot-2D5D7F?style=for-the-badge&logo=github&logoColor=white)](https://github.com/features/copilot) [![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
-
 
 ## License
 
@@ -26,21 +29,23 @@ With gratitude, I acknowledge these libraries, tools, and documentation which pl
 **Documentation:**
 - [React Official Site](https://react.dev/)
 - [React Native Official Site](https://reactnative.dev/)
+- [YouTube: React Native for Beginners](https://www.youtube.com/watch?v=0-S5a0eXPoc&t=1918s)
 - [YouTube: Understanding React Native Performance](https://www.youtube.com/watch?v=lA_73_-n-V4)
 - [W3Schools: TypeScript](https://www.w3schools.com/typescript/)
 
-**Libraries & Frameworks:**
+**Tools, Frameworks & Libraries:**
 - [React Hook Form](https://react-hook-form.com/)
 - [Tailwind CSS](https://tailwindcss.com)
 - [React Native Paper](https://reactnativepaper.com/)
 - [Expo with React Native](https://expo.dev/)
-
-**Development Tools:**
 - [GitHub: FluffySpoon.Ngrok](https://github.com/ffMathy/FluffySpoon.Ngrok)
-- [GitHub: .NET Template Reference](https://github.com/dotnet/templating/wiki/Reference-for-template.json)
-- [Stack Overflow: .NET Template Code](https://stackoverflow.com/questions/74547689/net-template-code-in-conditional-is-ignored-during-compilation)
 - [GitHub: ASP.NET Core JWT Authentication](https://github.com/VahidN/ASPNETCore2JwtAuthentication)
 
 **Architecture & Design:**
-- [Clean Architecture on GitHub](https://github.com/jasontaylordev/CleanArchitecture)
+- [GitHub: Clean Architecture](https://github.com/jasontaylordev/CleanArchitecture)
 - [UXWing: Free Icons](https://uxwing.com/)
+- [Best-README-Template](https://github.com/othneildrew/Best-README-Template)
+- [Gist: .NET Project Structure](https://gist.github.com/davidfowl/ed7564297c61fe9ab814)
+- [GitHub: .NET Template Reference](https://github.com/dotnet/templating/wiki/Reference-for-template.json)
+- [Gist: Conventional Commit Messages](https://gist.github.com/qoomon/5dfcdf8eec66a051ecd85625518cfd13?permalink_comment_id=4892033)
+- [Gist: Git Commit Message Emoji](https://gist.github.com/parmentf/035de27d6ed1dce0b36a)
