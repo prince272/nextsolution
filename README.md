@@ -8,6 +8,14 @@
 
 </div>
 
+## Motivation
+
+🚀 After releasing the initial version of the [NextSolution template](https://github.com/prince272/nextsolution) on [NuGet](https://www.nuget.org/packages/NextSolution.Template), I observed a steady increase in both downloads and GitHub stars over a few months. This positive feedback was a significant motivator for me to develop V2, which features an improved codebase and more organized patterns.
+
+🌟 Your contributions and sponsorship will be invaluable in continuing to refine and simplify software development. Thank you for your support! 🙏
+
+
+
 ## Demo
 
 ![Next Solution Template Demo](https://raw.githubusercontent.com/othneildrew/Best-README-Template/main/images/screenshot.png)
