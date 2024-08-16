@@ -8,7 +8,7 @@
 
 </div>
 
-# NextSolution - ASP.NET, Next.js, and Expo 🚀
+# NextSolution with ASP.NET, Next.js, and Expo 🚀
 
 This starter template combines an [ASP.NET API](https://dotnet.microsoft.com/apps/aspnet) 🖥️ with a [Next.js (React)](https://nextjs.org/) web application 🌐 and an [Expo (React Native)](https://expo.dev/) mobile app 📱 to provide a solid foundation for building full-stack applications with powerful APIs and responsive web and mobile interfaces.
 

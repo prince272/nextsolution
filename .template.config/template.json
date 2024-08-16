@@ -92,8 +92,8 @@
     "configureNgrok": {
       "type": "parameter",
       "datatype": "bool",
-      "displayName": "Configure Ngrok for Web API Tunneling",
-      "description": "Enables Ngrok for tunneling the Web API.",
+      "displayName": "Configure Ngrok Tunneling (requires signing up at Ngrok to obtain your token and domain)",
+      "description": "Enables Ngrok for secure tunneling of the Web API. To get started, sign up at Ngrok to obtain your authentication token and a custom domain.",
       "defaultValue": "true"
     },
     "httpPort": {
