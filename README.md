@@ -35,7 +35,7 @@ Before you begin, ensure you have the following installed:
 - [Visual Studio Code](https://code.visualstudio.com/) (optional)
 - [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) (latest version)
 - [Node.js v20](https://nodejs.org/en/) (latest version,  only required if you are using Next.js or Expo)
-  
+   
 ### Installation
 
 To set up your project using the NuGet template, follow these steps:
@@ -82,6 +82,15 @@ To set up your project using the NuGet template, follow these steps:
    - **Using Visual Studio:**
 
      Open Visual Studio, select "Create a new project," search for "Next Solution," select it, and follow the prompts to create your project.
+
+3. **Set Up Your Mobile Development Environment:**
+
+   Follow the detailed guide in the official Expo documentation:
+
+   - [Set Up Your Expo Development Environment](https://docs.expo.dev/get-started/set-up-your-environment/)
+
+   This guide will help you install all the necessary tools, configure your environment, and run your first Expo project.
+
 
 ## Tools, Frameworks & Libraries
 
