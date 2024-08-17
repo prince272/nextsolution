@@ -85,7 +85,7 @@ To set up your project using the NuGet template, follow these steps:
 
 3. **Set Up Your Mobile Development Environment:**
 
-   Follow the detailed guide in the official Expo documentation:
+   Follow the detailed guide in the official Expo documentation to set up your mobile development environment:
 
    - [Set Up Your Expo Development Environment](https://docs.expo.dev/get-started/set-up-your-environment/)
 
