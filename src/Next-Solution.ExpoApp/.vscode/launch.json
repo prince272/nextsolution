@@ -1,14 +1,46 @@
 {
-  // Use IntelliSense to learn about possible attributes.
-  // Hover to view descriptions of existing attributes.
-  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Attach to Hermes application",
-      "request": "attach",
-      "type": "reactnativedirect",
-      "cwd": "${workspaceFolder}"
+      "name": "Start Expo",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "expo",
+        "start"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "externalTerminal",
+      "stopOnEntry": true
+    },
+    {
+      "name": "Start Expo (Android)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "expo",
+        "start",
+        "--android"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "externalTerminal",
+      "stopOnEntry": true
+    },
+    {
+      "name": "Start Expo (iOS)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "expo",
+        "start",
+        "--ios"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "externalTerminal",
+      "stopOnEntry": true
     }
   ]
 }

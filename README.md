@@ -8,11 +8,9 @@
 
 </div>
 
-# NextSolution with ASP.NET, Next.js, and Expo 🚀
+# NextSolution (ASP.NET API with Next.js, and Expo) 🚀
 
 This starter template combines an [ASP.NET API](https://dotnet.microsoft.com/apps/aspnet) 🖥️ with a [Next.js (React)](https://nextjs.org/) web application 🌐 and an [Expo (React Native)](https://expo.dev/) mobile app 📱 to provide a solid foundation for building full-stack applications with powerful APIs and responsive web and mobile interfaces.
-
-
 
 ## Motivation
 
@@ -20,11 +18,12 @@ This starter template combines an [ASP.NET API](https://dotnet.microsoft.com/app
 
 🌟 Your contributions and sponsorship will be invaluable in continuing to refine and simplify software development. Thank you for your support! 🙏
 
-
-
 ## Demo
 
-![Next Solution Template Demo](https://raw.githubusercontent.com/othneildrew/Best-README-Template/main/images/screenshot.png)
+![Next Solution Template Demo](./docs/demo.png)
+
+## Installation
+
 
 ## Tools, Frameworks & Libraries
 
