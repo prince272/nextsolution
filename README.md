@@ -25,7 +25,7 @@ This starter template combines an [ASP.NET API](https://dotnet.microsoft.com/app
 
 ## Getting Started
 
-This guide will help you set up your project using the `NextSolution.Template::1.0.1` template. Follow these steps to get your development environment up and running.
+Follow these steps to get your development environment up and running.
 
 ### Prerequisites
 
@@ -34,7 +34,8 @@ Before you begin, ensure you have the following installed:
 - [Visual Studio 2022 or later](https://visualstudio.microsoft.com/downloads/)
 - [Visual Studio Code](https://code.visualstudio.com/) (optional)
 - [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) (latest version)
- 
+- [Node.js v20](https://nodejs.org/en/) (latest version,  only required if you are using Next.js or Expo)
+  
 ### Installation
 
 To set up your project using the NuGet template, follow these steps:
@@ -50,7 +51,7 @@ To set up your project using the NuGet template, follow these steps:
 
 2. **Create a New Project Using the Template:**
 
-   After installing the template, you can either continue using the terminal or command prompt, or switch to Visual Studio to complete the setup:
+   After installing the template, you can either continue using the terminal or command prompt, or switch to Visual Studio to create the new project:
 
    - **Using the terminal or command prompt:**
 

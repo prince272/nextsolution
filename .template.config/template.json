@@ -50,14 +50,17 @@
         "**/*.gitignore",
         "**/*.nuspec"
       ],
+      "rename": {
+        "README-template.md": "README.md"
+      },
       "modifiers": [
         {
           "condition": "(!includeExpoProject)",
-          "exclude": ["src/Next-Solution.ExpoApp/**/*"]
+          "exclude": [ "src/Next-Solution.ExpoApp/**/*" ]
         },
         {
           "condition": "(!includeNextProject)",
-          "exclude": ["src/Next-Solution.NextApp/**/*"]
+          "exclude": [ "src/Next-Solution.NextApp/**/*" ]
         }
       ]
     }
