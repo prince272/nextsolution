@@ -5,7 +5,7 @@
   "identity": "NextSolution.Template",
   "name": "Next Solution",
   "description": "A starter solution template for rapidly creating a modern and efficient applications.",
-  "shortName": "nextsoln",
+  "shortName": "nextsln",
   "sourceName": "Next-Solution",
   "preferNameDirectory": true,
   "guids": [
