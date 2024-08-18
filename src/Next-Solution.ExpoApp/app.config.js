@@ -36,7 +36,7 @@ const config = (context) => {
       favicon: "./assets/images/favicon.png",
       bundler: "metro"
     },
-    plugins: ["expo-font"],
+    plugins: ["expo-font", "expo-router"],
     extra: {
       eas: {
         projectId: "9ecced41-d88e-488e-a37c-bb456b3f9286"
