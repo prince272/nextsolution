@@ -1,14 +1,15 @@
+import { WelcomeScreen } from "@/screens/welcome-screen";
 import { useAuthentication } from "@/states";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { CommonActions } from "@react-navigation/native";
-import { Redirect, Tabs } from "expo-router";
+import { Tabs } from "expo-router";
 import { BottomNavigation } from "react-native-paper";
 
 export default function Layout() {
   const { user: currentUser } = useAuthentication();
 
   if (!currentUser) {
-    return <Redirect href="/sign-in" />;
+    return <WelcomeScreen />
   }
 
   return (
