@@ -10,7 +10,16 @@
   "preferNameDirectory": true,
   "guids": [
     "1A114D3A-52AA-408F-ACFE-89A437A9BCC4",
-    "24FBFF44-2F91-4C05-BBDE-6FB7E43EF1B3"
+    "24FBFF44-2F91-4C05-BBDE-6FB7E43EF1B3",
+
+    "2150E333-8FDC-42A3-9474-1A3956D46DE8",
+    "2FB2C163-490B-4ED7-A182-27164E8D2766",
+    "9A19103F-16F7-4668-BE54-9A1E7A4F7556",
+    "30F7BA30-3D17-4820-A7A9-FE1D023D7D5F",
+    "54A90642-561A-4BB1-A94E-469ADEE60C69",
+    "7AD26BE3-903D-4787-A48C-84A8227BB3F7",
+    "F50700D6-1DF7-478C-B4F7-CB9C4C8BAD27",
+    "8CA26C20-5634-41D4-B534-52C1D620C270"
   ],
   "tags": {
     "type": "solution",
@@ -56,11 +65,11 @@
       "modifiers": [
         {
           "condition": "(!includeExpoProject)",
-          "exclude": [ "src/Next-Solution.ExpoApp/**/*" ]
+          "exclude": ["src/Next-Solution.ExpoApp/**/*"]
         },
         {
           "condition": "(!includeNextProject)",
-          "exclude": [ "src/Next-Solution.NextApp/**/*" ]
+          "exclude": ["src/Next-Solution.NextApp/**/*"]
         }
       ]
     }
