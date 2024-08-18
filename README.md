@@ -85,7 +85,7 @@ To set up your project using the NuGet template, follow these steps:
 
      Open Visual Studio, select "Create a new project," search for "Next Solution," select it, and follow the prompts to create your project.
 
-3. **Set Up Your Mobile Development Environment:**
+3. **Set Up Your Mobile Development Environment (Expo Project Only):**
 
    Follow the detailed guide in the official Expo documentation to set up your mobile development environment:
 
