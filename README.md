@@ -8,7 +8,6 @@
 
 </div>
 
-
 # NextSolution V2 (ASP.NET API with Next.js, and Expo) 🚀
 
 This starter template combines an [ASP.NET API](https://dotnet.microsoft.com/apps/aspnet) 🖥️ with a [Next.js (React)](https://nextjs.org/) web application 🌐 and an [Expo (React Native)](https://expo.dev/) mobile app 📱 to provide a solid foundation for building full-stack applications with powerful APIs and responsive web and mobile interfaces.
@@ -34,8 +33,8 @@ Before you begin, ensure you have the following installed:
 - [Visual Studio 2022 or later](https://visualstudio.microsoft.com/downloads/)
 - [Visual Studio Code](https://code.visualstudio.com/) (optional)
 - [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) (latest version)
-- [Node.js v20](https://nodejs.org/en/) (latest version,  only required if you are using Next.js or Expo)
-   
+- [Node.js v20](https://nodejs.org/en/) (latest version, only required if you are using Next.js or Expo)
+
 ### Installation
 
 To set up your project using the NuGet template, follow these steps:
@@ -47,7 +46,6 @@ To set up your project using the NuGet template, follow these steps:
    ```bash
    dotnet new --install NextSolution.Template::2.0.0
    ```
-   
 
 2. **Create a New Project Using the Template:**
 
@@ -57,27 +55,31 @@ To set up your project using the NuGet template, follow these steps:
 
      Generate a new project by running the following command. Replace `YourProjectName` with your desired project name:
 
-     ```bash
-     dotnet new nextsln -o YourProjectName
-     ```
+   ```bash
+    dotnet new nextsln -o YourProjectName --include-expo --include-next --configure-ngrok
+   ```
 
-     Move into the newly created project directory:
+   - `--include-expo`: Include Expo project in the solution (Ngrok is recommended for exposing APIs to your Expo app).
+   - `--include-next`: Include Next.js project in the solution.
+   - `--configure-ngrok`: Configure Ngrok tunneling (requires signing up at Ngrok to obtain your token and a custom domain).
 
-     ```bash
-     cd YourProjectName
-     ```
+   Move into the newly created project directory:
 
-     Restore the project dependencies:
+   ```bash
+   cd YourProjectName
+   ```
 
-     ```bash
-     dotnet restore
-     ```
+   Restore the project dependencies:
 
-     Open the solution file in Visual Studio:
+   ```bash
+   dotnet restore
+   ```
 
-     ```bash
-     start YourProjectName.sln
-     ```
+   Open the solution file in Visual Studio:
+
+   ```bash
+   start YourProjectName.sln
+   ```
 
    - **Using Visual Studio:**
 
@@ -91,13 +93,11 @@ To set up your project using the NuGet template, follow these steps:
 
    This guide will help you install all the necessary tools, configure your environment, and run your first Expo project.
 
-
 ## Tools, Frameworks & Libraries
 
 This template was built using a variety of powerful frameworks and tools, including those listed below and many others:
 
 [![.NET](https://img.shields.io/badge/.NET-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/) [![Ngrok](https://img.shields.io/badge/ngrok-003F5C?style=for-the-badge&logo=ngrok&logoColor=white)](https://ngrok.com/) [![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=json-web-tokens&logoColor=white)](https://jwt.io/) [![Entity Framework](https://img.shields.io/badge/Entity_Framework-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)](https://docs.microsoft.com/en-us/ef/) [![AutoMapper](https://img.shields.io/badge/AutoMapper-000000?style=for-the-badge&logo=automapper&logoColor=white)](https://automapper.org/) [![FluentValidation](https://img.shields.io/badge/FluentValidation-000000?style=for-the-badge&logo=fluentvalidation&logoColor=white)](https://fluentvalidation.net/) [![Flurl](https://img.shields.io/badge/Flurl-000000?style=for-the-badge&logo=flurl&logoColor=white)](https://flurl.dev/) [![Humanizer](https://img.shields.io/badge/Humanizer-000000?style=for-the-badge&logo=humanizer&logoColor=white)](https://github.com/Humanizr/Humanizer) [![libphonenumber-csharp](https://img.shields.io/badge/libphonenumber--csharp-000000?style=for-the-badge&logo=libphonenumber&logoColor=white)](https://github.com/libphonenumber/libphonenumber-csharp) [![MailKit](https://img.shields.io/badge/MailKit-00B9F2?style=for-the-badge&logo=mailkit&logoColor=white)](https://github.com/jstedfast/MailKit) [![OAuth](https://img.shields.io/badge/OAuth-000000?style=for-the-badge&logo=oauth&logoColor=white)](https://oauth.net/) [![Serilog](https://img.shields.io/badge/Serilog-2F2F2F?style=for-the-badge&logo=serilog&logoColor=white)](https://serilog.net/) [![Twilio](https://img.shields.io/badge/Twilio-000000?style=for-the-badge&logo=twilio&logoColor=white)](https://www.twilio.com/) [![Swagger](https://img.shields.io/badge/Swagger-85EA2D?style=for-the-badge&logo=swagger&logoColor=black)](https://swagger.io/) [![React.js](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/) [![React Native](https://img.shields.io/badge/React_Native-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactnative.dev/) [![React Navigation](https://img.shields.io/badge/React_Navigation-000000?style=for-the-badge&logo=reactnavigation&logoColor=white)](https://reactnavigation.org/) [![Axios](https://img.shields.io/badge/Axios-5A29E3?style=for-the-badge&logo=axios&logoColor=white)](https://axios-http.com/) [![Expo Dev](https://img.shields.io/badge/Expo_Dev-000020?style=for-the-badge&logo=expo&logoColor=white)](https://expo.dev/) [![lodash](https://img.shields.io/badge/Lodash-3492F2?style=for-the-badge&logo=lodash&logoColor=white)](https://lodash.com/) [![nativewind](https://img.shields.io/badge/NativeWind-000000?style=for-the-badge&logo=nativewind&logoColor=white)](https://nativewind.dev/) [![react-hook-form](https://img.shields.io/badge/React_Hook_Form-ECF5F6?style=for-the-badge&logo=reacthookform&logoColor=000000)](https://react-hook-form.com/) [![zustand](https://img.shields.io/badge/Zustand-FF4C60?style=for-the-badge&logo=zustand&logoColor=white)](https://github.com/pmndrs/zustand) [![Visual Studio Code](https://img.shields.io/badge/Visual_Studio_Code-007ACC?style=for-the-badge&logo=visualstudiocode&logoColor=white)](https://code.visualstudio.com/) [![Visual Studio](https://img.shields.io/badge/Visual_Studio-5C2D91?style=for-the-badge&logo=visualstudio&logoColor=white)](https://visualstudio.microsoft.com/) [![Android Studio](https://img.shields.io/badge/Android_Studio-3DDC84?style=for-the-badge&logo=androidstudio&logoColor=white)](https://developer.android.com/studio) [![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)](https://git-scm.com/) [![GitHub Copilot](https://img.shields.io/badge/GitHub_Copilot-2D5D7F?style=for-the-badge&logo=github&logoColor=white)](https://github.com/features/copilot) [![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/) [![React Native Paper](https://img.shields.io/badge/React_Native_Paper-000000?style=for-the-badge&logo=react&logoColor=white)](https://reactnativepaper.com/) [![NextUI](https://img.shields.io/badge/NextUI-000000?style=for-the-badge&logo=next&logoColor=white)](https://nextui.org/)
-
 
 ## License
 
@@ -108,6 +108,7 @@ This template is distributed under the MIT License. Please refer to the [LICENSE
 With gratitude, I acknowledge these libraries, tools, and documentation which played a crucial role in the creation of this template.
 
 **Documentation:**
+
 - [React Official Site](https://react.dev/)
 - [React Native Official Site](https://reactnative.dev/)
 - [YouTube: React Native for Beginners](https://www.youtube.com/watch?v=0-S5a0eXPoc&t=1918s)
@@ -115,6 +116,7 @@ With gratitude, I acknowledge these libraries, tools, and documentation which pl
 - [W3Schools: TypeScript](https://www.w3schools.com/typescript/)
 
 **Tools, Frameworks & Libraries:**
+
 - [React Hook Form](https://react-hook-form.com/)
 - [Tailwind CSS](https://tailwindcss.com)
 - [React Native Paper](https://reactnativepaper.com/)
@@ -123,6 +125,7 @@ With gratitude, I acknowledge these libraries, tools, and documentation which pl
 - [GitHub: ASP.NET Core JWT Authentication](https://github.com/VahidN/ASPNETCore2JwtAuthentication)
 
 **Architecture & Design:**
+
 - [GitHub: Clean Architecture](https://github.com/jasontaylordev/CleanArchitecture)
 - [UXWing: Free Icons](https://uxwing.com/)
 - [Best-README-Template](https://github.com/othneildrew/Best-README-Template)
@@ -132,6 +135,5 @@ With gratitude, I acknowledge these libraries, tools, and documentation which pl
 - [Gist: Git Commit Message Emoji](https://gist.github.com/parmentf/035de27d6ed1dce0b36a)
 
 ## Get in Touch
+
 [![GitHub](https://img.shields.io/badge/GitHub-%2312100E.svg?logo=github&logoColor=white)](https://github.com/prince272) [![LinkedIn](https://img.shields.io/badge/LinkedIn-%230077B5.svg?logo=linkedin&logoColor=white)](https://www.linkedin.com/in/prince-owusu-799438108) [![Email](https://img.shields.io/badge/Email-D14836?logo=gmail&logoColor=white)](mailto:princeowusu.272@gmail.com) [![WhatsApp](https://img.shields.io/badge/WhatsApp-25D366?logo=whatsapp&logoColor=white)](https://wa.me/233550362337) [![Telegram](https://img.shields.io/badge/Telegram-2CA5E0?logo=telegram&logoColor=white)](https://t.me/princeowusu272) [![Discord](https://img.shields.io/badge/Discord-5865F2?logo=discord&logoColor=white)](https://discord.com/users/prince.272) [![Instagram](https://img.shields.io/badge/Instagram-E4405F?logo=instagram&logoColor=white)](https://www.instagram.com/owusuyaw1234/) [![Stack Overflow](https://img.shields.io/badge/-Stackoverflow-FE7A16?logo=stack-overflow&logoColor=white)](https://stackoverflow.com/users/5265873) [![Twitter](https://img.shields.io/badge/Twitter-%231DA1F2.svg?logo=Twitter&logoColor=white)](https://twitter.com/OwusuPrince272)
-
-
