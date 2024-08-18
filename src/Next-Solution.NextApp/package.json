@@ -1,35 +1,26 @@
 {
-  "name": "my-app",
+  "name": "my-app2",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "cross-env SERVER_URL=https://localhost:5282 next dev",
-    "dev:ssl": "cross-env SERVER_URL=https://localhost:7135 next dev --experimental-https",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "format:check": "prettier --check .",
-    "format": "prettier --write ."
+    "lint": "next lint"
   },
   "dependencies": {
-    "axios": "^1.7.2",
-    "axios-retry": "^4.4.1",
-    "next": "14.2.5",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "next": "14.2.5"
   },
   "devDependencies": {
-    "@ianvs/prettier-plugin-sort-imports": "^4.3.1",
+    "typescript": "^5",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "cross-env": "^7.0.3",
-    "eslint": "^8",
-    "eslint-config-next": "14.2.5",
     "postcss": "^8",
-    "prettier": "^3.3.2",
-    "prettier-plugin-tailwindcss": "^0.6.5",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5"
+    "eslint": "^8",
+    "eslint-config-next": "14.2.5"
   }
 }
