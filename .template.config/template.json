@@ -1,25 +1,16 @@
 {
   "$schema": "http://json.schemastore.org/template",
   "author": "@prince272",
-  "classifications": ["C#", "Mobile", "IOS", "Android", "Web", "API", "Expo"],
+  "classifications": [ "C#", "Mobile", "IOS", "Android", "Web", "API", "Expo" ],
   "identity": "NextSolution.Template",
   "name": "Next Solution",
-  "description": "A starter solution template for rapidly creating a modern and efficient applications.",
+  "description": "A starter solution template for rapidly creating modern and efficient applications.",
   "shortName": "nextsln",
   "sourceName": "Next-Solution",
   "preferNameDirectory": true,
   "guids": [
     "1A114D3A-52AA-408F-ACFE-89A437A9BCC4",
-    "24FBFF44-2F91-4C05-BBDE-6FB7E43EF1B3",
-
-    "2150E333-8FDC-42A3-9474-1A3956D46DE8",
-    "2FB2C163-490B-4ED7-A182-27164E8D2766",
-    "9A19103F-16F7-4668-BE54-9A1E7A4F7556",
-    "30F7BA30-3D17-4820-A7A9-FE1D023D7D5F",
-    "54A90642-561A-4BB1-A94E-469ADEE60C69",
-    "7AD26BE3-903D-4787-A48C-84A8227BB3F7",
-    "F50700D6-1DF7-478C-B4F7-CB9C4C8BAD27",
-    "8CA26C20-5634-41D4-B534-52C1D620C270"
+    "24FBFF44-2F91-4C05-BBDE-6FB7E43EF1B3"
   ],
   "tags": {
     "type": "solution",
@@ -65,11 +56,11 @@
       "modifiers": [
         {
           "condition": "(!includeExpoProject)",
-          "exclude": ["src/Next-Solution.ExpoApp/**/*"]
+          "exclude": [ "src/Next-Solution.ExpoApp/**/*" ]
         },
         {
           "condition": "(!includeNextProject)",
-          "exclude": ["src/Next-Solution.NextApp/**/*"]
+          "exclude": [ "src/Next-Solution.NextApp/**/*" ]
         }
       ]
     }
@@ -130,11 +121,11 @@
   "forms": {
     "slug": {
       "identifier": "chain",
-      "steps": ["hyphenReplace", "lowerCase"]
+      "steps": [ "hyphenReplace", "lowerCase" ]
     },
     "title": {
       "identifier": "chain",
-      "steps": ["titleCase", "spaceReplace"]
+      "steps": [ "titleCase", "spaceReplace" ]
     },
     "lowerCase": {
       "identifier": "lowerCase"
@@ -152,5 +143,23 @@
       "pattern": "([a-z0-9])([A-Z])|[^a-zA-Z0-9]+",
       "replacement": "$1-$2"
     }
-  }
+  },
+  "postActions": [
+    {
+      "actionId": "3A7C4B45-1F5D-4A30-959A-51B88E82B5D2",
+      "args": {
+        "executable": "node",
+        "args": "install-dependencies.js",
+        "redirectStandardOutput": false,
+        "redirectStandardError": false
+      },
+      "manualInstructions": [
+        {
+          "text": "Run 'node install-dependencies.js' to install node dependencies."
+        }
+      ],
+      "continueOnError": true,
+      "description": "Installs node dependencies using 'install-dependencies.js'."
+    }
+  ]
 }
