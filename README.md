@@ -16,7 +16,7 @@ This starter template combines an [ASP.NET API](https://dotnet.microsoft.com/app
 
 🚀 After releasing the initial version of the [NextSolution template](https://github.com/prince272/nextsolution) on [NuGet](https://www.nuget.org/packages/NextSolution.Template), I observed a gradual increase in both NuGet downloads and GitHub stars over a few months. This positive feedback was a significant motivator for me to develop V2, which features an improved codebase and more organized patterns.
 
-🤔 If you find next solution useful, please give it a star ⭐ and consider sponsoring. Your support helps me keep improving it. Thanks!
+🙏 If you find this next solution helpful, please consider giving it a star ⭐ and supporting the project through sponsorship. Your support makes ongoing enhancements and improvements possible. Thank you! 🙌
 
 ## Demo
 
