@@ -361,5 +361,3 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
-/src/NextSolution.WebApi/uploads
-/src/NextSolution.WebApi/wwwroot/uploads
