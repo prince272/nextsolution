@@ -81,7 +81,7 @@ namespace Next_Solution.WebApi.Providers.Ngrok
         {
             var authTokenArg = !string.IsNullOrEmpty(_options.CurrentValue.AuthToken)
                 ? $"--authtoken {_options.CurrentValue.AuthToken}"
-                : throw new InvalidOperationException("An auth token is required for Ngrok to work. Sign up at https://ngrok.com to get your token.");
+                : throw new InvalidOperationException("An auth token is required for Ngrok to work. Sign up at https://ngrok.com to get your token and a domain.");
 
             var arguments = $"start --none {authTokenArg}".Trim();
 
