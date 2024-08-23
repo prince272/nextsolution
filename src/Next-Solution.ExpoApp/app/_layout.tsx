@@ -1,4 +1,4 @@
-import "../global.css";
+import "../styles/global.css";
 import { useEffect, useMemo } from "react";
 import { Appearance } from "react-native";
 import { SnackbarProvider } from "@/components";

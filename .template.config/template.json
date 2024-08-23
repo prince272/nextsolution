@@ -99,7 +99,7 @@
       "description": "Configures a secure tunnel from a public URL to your local development environment, allowing you to expose your APIs to the internet for testing and development purposes.",
       "defaultValue": "false"
     },
-    "httpPort": {
+    "serverHttpPort": {
       "type": "generated",
       "generator": "port",
       "parameters": {
@@ -108,7 +108,7 @@
       },
       "replaces": "5282"
     },
-    "httpsPort": {
+    "serverHttpsPort": {
       "type": "generated",
       "generator": "port",
       "parameters": {
@@ -116,6 +116,15 @@
         "high": 7400
       },
       "replaces": "7135"
+    },
+    "clientHttpPort": {
+      "type": "generated",
+      "generator": "port",
+      "parameters": {
+        "low": 3000,
+        "high": 3400
+      },
+      "replaces": "3157"
     }
   },
   "forms": {

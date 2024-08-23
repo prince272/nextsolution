@@ -1,8 +1,8 @@
+import "../styles/globals.css";
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
-
-const inter = Inter({ subsets: ["latin"] });
+import { cn } from "@/utils";
+import { fontMono, fontSans } from "@/configs/fonts";
+import { AppProvider } from "./provider";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -15,8 +15,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={inter.className}>{children}</body>
+    <html suppressHydrationWarning lang="en">
+      <head />
+      <body
+        className={cn(
+          "min-h-screen bg-background text-foreground font-sans antialiased",
+          fontSans.variable,
+          fontMono.variable
+        )}
+      >
+        <AppProvider>{children}</AppProvider>
+      </body>
     </html>
   );
 }
