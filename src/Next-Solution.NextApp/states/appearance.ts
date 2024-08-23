@@ -54,7 +54,6 @@ export const createAppearanceSlice: StateCreator<AppearanceSlice, [], [], Appear
             inverseTheme: getInverseTheme(theme, state.appearance.systemScheme)
           }
         }));
-        Appearance.setColorScheme(theme === "system" ? get().appearance.systemScheme : theme);
       },
       setSystemTheme: (systemTheme) => {
         set((state) => ({

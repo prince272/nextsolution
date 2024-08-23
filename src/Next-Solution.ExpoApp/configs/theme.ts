@@ -9,6 +9,8 @@ import {
 import { useFonts } from "expo-font";
 import { merge } from "lodash";
 import { adaptNavigationTheme, MD3DarkTheme, MD3LightTheme, MD3Theme } from "react-native-paper";
+import { Appearance } from "react-native";
+import { Theme } from "@/states/appearance";
 
 const { LightTheme: NavigationLightTheme, DarkTheme: NavigationDarkTheme } = adaptNavigationTheme({
   reactNavigationLight: NativeNavigationLightTheme,
@@ -27,7 +29,7 @@ const themes = {
 };
 
 export function useThemeConfig() {
-  const { activeTheme, inverseTheme, addSystemThemeChangeListener } = useAppearance();
+  const { activeTheme, inverseTheme, setSystemTheme, theme, systemScheme } = useAppearance();
 
   const themeConfig = useMemo(
     () => (activeTheme === "dark" ? themes.Dark : themes.Light),
@@ -41,8 +43,11 @@ export function useThemeConfig() {
   });
 
   useEffect(() => {
-    const systemThemeListener = addSystemThemeChangeListener();
-    return () => systemThemeListener.remove();
+    setSystemTheme(Appearance.getColorScheme() as Theme);
+    const subscription = Appearance.addChangeListener(({ colorScheme: systemTheme }) => {
+      if (systemTheme) setSystemTheme(systemTheme as Theme);
+    });
+    return () => subscription.remove();
   }, []);
 
   return { themeConfig, activeTheme, inverseTheme, fontsLoaded, fontsError };
