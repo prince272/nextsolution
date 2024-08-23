@@ -1,14 +1,17 @@
 import "../global.css";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
+import { Appearance } from "react-native";
 import { SnackbarProvider } from "@/components";
-import { useThemeConfig } from "@/configs/theme";
-import { useHydration } from "@/states";
+import { DarkThemeConfig, LightThemeConfig } from "@/configs/theme";
+import { useAppearance, useHydration } from "@/states";
+import { Theme } from "@/states/appearance";
 import { ThemeProvider } from "@react-navigation/native";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { PaperProvider, Snackbar } from "react-native-paper";
 import { initialWindowMetrics, SafeAreaProvider } from "react-native-safe-area-context";
+import { useFonts } from "expo-font";
 
 export { ErrorBoundary } from "expo-router";
 
@@ -16,7 +19,26 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const hydrated = useHydration();
-  const { themeConfig, inverseTheme, fontsLoaded, fontsError } = useThemeConfig();
+  const { activeTheme, inverseTheme, setSystemTheme } = useAppearance();
+
+  const themeConfig = useMemo(
+    () => (activeTheme === "dark" ? DarkThemeConfig : LightThemeConfig),
+    [activeTheme]
+  );
+
+  const [fontsLoaded, fontsError] = useFonts({
+    "Roboto-Regular": require("@/assets/fonts/roboto/Roboto-Regular.ttf"),
+    "Roboto-Medium": require("@/assets/fonts/roboto/Roboto-Medium.ttf"),
+    "Roboto-Bold": require("@/assets/fonts/roboto/Roboto-Bold.ttf")
+  });
+
+  useEffect(() => {
+    setSystemTheme(Appearance.getColorScheme() as Theme);
+    const subscription = Appearance.addChangeListener(({ colorScheme: systemTheme }) => {
+      if (systemTheme) setSystemTheme(systemTheme as Theme);
+    });
+    return () => subscription.remove();
+  }, []);
 
   useEffect(() => {
     if (fontsError) throw fontsError;
