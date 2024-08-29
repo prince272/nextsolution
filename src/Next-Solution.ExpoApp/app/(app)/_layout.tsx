@@ -1,4 +1,4 @@
-import { WelcomeScreen } from "@/screens/welcome-screen";
+import { SignInMethodScreen } from "@/screens/sign-in-method-screen";
 import { useAuthentication } from "@/states";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { CommonActions } from "@react-navigation/native";
@@ -9,7 +9,7 @@ export default function Layout() {
   const { user: currentUser } = useAuthentication();
 
   if (!currentUser) {
-    return <WelcomeScreen />
+      return <SignInMethodScreen />
   }
 
   return (
