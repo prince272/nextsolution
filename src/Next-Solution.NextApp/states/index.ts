@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { merge } from "lodash";
 import { create, StoreApi, UseBoundStore } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
@@ -31,7 +30,7 @@ const useAppStore = createSelectors(
       }),
       {
         name: "Next-Solution.Storage-1A114D3A-52AA-408F-ACFE-89A437A9BCC4",
-        storage: createJSONStorage(() => AsyncStorage),
+        storage: createJSONStorage(() => localStorage),
         // zustand persist - actions inside nested object are undefined on rehydration
         // fix: https://github.com/pmndrs/zustand/issues/457
         merge: (persistedState, currentState) => {
