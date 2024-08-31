@@ -11,9 +11,9 @@ import * as WebBrowser from "expo-web-browser";
 import { TouchableRipple, useTheme } from "react-native-paper";
 import { SignInWithProvider } from "@/services/types";
 
-export type WelcomeScreenProps = ComponentProps<typeof View> & {};
+export type SignInMethodScreenProps = ComponentProps<typeof View> & {};
 
-const WelcomeScreen = ({ className, ...props }: WelcomeScreenProps) => {
+const SignInMethodScreen = ({ className, ...props }: SignInMethodScreenProps) => {
   const [signingInWith, setSigningInWith] = useState<SignInWithProvider | null>(null);
   const themeConfig = useTheme();
   const snackbar = useSnackbar();
@@ -24,7 +24,7 @@ const WelcomeScreen = ({ className, ...props }: WelcomeScreenProps) => {
   const handleSignInWith = useCallback(async (provider: SignInWithProvider) => {
     try {
       setSigningInWith(provider);
-      await sleep(2000);
+      await sleep(500);
       const callbackUrl = Linking.createURL("/");
       const redirectUrl = identityService.signInWithRedirect(provider, callbackUrl);
       await WebBrowser.openAuthSessionAsync(redirectUrl);
@@ -161,4 +161,4 @@ const WelcomeScreen = ({ className, ...props }: WelcomeScreenProps) => {
   );
 };
 
-export { WelcomeScreen };
+export { SignInMethodScreen };

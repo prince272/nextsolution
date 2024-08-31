@@ -5,7 +5,7 @@ module.exports = (() => {
   const baseConfig = getDefaultConfig(__dirname);
 
   // Integrate NativeWind configuration
-  const nativeWindConfig = withNativeWind(baseConfig, { input: "./global.css" });
+  const nativeWindConfig = withNativeWind(baseConfig, { input: "./styles/global.css" });
 
   const { transformer, resolver } = nativeWindConfig;
 

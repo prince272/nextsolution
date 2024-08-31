@@ -24,7 +24,7 @@ namespace Next_Solution.WebApi.Providers.Ngrok
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            await _service.InitializeAsync(cancellationToken);
+            await _service.TryInitializeAsync(cancellationToken);
 
             var combinedCancellationToken = CancellationTokenSource
                 .CreateLinkedTokenSource(cancellationToken, _lifetime.ApplicationStopping)

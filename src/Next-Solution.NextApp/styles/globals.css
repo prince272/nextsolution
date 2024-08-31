@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Hide the eye from a password input in MS Edge and IE [duplicate] */
+input::-ms-reveal,
+input::-ms-clear {
+  display: none;
+}
