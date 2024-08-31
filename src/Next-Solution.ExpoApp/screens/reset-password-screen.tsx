@@ -15,7 +15,7 @@ import { identityService } from "@/services";
 import { useKeyboard } from "@react-native-community/hooks";
 import { router } from "expo-router";
 import { Controller, useFormContext } from "react-hook-form";
-import { ValidationProblem } from "@/services/results";
+import { ValidationFailed } from "@/services/results";
 import { ResetPasswordForm } from "@/services/types";
 
 export type ResetPasswordScreenProps = ComponentProps<typeof View> & {};
@@ -69,7 +69,7 @@ const createResetPasswordScreen = (step: ResetPasswordScreenSteps) => {
         if (!resend) setFormSubmitting(false);
 
         if (!response.success) {
-          if (response instanceof ValidationProblem) {
+          if (response instanceof ValidationFailed) {
             const errorFields = Object.entries(response.errors || {});
 
             errorFields.forEach(([name, message]) => {
@@ -100,7 +100,7 @@ const createResetPasswordScreen = (step: ResetPasswordScreenSteps) => {
         setFormSubmitting(false);
 
         if (!response.success) {
-          if (response instanceof ValidationProblem) {
+          if (response instanceof ValidationFailed) {
             const errorFields = Object.entries(response.errors || {}).filter((errorField) =>
               formFields.includes(errorField[0] as keyof ResetPasswordForm)
             );

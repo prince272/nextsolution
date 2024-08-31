@@ -10,7 +10,7 @@ import { useKeyboard } from "@react-native-community/hooks";
 import { router } from "expo-router";
 import { cssInterop } from "nativewind";
 import { Controller, useFormContext } from "react-hook-form";
-import { ValidationProblem } from "@/services/results";
+import { ValidationFailed } from "@/services/results";
 import { CreateAccountForm } from "@/services/types";
 
 export type SignUpScreenProps = ComponentProps<typeof View> & {};
@@ -50,7 +50,7 @@ const createSignUpScreen = (step: SignUpScreenSteps) => {
         setFormSubmitting(false);
 
         if (!response.success) {
-          if (response instanceof ValidationProblem) {
+          if (response instanceof ValidationFailed) {
             const errorFields = Object.entries(response.errors || {}).filter((errorField) =>
               formFields.includes(errorField[0] as keyof CreateAccountForm)
             );

@@ -45,11 +45,11 @@ export const SignInMethodModal = ({ isOpen, id, ...props }: SignInMethodModalPro
             console.log("Sign in failed:", response);
             toast.error(response.message);
             return;
-          } else {
-            console.log("User signed in:", response.data.userName);
-            setCurrentUser(response.data);
-            clearModalId();
-          }
+          } 
+
+          console.log("User signed in:", response.data.userName);
+          setCurrentUser(response.data);
+          clearModalId();
         }
       } catch (error) {
         console.error(error);

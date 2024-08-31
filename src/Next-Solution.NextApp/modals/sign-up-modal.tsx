@@ -8,7 +8,7 @@ import SolarAltArrowLeftOutline from "@iconify-icons/solar/alt-arrow-left-outlin
 import { Button } from "@nextui-org/button";
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@nextui-org/modal";
 import { useForm } from "react-hook-form";
-import { ValidationProblem } from "@/services/results";
+import { ValidationFailed } from "@/services/results";
 import { CreateAccountForm } from "@/services/types";
 import { ModalComponentProps, useModalController } from ".";
 
@@ -30,7 +30,7 @@ export const SignUpModal = ({ isOpen, id, ...props }: SignUpModalProps) => {
       setFormSubmitting(false);
 
       if (!response.success) {
-        if (response instanceof ValidationProblem) {
+        if (response instanceof ValidationFailed) {
           const errorFields = Object.entries<string[]>(response.errors || []);
 
           errorFields.forEach(([name, message]) => {
