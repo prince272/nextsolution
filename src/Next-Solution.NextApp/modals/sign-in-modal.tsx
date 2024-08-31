@@ -16,6 +16,7 @@ import { ValidationProblem } from "@/services/results";
 import { SignInForm } from "@/services/types";
 import { PasswordInput } from "@/components/password-input";
 import { ModalComponentProps, useModalController } from ".";
+import { toast } from "sonner";
 
 export interface SignInModalProps extends ModalComponentProps {}
 
@@ -47,18 +48,18 @@ export const SignInModal = ({ isOpen, id, ...props }: SignInModalProps) => {
 
           if (errorFields.length > 0) return;
 
-          snackbar.show(response.message);
+          toast.error(response.message);
           return;
         } else {
-          snackbar.show(response.message);
+          toast.error(response.message);
           return;
         }
       }
 
       setCurrentUser(response.data);
-      router.replace("/");
+      clearModalId();
     })();
-  }, []);
+  }, [clearModalId, form, setCurrentUser]);
 
   return (
     <>
@@ -71,7 +72,17 @@ export const SignInModal = ({ isOpen, id, ...props }: SignInModalProps) => {
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1 pl-3">
             <div className="flex h-8 items-center space-x-1">
-              <Button size="sm" variant="light" isIconOnly onPress={() => {}}>
+              <Button
+                size="sm"
+                variant="light"
+                isIconOnly
+                as={NextLink}
+                href={buildUrl({
+                  url: pathname,
+                  query: Object.fromEntries(searchParams.entries()),
+                  fragmentIdentifier: "sign-in-method"
+                })}
+              >
                 <Icon icon={SolarAltArrowLeftOutline} width="24" height="24" />
               </Button>
               <div>Sign into Your Account</div>

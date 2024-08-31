@@ -10,6 +10,8 @@ namespace Next_Solution.WebApi.Providers.Ngrok
 
         Task InitializeAsync(CancellationToken cancellationToken = default);
 
+        Task<bool> TryInitializeAsync(CancellationToken cancellationToken = default);
+
         Task<TunnelResponse> StartAsync(
             Uri host,
             CancellationToken cancellationToken = default);

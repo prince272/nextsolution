@@ -104,7 +104,7 @@
       "generator": "port",
       "parameters": {
         "low": 5000,
-        "high": 5400
+        "high": 5500
       },
       "replaces": "5282"
     },
@@ -113,7 +113,7 @@
       "generator": "port",
       "parameters": {
         "low": 7000,
-        "high": 7400
+        "high": 7500
       },
       "replaces": "7135"
     },
@@ -122,9 +122,18 @@
       "generator": "port",
       "parameters": {
         "low": 3000,
-        "high": 3400
+        "high": 3500
       },
       "replaces": "3157"
+    },
+    "clientHttpsPort": {
+      "type": "generated",
+      "generator": "port",
+      "parameters": {
+        "low": 6000,
+        "high": 6500
+      },
+      "replaces": "6251"
     }
   },
   "forms": {

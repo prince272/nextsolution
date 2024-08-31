@@ -12,8 +12,8 @@ export default function Page() {
 
   return (
     <div className="flex justify-center items-center h-screen">
-      <Button color="primary" onClick={() => router.push("#sign-in")}>
-        Sign In
+      <Button color="primary" onClick={() => router.push("#sign-in-method")}>
+        Sign In Method
       </Button>
       <Button color="primary" onClick={() => router.push("#sign-up")}>
         Sign Up

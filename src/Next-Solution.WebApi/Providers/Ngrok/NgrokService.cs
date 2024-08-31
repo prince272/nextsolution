@@ -10,7 +10,7 @@ namespace Next_Solution.WebApi.Providers.Ngrok
         private readonly IOptionsMonitor<NgrokOptions> _options;
         private readonly IEnumerable<INgrokLifetimeHook> _hooks;
         private readonly INgrokApiClient _ngrok;
-        private readonly ILogger _logger;
+        private readonly ILogger<NgrokService> _logger;
 
         private bool _isInitialized;
 
@@ -51,6 +51,20 @@ namespace Next_Solution.WebApi.Providers.Ngrok
 
             await _downloader.DownloadExecutableAsync(cancellationToken);
             await _process.StartAsync();
+        }
+
+        public async Task<bool> TryInitializeAsync(CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                await InitializeAsync(cancellationToken);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "An error occurred while initializing the ngrok tunnel.");
+                return false;
+            }
         }
 
         public async Task<TunnelResponse> StartAsync(

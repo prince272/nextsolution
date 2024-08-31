@@ -24,7 +24,7 @@ const SignInMethodScreen = ({ className, ...props }: SignInMethodScreenProps) =>
   const handleSignInWith = useCallback(async (provider: SignInWithProvider) => {
     try {
       setSigningInWith(provider);
-      await sleep(2000);
+      await sleep(500);
       const callbackUrl = Linking.createURL("/");
       const redirectUrl = identityService.signInWithRedirect(provider, callbackUrl);
       await WebBrowser.openAuthSessionAsync(redirectUrl);

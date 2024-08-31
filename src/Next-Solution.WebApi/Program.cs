@@ -167,16 +167,21 @@ try
     {
         options.AddDefaultPolicy(policy =>
         {
-            var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins")?.Get<string[]>() ?? Array.Empty<string>();
-
-            policy
+            policy = policy
                 .AllowAnyMethod()
                 .AllowAnyHeader()
                 .AllowCredentials()
                 .WithExposedHeaders("Content-Disposition")
                 .SetPreflightMaxAge(TimeSpan.FromMinutes(10))
-                .SetIsOriginAllowedToAllowWildcardSubdomains()
-                .WithOrigins(allowedOrigins);
+                .SetIsOriginAllowedToAllowWildcardSubdomains();
+
+
+            var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins")?.Get<string[]>();
+
+            if (allowedOrigins != null)
+                policy.WithOrigins(allowedOrigins);
+
+            else policy.AllowAnyOrigin();
         });
     });
 
@@ -274,6 +279,8 @@ try
     {
         app.UseHttpsRedirection();
     }
+
+    app.UseCors();
 
     app.UseAuthentication();
     app.UseAuthorization();
