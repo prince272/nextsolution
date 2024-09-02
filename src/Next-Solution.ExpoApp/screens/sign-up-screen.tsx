@@ -211,6 +211,7 @@ const createSignUpScreen = (step: SignUpScreenSteps) => {
                         <TextInput
                           mode="outlined"
                           secureTextEntry
+                          autoCorrect={false}
                           label="Password"
                           onBlur={onBlur}
                           onChangeText={onChange}

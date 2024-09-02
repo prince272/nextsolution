@@ -62,7 +62,6 @@ const createResetPasswordScreen = (step: ResetPasswordScreenSteps) => {
 
     const sendResetPasswordCode = async (resend: boolean = false) => {
       if (!resend) setFormSubmitting(true);
-      sendCodeTimer.start();
 
       return form.handleSubmit(async (inputs) => {
         const response = await identityService.sendResetPasswordCodeAsync(inputs);
@@ -87,7 +86,7 @@ const createResetPasswordScreen = (step: ResetPasswordScreenSteps) => {
         }
 
         snackbar.show(resend ? "Verification code resent!" : "Verification code sent!");
-
+        sendCodeTimer.start();
         if (nextStep && !resend) router.push(`/reset-password/${nextStep}`);
       })();
     };
@@ -287,6 +286,7 @@ const createResetPasswordScreen = (step: ResetPasswordScreenSteps) => {
                           mode="outlined"
                           autoFocus
                           secureTextEntry
+                          autoCorrect={false}
                           label="New password"
                           onBlur={onBlur}
                           onChangeText={onChange}
@@ -308,6 +308,7 @@ const createResetPasswordScreen = (step: ResetPasswordScreenSteps) => {
                         <TextInput
                           mode="outlined"
                           secureTextEntry
+                          autoCorrect={false}
                           label="Confirm password"
                           onBlur={onBlur}
                           onChangeText={onChange}

@@ -123,6 +123,7 @@ const SignInScreen = ({ className, ...props }: SignInScreenProps) => {
                     <TextInput
                       mode="outlined"
                       secureTextEntry
+                      autoCorrect={false}
                       label="Password"
                       onBlur={onBlur}
                       onChangeText={onChange}
