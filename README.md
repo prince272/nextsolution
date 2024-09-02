@@ -19,11 +19,7 @@ This starter template combines an [ASP.NET API](https://dotnet.microsoft.com/app
 🙏 If you find this next solution helpful, please consider giving it a star ⭐ and supporting the project through sponsorship. Your support makes ongoing enhancements and improvements possible. Thank you! 🙌
 
 ## Expo App Demo
-<video width="388" height="818" controls>
-  <source src="./docs/expo-demo.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
-
+https://github.com/user-attachments/assets/e33f0f81-c978-48c2-9a82-1f90102e6b7b
 
 ## Getting Started
 
