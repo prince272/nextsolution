@@ -1,7 +1,7 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import NextLink from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useMemoizedValue } from "@/hooks";
+import { usePathname, useSearchParams } from "next/navigation";
+import { useMemoizedValue, useTimer } from "@/hooks";
 import { identityService } from "@/services";
 import { useAuthentication } from "@/states";
 import { buildUrl } from "@/utils";
@@ -14,16 +14,16 @@ import { Modal, ModalBody, ModalContent, ModalHeader } from "@nextui-org/modal";
 import { Controller as FormController, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { ValidationFailed } from "@/services/results";
-import { CreateAccountForm } from "@/services/types";
+import { ResetPasswordForm } from "@/services/types";
 import { PasswordInput } from "@/components/password-input";
 import { ModalComponentProps, useModalController } from ".";
 
-export interface SignUpModalProps extends ModalComponentProps {}
+export interface ResetPasswordModalProps extends ModalComponentProps {}
 
-export const SignUpModal = ({ isOpen, id, ...props }: SignUpModalProps) => {
+export const ResetPasswordModal = ({ isOpen, id, ...props }: ResetPasswordModalProps) => {
   const { modals, setModalId, clearModalId } = useModalController();
 
-  const form = useForm<CreateAccountForm>();
+  const form = useForm<ResetPasswordForm>();
   const [formSubmitting, setFormSubmitting] = useState(false);
   const formErrors = useMemoizedValue(form.formState.errors, !formSubmitting);
 
@@ -32,10 +32,50 @@ export const SignUpModal = ({ isOpen, id, ...props }: SignUpModalProps) => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const handleSignUp = useCallback(async () => {
+  const [codeSending, setCodeSending] = useState(false);
+  const [codeSent, setCodeSent] = useState(false);
+
+  const sendCodeTimer = useTimer({
+    timerType: "DECREMENTAL",
+    initialTime: 60,
+    endTime: 0
+  });
+
+  const sendResetPasswordCode = async () => {
+    setCodeSending(true);
+
+    return form.handleSubmit(async (inputs) => {
+      const response = await identityService.sendResetPasswordCodeAsync(inputs);
+      setCodeSending(false);
+
+      if (!response.success) {
+        if (response instanceof ValidationFailed) {
+          const errorFields = Object.entries(response.errors || {});
+
+          errorFields.forEach(([name, message]) => {
+            form.setError(name as keyof ResetPasswordForm, { message: message?.join("\n") });
+          });
+
+          if (errorFields.length > 0) return;
+
+          toast.error(response.message);
+          return;
+        } else {
+          toast.error(response.message);
+          return;
+        }
+      }
+
+      toast.success(codeSent ? "Verification code resent!" : "Verification code sent!");
+      sendCodeTimer.start();
+      setCodeSent(true);
+    })();
+  };
+
+  const handleResetPassword = useCallback(async () => {
     setFormSubmitting(true);
     return form.handleSubmit(async (inputs) => {
-      const response = await identityService.createAccountAsync({ ...inputs });
+      const response = await identityService.resetPasswordAsync({ ...inputs });
       setFormSubmitting(false);
 
       if (!response.success) {
@@ -43,7 +83,7 @@ export const SignUpModal = ({ isOpen, id, ...props }: SignUpModalProps) => {
           const errorFields = Object.entries<string[]>(response.errors || []);
 
           errorFields.forEach(([name, message]) => {
-            form.setError(name as keyof CreateAccountForm, { message: message?.join("\n") });
+            form.setError(name as keyof ResetPasswordForm, { message: message?.join("\n") });
           });
 
           if (errorFields.length > 0) return;
@@ -58,9 +98,9 @@ export const SignUpModal = ({ isOpen, id, ...props }: SignUpModalProps) => {
 
       console.log("User signed in:", response.data.userName);
       setCurrentUser(response.data);
-      clearModalId();
+      setModalId("sign-in");
     })();
-  }, [clearModalId, form, setCurrentUser]);
+  }, [setModalId, form, setCurrentUser]);
 
   return (
     <>
@@ -81,42 +121,16 @@ export const SignUpModal = ({ isOpen, id, ...props }: SignUpModalProps) => {
                 href={buildUrl({
                   url: pathname,
                   query: Object.fromEntries(searchParams.entries()),
-                  fragmentIdentifier: "sign-in-method"
+                  fragmentIdentifier: "sign-in"
                 })}
               >
                 <Icon icon={SolarAltArrowLeftOutline} width="24" height="24" />
               </Button>
-              <div>Create Your New Account</div>
+              <div>Reset Your Password</div>
             </div>
           </ModalHeader>
           <ModalBody>
             <div className="grid grid-cols-12 gap-x-3 gap-y-5 pb-4">
-              <FormController
-                control={form.control}
-                name="firstName"
-                render={({ field }) => (
-                  <Input
-                    {...field}
-                    className="col-span-6"
-                    label="First name"
-                    isInvalid={!!formErrors.firstName}
-                    errorMessage={formErrors.firstName?.message}
-                  />
-                )}
-              />
-              <FormController
-                control={form.control}
-                name="lastName"
-                render={({ field }) => (
-                  <Input
-                    {...field}
-                    className="col-span-6"
-                    label="Last name"
-                    isInvalid={!!formErrors.lastName}
-                    errorMessage={formErrors.lastName?.message}
-                  />
-                )}
-              />
               <FormController
                 control={form.control}
                 name="username"
@@ -132,16 +146,41 @@ export const SignUpModal = ({ isOpen, id, ...props }: SignUpModalProps) => {
               />
               <FormController
                 control={form.control}
-                name="password"
+                name="code"
                 render={({ field }) => (
-                  <div className="col-span-12">
-                    <PasswordInput
-                      {...field}
-                      label="Password"
-                      isInvalid={!!formErrors.password}
-                      errorMessage={formErrors.password?.message}
-                    />
-                  </div>
+                  <Input
+                    {...field}
+                    className="col-span-12"
+                    label="Enter code"
+                    description={
+                      <span className="text-default-400">
+                        {sendCodeTimer.isRunning
+                          ? `Didn't get the code? Try again in ${sendCodeTimer.time}s.`
+                          : codeSent
+                            ? "Enter the code that was sent to you."
+                            : "Request a code to be sent to you."}
+                      </span>
+                    }
+                    isInvalid={!!formErrors.code}
+                    errorMessage={formErrors.code?.message}
+                    endContent={
+                      <Button
+                        className="-mt-4 px-7"
+                        color="default"
+                        variant="solid"
+                        size="sm"
+                        type="button"
+                        spinnerPlacement="end"
+                        isDisabled={codeSending || sendCodeTimer.isRunning}
+                        isLoading={codeSending}
+                        onPress={() => {
+                          sendResetPasswordCode();
+                        }}
+                      >
+                        {formSubmitting ? "Requesting code..." : "Request code"}
+                      </Button>
+                    }
+                  />
                 )}
               />
               <Button
@@ -149,11 +188,11 @@ export const SignUpModal = ({ isOpen, id, ...props }: SignUpModalProps) => {
                 color="primary"
                 type="button"
                 variant="solid"
-                isDisabled={formSubmitting}
+                isDisabled={!codeSent || formSubmitting}
                 isLoading={formSubmitting}
-                onPress={() => handleSignUp()}
+                onPress={() => handleResetPassword()}
               >
-                Create account
+                Reset password
               </Button>
             </div>
           </ModalBody>
