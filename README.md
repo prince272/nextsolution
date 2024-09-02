@@ -18,9 +18,12 @@ This starter template combines an [ASP.NET API](https://dotnet.microsoft.com/app
 
 🙏 If you find this next solution helpful, please consider giving it a star ⭐ and supporting the project through sponsorship. Your support makes ongoing enhancements and improvements possible. Thank you! 🙌
 
-## Demo
+## Expo App Demo
+<video width="388" height="818" controls>
+  <source src="./docs/expo-demo.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-![Next Solution Template Demo](./docs/demo.png)
 
 ## Getting Started
 
