@@ -416,20 +416,21 @@ namespace Next_Solution.WebApi.Services
                 }
                 else
                 {
-                    var checkPassword = await _userManager.CheckPasswordAsync(existingUser, form.Password);
-
-                    if (!checkPassword)
+                    if (!string.IsNullOrEmpty(form.Password))
                     {
-                        formErrors.TryAdd(nameof(form.Password), new[] { $"'{nameof(form.Password).Humanize(LetterCasing.Sentence)}' is incorrect." });
-                    }
-                    else
-                    {
-                        var requiresUsernameConfirmation = await _userManager.RequiresUsernameConfirmationAsync(existingUser, form.UsernameType);
+                        var checkPassword = await _userManager.CheckPasswordAsync(existingUser, form.Password);
 
-                        if (requiresUsernameConfirmation)
+                        if (!checkPassword)
                         {
-                            formErrors.TryAdd(nameof(form.Username), new[] { $"'{form.UsernameType.Humanize(LetterCasing.Sentence)}' is not confirmed." });
+                            formErrors.TryAdd(nameof(form.Password), new[] { $"'{nameof(form.Password).Humanize(LetterCasing.Sentence)}' is incorrect." });
                         }
+                    }
+
+                    var requiresUsernameConfirmation = await _userManager.RequiresUsernameConfirmationAsync(existingUser, form.UsernameType);
+
+                    if (requiresUsernameConfirmation)
+                    {
+                        formErrors.TryAdd(nameof(form.Username), new[] { $"'{form.UsernameType.Humanize(LetterCasing.Sentence)}' is not confirmed." });
                     }
 
                 }

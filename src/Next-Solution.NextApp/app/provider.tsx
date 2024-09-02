@@ -9,6 +9,7 @@ import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { Toaster } from "@/components/toaster";
 import { useEffect } from "react";
 import { WebBrowser } from "@/libs/web-browser";
+import { ResetPasswordModal } from "@/modals/reset-password";
 
 export const AppProvider = ({ children }: { children: React.ReactNode }) => {
 
@@ -24,6 +25,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
           <ModalController id="sign-in" modal={SignInModal} />
           <ModalController id="sign-in-method" modal={SignInMethodModal} />
           <ModalController id="sign-up" modal={SignUpModal} />
+          <ModalController id="reset-password" modal={ResetPasswordModal} />
         </ModalControllerProvider>
         <Toaster />
       </NextThemesProvider>

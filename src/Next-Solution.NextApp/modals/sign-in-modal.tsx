@@ -12,13 +12,14 @@ import { Input } from "@nextui-org/input";
 import { Link } from "@nextui-org/link";
 import { Modal, ModalBody, ModalContent, ModalHeader } from "@nextui-org/modal";
 import { Controller as FormController, useForm } from "react-hook-form";
-import { ValidationProblem } from "@/services/results";
+import { toast } from "sonner";
+import { ValidationFailed } from "@/services/results";
 import { SignInForm } from "@/services/types";
 import { PasswordInput } from "@/components/password-input";
 import { ModalComponentProps, useModalController } from ".";
-import { toast } from "sonner";
 
 export interface SignInModalProps extends ModalComponentProps {}
+
 
 export const SignInModal = ({ isOpen, id, ...props }: SignInModalProps) => {
   const { modals, setModalId, clearModalId } = useModalController();
@@ -39,7 +40,7 @@ export const SignInModal = ({ isOpen, id, ...props }: SignInModalProps) => {
       setFormSubmitting(false);
 
       if (!response.success) {
-        if (response instanceof ValidationProblem) {
+        if (response instanceof ValidationFailed) {
           const errorFields = Object.entries<string[]>(response.errors || []);
 
           errorFields.forEach(([name, message]) => {
@@ -56,6 +57,7 @@ export const SignInModal = ({ isOpen, id, ...props }: SignInModalProps) => {
         }
       }
 
+      console.log("User signed in:", response.data.userName);
       setCurrentUser(response.data);
       clearModalId();
     })();

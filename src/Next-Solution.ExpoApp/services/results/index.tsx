@@ -15,51 +15,51 @@ export class Result {
     public message: string
   ) {}
 
-  get success() {
-    return this.statusCode >= 200 && this.statusCode < 300;
+  get success(): boolean {
+    return this instanceof Succeeded;
   }
 
-  static async handle<T = Result>(request: Promise<AxiosResponse<any>>): Promise<T> {
+  static async handle<TResult>(request: Promise<AxiosResponse<any>>): Promise<TResult> {
     try {
       const response = await request;
-      return new Succeeded(HttpStatusCode.Ok, response.statusText, response.data) as T;
+      return new Succeeded(response.status, response.statusText, response.data) as TResult;
     } catch (error) {
       if (isAxiosError(error) && error.response) {
         const response = error.response;
         switch (response.status) {
           case HttpStatusCode.BadRequest: {
             if (response.data?.errors) {
-              return new ValidationProblem(
+              return new ValidationFailed(
                 response.status,
                 response.statusText,
                 response.data
-              ) as T;
+              ) as TResult;
             }
-            return new BadRequest(response.status, response.statusText, response.data) as T;
+            return new BadRequest(response.status, response.statusText, response.data) as TResult;
           }
           case HttpStatusCode.NotFound: {
-            return new NotFound(response.status, response.statusText, response.data) as T;
+            return new NotFound(response.status, response.statusText, response.data) as TResult;
           }
           case HttpStatusCode.Unauthorized: {
-            return new Unauthorized(response.status, response.statusText, response.data) as T;
+            return new Unauthorized(response.status, response.statusText, response.data) as TResult;
           }
           case HttpStatusCode.Forbidden: {
-            return new Forbidden(response.status, response.statusText, response.data) as T;
+            return new Forbidden(response.status, response.statusText, response.data) as TResult;
           }
           default: {
-            return new Problem(response.status, response.statusText, response.data) as T;
+            return new Failed(response.status, response.statusText, response.data) as TResult;
           }
         }
       } else if (isAxiosError(error)) {
-        return new Problem(-1, "NetworkError", {
+        return new Failed(-1, "NetworkError", {
           title: "Unable to connect to the server.",
           detail: "Please check your internet connection and try again."
-        }) as T;
+        }) as TResult;
       } else {
-        return new Problem(-999, "UnknownError", {
+        return new Failed(-999, "UnknownError", {
           title: "An unknown error occurred.",
           detail: "Please try again later."
-        }) as T;
+        }) as TResult;
       }
     }
   }
@@ -81,7 +81,7 @@ export class Result {
   }
 }
 
-export class Problem extends Result {
+export class Failed extends Result {
   detail?: string | null;
   instance?: string | null;
   title?: string | null;
@@ -102,13 +102,22 @@ export class Problem extends Result {
   }
 }
 
-export class BadRequest extends Problem {
+export class Succeeded<T extends unknown = any> extends Result {
+  data: T;
+
+  constructor(statusCode: number, status: string, data: T = undefined as any) {
+    super(statusCode, status, Result.getMessage(statusCode));
+    this.data = data;
+  }
+}
+
+export class BadRequest extends Failed {
   constructor(statusCode: number, status: string, problem: ProblemType) {
     super(statusCode, status, problem);
   }
 }
 
-export class ValidationProblem<T extends Record<string, any> = any> extends BadRequest {
+export class ValidationFailed<T extends Record<string, any> = any> extends BadRequest {
   errors: Record<keyof T, string[]>;
 
   constructor(
@@ -126,29 +135,20 @@ export class ValidationProblem<T extends Record<string, any> = any> extends BadR
   }
 }
 
-export class NotFound extends Problem {
+export class NotFound extends Failed {
   constructor(statusCode: number, status: string, data: ProblemType) {
     super(statusCode, status, data);
   }
 }
 
-export class Unauthorized extends Problem {
+export class Unauthorized extends Failed {
   constructor(statusCode: number, status: string, problem: ProblemType) {
     super(statusCode, status, problem);
   }
 }
 
-export class Forbidden extends Problem {
+export class Forbidden extends Failed {
   constructor(statusCode: number, status: string, problem: ProblemType) {
     super(statusCode, status, problem);
-  }
-}
-
-export class Succeeded<T extends unknown = any> extends Result {
-  data: T;
-
-  constructor(statusCode: number, status: string, data: T = undefined as any) {
-    super(statusCode, status, Result.getMessage(statusCode));
-    this.data = data;
   }
 }

@@ -216,7 +216,7 @@ try
 
 #if (configureNgrok)
     // Configure Ngrok
-    if (builder.Environment.IsDevelopment())
+    if (builder.Environment.IsDevelopment() && builder.Configuration.GetValue<bool>("Ngrok:StartNgrokService"))
     {
         builder.Services.AddNgrokHostedService(options =>
         {

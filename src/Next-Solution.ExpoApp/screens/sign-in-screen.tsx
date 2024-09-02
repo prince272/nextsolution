@@ -20,7 +20,7 @@ import { useKeyboard } from "@react-native-community/hooks";
 import { router } from "expo-router";
 import { cssInterop } from "nativewind";
 import { Controller, useFormContext } from "react-hook-form";
-import { ValidationProblem } from "@/services/results";
+import { ValidationFailed } from "@/services/results";
 import { SignInForm } from "@/services/types";
 
 export type SignInScreenProps = ComponentProps<typeof View> & {};
@@ -43,7 +43,7 @@ const SignInScreen = ({ className, ...props }: SignInScreenProps) => {
       setFormSubmitting(false);
 
       if (!response.success) {
-        if (response instanceof ValidationProblem) {
+        if (response instanceof ValidationFailed) {
           const errorFields = Object.entries<string[]>(response.errors || []);
 
           errorFields.forEach(([name, message]) => {
@@ -123,6 +123,7 @@ const SignInScreen = ({ className, ...props }: SignInScreenProps) => {
                     <TextInput
                       mode="outlined"
                       secureTextEntry
+                      autoCorrect={false}
                       label="Password"
                       onBlur={onBlur}
                       onChangeText={onChange}

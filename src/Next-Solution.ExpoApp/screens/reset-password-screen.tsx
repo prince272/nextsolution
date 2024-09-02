@@ -15,7 +15,7 @@ import { identityService } from "@/services";
 import { useKeyboard } from "@react-native-community/hooks";
 import { router } from "expo-router";
 import { Controller, useFormContext } from "react-hook-form";
-import { ValidationProblem } from "@/services/results";
+import { ValidationFailed } from "@/services/results";
 import { ResetPasswordForm } from "@/services/types";
 
 export type ResetPasswordScreenProps = ComponentProps<typeof View> & {};
@@ -62,14 +62,13 @@ const createResetPasswordScreen = (step: ResetPasswordScreenSteps) => {
 
     const sendResetPasswordCode = async (resend: boolean = false) => {
       if (!resend) setFormSubmitting(true);
-      sendCodeTimer.start();
 
       return form.handleSubmit(async (inputs) => {
         const response = await identityService.sendResetPasswordCodeAsync(inputs);
         if (!resend) setFormSubmitting(false);
 
         if (!response.success) {
-          if (response instanceof ValidationProblem) {
+          if (response instanceof ValidationFailed) {
             const errorFields = Object.entries(response.errors || {});
 
             errorFields.forEach(([name, message]) => {
@@ -87,7 +86,7 @@ const createResetPasswordScreen = (step: ResetPasswordScreenSteps) => {
         }
 
         snackbar.show(resend ? "Verification code resent!" : "Verification code sent!");
-
+        sendCodeTimer.start();
         if (nextStep && !resend) router.push(`/reset-password/${nextStep}`);
       })();
     };
@@ -100,7 +99,7 @@ const createResetPasswordScreen = (step: ResetPasswordScreenSteps) => {
         setFormSubmitting(false);
 
         if (!response.success) {
-          if (response instanceof ValidationProblem) {
+          if (response instanceof ValidationFailed) {
             const errorFields = Object.entries(response.errors || {}).filter((errorField) =>
               formFields.includes(errorField[0] as keyof ResetPasswordForm)
             );
@@ -287,6 +286,7 @@ const createResetPasswordScreen = (step: ResetPasswordScreenSteps) => {
                           mode="outlined"
                           autoFocus
                           secureTextEntry
+                          autoCorrect={false}
                           label="New password"
                           onBlur={onBlur}
                           onChangeText={onChange}
@@ -308,6 +308,7 @@ const createResetPasswordScreen = (step: ResetPasswordScreenSteps) => {
                         <TextInput
                           mode="outlined"
                           secureTextEntry
+                          autoCorrect={false}
                           label="Confirm password"
                           onBlur={onBlur}
                           onChangeText={onChange}
