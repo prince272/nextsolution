@@ -22,9 +22,7 @@ This starter template combines an [ASP.NET API](https://dotnet.microsoft.com/app
 https://github.com/user-attachments/assets/e33f0f81-c978-48c2-9a82-1f90102e6b7b
 
 ## Next App Demo
-https://github.com/user-attachments/assets/3a03de48-0498-4b29-9eeb-7c3e7e25d41b
-
-
+https://github.com/user-attachments/assets/5c7b1698-a583-4d05-914a-20deb0257dd0
 
 ## Getting Started
 
