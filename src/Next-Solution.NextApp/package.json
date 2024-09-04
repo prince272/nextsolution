@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@iconify-icons/flat-color-icons": "1.2.5",
+    "@iconify-icons/logos": "1.2.36",
     "@nextui-org/button": "2.0.37",
     "@nextui-org/input": "2.2.4",
     "@nextui-org/link": "2.0.34",

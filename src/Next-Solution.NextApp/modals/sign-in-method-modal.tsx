@@ -6,7 +6,8 @@ import { identityService } from "@/services";
 import { useAuthentication } from "@/states";
 import { buildUrl, sleep } from "@/utils";
 import { Icon } from "@iconify-icon/react";
-import FlatColorIconsGoogle from "@iconify-icons/flat-color-icons/google";
+import LogoIconFacebook from "@iconify-icons/logos/facebook";
+import LogoIconGoogle from "@iconify-icons/logos/google-icon";
 import SolarUserBold from "@iconify-icons/solar/user-bold";
 import { Button } from "@nextui-org/button";
 import { Modal, ModalBody, ModalContent } from "@nextui-org/modal";
@@ -45,7 +46,7 @@ export const SignInMethodModal = ({ isOpen, id, ...props }: SignInMethodModalPro
             console.log("Sign in failed:", response);
             toast.error(response.message);
             return;
-          } 
+          }
 
           console.log("User signed in:", response.data.userName);
           setCurrentUser(response.data);
@@ -98,14 +99,24 @@ export const SignInMethodModal = ({ isOpen, id, ...props }: SignInMethodModalPro
                 type="button"
                 color="default"
                 variant="solid"
-                startContent={
-                  !signingInWith && <Icon icon={FlatColorIconsGoogle} width="24" height="24" />
-                }
-                isDisabled={signingInWith == "Google"}
+                startContent={signingInWith != "Google" && <Icon icon={LogoIconGoogle} width="24" height="24" />}
+                isDisabled={!!signingInWith}
                 isLoading={signingInWith == "Google"}
                 onPress={() => handleSignInWith("Google")}
               >
                 Continue with Google
+              </Button>
+              <Button
+                className="col-span-12 light"
+                type="button"
+                color="default"
+                variant="solid"
+                startContent={signingInWith != "Facebook" && <Icon icon={LogoIconFacebook} width="24" height="24" />}
+                isDisabled={!!signingInWith}
+                isLoading={signingInWith == "Facebook"}
+                onPress={() => handleSignInWith("Facebook")}
+              >
+                Continue with Facebook
               </Button>
               <Button
                 className="col-span-12"

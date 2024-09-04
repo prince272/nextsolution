@@ -24,14 +24,14 @@ export default function Page() {
 
   return (
     <div className={`flex-1 flex flex-col items-center justify-center px-4 py-8 h-full`}>
-      <div className="flex space-x-4 mb-4">
+      {/* <div className="flex space-x-4 mb-4">
         <Button onPress={() => toggleTheme("light")} className="rounded-full shadow-lg">
           Light Theme
         </Button>
         <Button onPress={() => toggleTheme("dark")} className="rounded-full shadow-lg">
           Dark Theme
         </Button>
-      </div>
+      </div> */}
       {currentUser ? (
         <div className={`rounded-lg shadow-lg p-6 w-full max-w-md`}>
           <p className="text-2xl font-semibold mb-6 text-center">
