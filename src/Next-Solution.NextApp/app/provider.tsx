@@ -10,8 +10,11 @@ import { Toaster } from "@/components/toaster";
 import { useEffect } from "react";
 import { WebBrowser } from "@/libs/web-browser";
 import { ResetPasswordModal } from "@/modals/reset-password";
+import { useAppearance } from "@/states";
 
 export const AppProvider = ({ children }: { children: React.ReactNode }) => {
+
+  const { activeTheme, systemTheme } = useAppearance();
 
   useEffect(() => {
     WebBrowser.notify();
@@ -19,7 +22,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <NextUIProvider>
-      <NextThemesProvider attribute="class" defaultTheme="dark">
+      <NextThemesProvider attribute="class" forcedTheme={activeTheme} defaultTheme={systemTheme}>
         <ModalControllerProvider>
           {children}
           <ModalController id="sign-in" modal={SignInModal} />

@@ -4,7 +4,7 @@ export type Theme = "light" | "dark";
 
 export interface AppearanceState {
   theme: Theme | "system";
-  systemScheme: Theme;
+  systemTheme: Theme;
   activeTheme: Theme;
   inverseTheme: Theme;
 }
@@ -42,7 +42,7 @@ export const createAppearanceSlice: StateCreator<AppearanceSlice, [], [], Appear
   return {
     appearance: {
       theme: initialTheme,
-      systemScheme: initialSystemTheme,
+      systemTheme: initialSystemTheme,
       activeTheme: initialActiveTheme,
       inverseTheme: initialInverseTheme,
       setTheme: (theme) => {
@@ -50,8 +50,8 @@ export const createAppearanceSlice: StateCreator<AppearanceSlice, [], [], Appear
           appearance: {
             ...state.appearance,
             theme,
-            activeTheme: getActiveTheme(theme, state.appearance.systemScheme),
-            inverseTheme: getInverseTheme(theme, state.appearance.systemScheme)
+            activeTheme: getActiveTheme(theme, state.appearance.systemTheme),
+            inverseTheme: getInverseTheme(theme, state.appearance.systemTheme)
           }
         }));
       },
@@ -59,7 +59,7 @@ export const createAppearanceSlice: StateCreator<AppearanceSlice, [], [], Appear
         set((state) => ({
           appearance: {
             ...state.appearance,
-            systemScheme: systemTheme,
+            systemTheme: systemTheme,
             activeTheme: getActiveTheme(state.appearance.theme, systemTheme),
             inverseTheme: getInverseTheme(state.appearance.theme, systemTheme)
           }

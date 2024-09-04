@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+html,
+body,
+body > div:first-of-type {
+  min-height: 100%;
+  height: 100%;
+  margin: 0;
+}
+
 /* Hide the eye from a password input in MS Edge and IE [duplicate] */
 input::-ms-reveal,
 input::-ms-clear {
