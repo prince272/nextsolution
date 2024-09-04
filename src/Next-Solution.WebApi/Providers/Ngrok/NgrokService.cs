@@ -62,7 +62,7 @@ namespace Next_Solution.WebApi.Providers.Ngrok
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "An error occurred while initializing the ngrok tunnel.");
+                _logger.LogError(ex, "An error occurred while initializing the ngrok tunnel.");
                 return false;
             }
         }

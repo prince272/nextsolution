@@ -216,13 +216,23 @@ try
 
 #if (configureNgrok)
     // Configure Ngrok
-    if (builder.Environment.IsDevelopment() && builder.Configuration.GetValue<bool>("Ngrok:StartNgrokService"))
+    if (builder.Environment.IsDevelopment())
     {
-        builder.Services.AddNgrokHostedService(options =>
-        {
-            builder.Configuration.GetRequiredSection("Ngrok").Bind(options);
+        var startNgrokService = builder.Configuration.GetValue<bool>("Ngrok:StartNgrokService");
 
-        });
+        if (startNgrokService)
+        {
+            Log.Information("Registering Ngrok hosted service as the application is running in development.");
+
+            builder.Services.AddNgrokHostedService(options =>
+            {
+                builder.Configuration.GetRequiredSection("Ngrok").Bind(options);
+            });
+        }
+        else
+        {
+            Log.Information("Skipping Ngrok hosted service registration as 'Ngrok:StartNgrokService' is not enabled.");
+        }
     }
 #endif
 

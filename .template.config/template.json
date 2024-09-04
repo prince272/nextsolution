@@ -1,10 +1,10 @@
 {
   "$schema": "http://json.schemastore.org/template",
   "author": "@prince272",
-  "classifications": [ "C#", "Mobile", "IOS", "Android", "Web", "API", "Expo" ],
+  "classifications": [ "C#", "JavaScript", "TypeScript", "Mobile", "IOS", "Android", "Web App", "Web API" ],
   "identity": "NextSolution.Template",
   "name": "Next Solution",
-  "description": "A starter solution template for rapidly creating modern and efficient applications.",
+  "description": "A comprehensive starter solution template designed for rapidly creating modern and efficient applications across Mobile (iOS and Android), Web, and API.",
   "shortName": "nextsln",
   "sourceName": "Next-Solution",
   "preferNameDirectory": true,
@@ -81,7 +81,7 @@
     "includeExpoProject": {
       "type": "parameter",
       "datatype": "bool",
-      "displayName": "Include Expo Project. (Ngrok is recommended for exposing APIs to your Expo app.)",
+      "displayName": "Include Expo Project. (Ngrok is recommended for exposing APIs to your Expo app)",
       "description": "Adds an Expo project to the solution.",
       "defaultValue": "false"
     },
@@ -95,7 +95,7 @@
     "configureNgrok": {
       "type": "parameter",
       "datatype": "bool",
-      "displayName": "Configure Ngrok Tunneling (requires signing up at Ngrok to obtain your token and a custom domain)",
+      "displayName": "Configure Ngrok Tunneling (requires Ngrok signup to get a token and a custom domain)",
       "description": "Configures a secure tunnel from a public URL to your local development environment, allowing you to expose your APIs to the internet for testing and development purposes.",
       "defaultValue": "false"
     },

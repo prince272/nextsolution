@@ -2,45 +2,47 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Start ExpoApp",
+      "name": "Start NextApp (Dev Server)",
       "type": "node",
       "request": "launch",
       "runtimeExecutable": "npx",
       "runtimeArgs": [
-        "expo",
-        "start"
+        "next",
+        "dev",
+        "-p",
+        "3157"
       ],
       "cwd": "${workspaceFolder}",
       "console": "externalTerminal",
-      "stopOnEntry": true
+      "stopOnEntry": false
     },
     {
-      "name": "Start ExpoApp (Android)",
+      "name": "Build NextApp Project",
       "type": "node",
       "request": "launch",
       "runtimeExecutable": "npx",
       "runtimeArgs": [
-        "expo",
-        "start",
-        "--android"
+        "next",
+        "build"
       ],
       "cwd": "${workspaceFolder}",
       "console": "externalTerminal",
-      "stopOnEntry": true
+      "stopOnEntry": false
     },
     {
-      "name": "Start ExpoApp (iOS)",
+      "name": "Start NextApp (Prod Server)",
       "type": "node",
       "request": "launch",
       "runtimeExecutable": "npx",
       "runtimeArgs": [
-        "expo",
+        "next",
         "start",
-        "--ios"
+        "-p",
+        "3157"
       ],
       "cwd": "${workspaceFolder}",
       "console": "externalTerminal",
-      "stopOnEntry": true
+      "stopOnEntry": false
     }
   ]
 }
