@@ -1,6 +1,6 @@
 <div align="center">
 
-[![Next Solution Template](./docs/images/banner.jpg)](https://github.com/prince272/nextsolution)
+[![Next Solution Template](./docs/template/images/banner.jpg)](https://github.com/prince272/nextsolution)
 
 [![NuGet Downloads](https://img.shields.io/nuget/dt/NextSolution.Template?color=%2317c964)](https://www.nuget.org/packages/NextSolution.Template)
 [![GitHub License](https://img.shields.io/github/license/prince272/nextsolution?color=%2317c964)](https://github.com/prince272/nextsolution/blob/main/LICENSE)
