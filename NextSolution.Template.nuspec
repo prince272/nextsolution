@@ -13,6 +13,10 @@
     <projectUrl>https://github.com/prince272/nextsolution</projectUrl>
     <description>This starter template combines an ASP.NET API 🖥️ with a Next.js (React) web application 🌐 and an Expo (React Native) mobile app 📱 to provide a solid foundation for building full-stack applications with powerful APIs and responsive web and mobile interfaces.</description>
     <language>en-US</language>
-    <tags>dotnet dotnetcore dotnet-core dotnet-cli dotnet-new dotnet-template csharp react react-native javascript typescript mobile web</tags>
+    <tags>dotnet dotnetcore dotnet-core dotnet-cli dotnet-new dotnet-template csharp react react-native javascript typescript mobile web aspnet api nextjs expo</tags>
+    <packageTypes>
+      <packageType name="Template" />
+    </packageTypes>
+    <repository type="git" url="https://github.com/prince272/nextsolution.git" />
   </metadata>
- </package>
+</package>
