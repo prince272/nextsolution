@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>NextSolution.Template</id>
+    <version>2.0.0</version>
+    <title>Next Solution</title>
+    <authors>Prince Owusu</authors>
+    <owners>Prince Owusu</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">MIT</license>
+    <icon>icon.png</icon>
+    <readme>README.md</readme>
+    <projectUrl>https://github.com/prince272/nextsolution</projectUrl>
+    <description>This starter template combines an ASP.NET API 🖥️ with a Next.js (React) web application 🌐 and an Expo (React Native) mobile app 📱 to provide a solid foundation for building full-stack applications with powerful APIs and responsive web and mobile interfaces.</description>
+    <language>en-US</language>
+    <tags>dotnet dotnetcore dotnet-core dotnet-cli dotnet-new dotnet-template csharp react react-native javascript typescript mobile web</tags>
+  </metadata>
+ </package>
