@@ -19,9 +19,11 @@ This starter template combines an [ASP.NET API](https://dotnet.microsoft.com/app
 🙏 If you find this next solution helpful, please consider giving it a star ⭐ and supporting the project through sponsorship. Your support makes ongoing enhancements and improvements possible. Thank you! 🙌
 
 ## Expo App Demo
+
 https://github.com/user-attachments/assets/e33f0f81-c978-48c2-9a82-1f90102e6b7b
 
 ## Next App Demo
+
 https://github.com/user-attachments/assets/5c7b1698-a583-4d05-914a-20deb0257dd0
 
 ## Getting Started
@@ -41,7 +43,7 @@ Before you begin, ensure you have the following installed:
 
 To set up your project using the NuGet template, follow these steps:
 
-1. **Install the NuGet template:**
+   **1. Install the NuGet template:**
 
    Open your terminal or command prompt and run the following command to install the template:
 
@@ -49,7 +51,7 @@ To set up your project using the NuGet template, follow these steps:
    dotnet new --install NextSolution.Template::2.0.0
    ```
 
-2. **Create a New Project Using the Template:**
+   **2. Create a New Project Using the Template:**
 
    After installing the template, you can either continue using the terminal or command prompt, or switch to Visual Studio to create the new project:
 
@@ -87,13 +89,37 @@ To set up your project using the NuGet template, follow these steps:
 
      Open Visual Studio, select "Create a new project," search for "Next Solution," select it, and follow the prompts to create your project.
 
-3. **Set Up Your Mobile Development Environment (Expo Project Only):**
+<!--#if (includeExpoProject) -->
 
-   Follow the detailed guide in the official Expo documentation to set up your mobile development environment:
+   **Mobile Development Guide:**
 
-   - [Set Up Your Expo Development Environment](https://docs.expo.dev/get-started/set-up-your-environment/)
+   Set up your mobile development environment by following these steps:
 
-   This guide will help you install all the necessary tools, configure your environment, and run your first Expo project.
+   - **Set Up Your Expo Development Environment**
+
+     Follow the official [Expo documentation](https://docs.expo.dev/get-started/set-up-your-environment/) to install all the necessary tools, configure your environment, and run your first Expo project.
+
+   - **Use React Native Paper Components**
+
+     Since we're using [React Native Paper](https://reactnativepaper.com/), you can refer to the following documentation to get started with its components and features: [Getting started with React Native Paper](https://callstack.github.io/react-native-paper/docs/guides/getting-started)  
+
+ <!--#endif -->
+
+ 
+<!--#if (includeWebProject) -->
+
+   **Web Development Guide:**
+
+   Set up your web development environment by following these steps:
+
+   1. **Install a Web Browser**  
+      Choose and install any modern browser of your choice (e.g., Google Chrome, Firefox, Microsoft Edge).
+
+   2. **Use NextUI Components**  
+      Since we're using [NextUI](https://nextui.org), you can refer to the following documentation to get started with its components and features: [Getting started with NextUI](https://nextui.org/docs/guide/getting-started)
+
+<!--#endif -->
+
 
 ## Tools, Frameworks & Libraries
 
