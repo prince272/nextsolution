@@ -44,9 +44,11 @@
         "**/[Ll]og/**",
         "**/[Ll]ogs/**",
         ".template.config/**/*",
-        ".template.config/**/*",
+        "docs/template/**/*",
+        "LICENSE.txt",
         "**/.vs/**",
         "**/.git/**",
+        "**/.github/**",
         "**/*.gitattributes",
         "**/*.gitignore",
         "**/*.nuspec"
