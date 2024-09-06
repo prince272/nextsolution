@@ -1,7 +1,16 @@
 {
   "$schema": "http://json.schemastore.org/template",
   "author": "@prince272",
-  "classifications": [ "C#", "JavaScript", "TypeScript", "Mobile", "IOS", "Android", "Web App", "Web API" ],
+  "classifications": [
+    "C#",
+    "JavaScript",
+    "TypeScript",
+    "Mobile",
+    "IOS",
+    "Android",
+    "Web App",
+    "Web API"
+  ],
   "identity": "NextSolution.Template",
   "name": "Next Solution",
   "description": "A comprehensive starter solution template designed for rapidly creating modern and efficient applications across Mobile (iOS and Android), Web, and API.",
@@ -44,8 +53,8 @@
         "**/[Ll]og/**",
         "**/[Ll]ogs/**",
         ".template.config/**/*",
-        "docs/template/**/*",
-        "LICENSE.txt",
+        "res/**/*",
+        "LICENSE.md",
         "**/.vs/**",
         "**/.git/**",
         "**/.github/**",
@@ -59,11 +68,11 @@
       "modifiers": [
         {
           "condition": "(!includeExpoProject)",
-          "exclude": [ "src/Next-Solution.ExpoApp/**/*" ]
+          "exclude": ["src/Next-Solution.ExpoApp/**/*"]
         },
         {
           "condition": "(!includeNextProject)",
-          "exclude": [ "src/Next-Solution.NextApp/**/*" ]
+          "exclude": ["src/Next-Solution.NextApp/**/*"]
         }
       ]
     }
@@ -142,11 +151,11 @@
   "forms": {
     "slug": {
       "identifier": "chain",
-      "steps": [ "hyphenReplace", "lowerCase" ]
+      "steps": ["hyphenReplace", "lowerCase"]
     },
     "title": {
       "identifier": "chain",
-      "steps": [ "titleCase", "spaceReplace" ]
+      "steps": ["titleCase", "spaceReplace"]
     },
     "lowerCase": {
       "identifier": "lowerCase"
@@ -165,6 +174,9 @@
       "replacement": "$1-$2"
     }
   },
+  "primaryOutputs": [
+    { "path": "README.md" }
+  ],
   "postActions": [
     {
       "actionId": "3A7C4B45-1F5D-4A30-959A-51B88E82B5D2",
@@ -181,6 +193,16 @@
       ],
       "continueOnError": true,
       "description": "Installs node dependencies using 'install-dependencies.js'."
+    },
+    {
+      "condition": "(HostIdentifier != \"dotnetcli\")",
+      "description": "Opens README.md in the editor",
+      "manualInstructions": [],
+      "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
+      "args": {
+        "files": "0"
+      },
+      "continueOnError": true
     }
   ]
 }
