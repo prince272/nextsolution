@@ -1,4 +1,4 @@
-[![Next Solution Template](https://github.com/user-attachments/assets/18b3c49e-bfa0-4197-ab9e-d46c7d1eb187)](https://github.com/prince272/nextsolution)
+[![Next Solution Template](https://i.imgur.com/qrMS5OA.png)](https://github.com/prince272/nextsolution)
 
 [![NuGet Downloads](https://img.shields.io/nuget/dt/NextSolution.Template?color=%2317c964)](https://www.nuget.org/packages/NextSolution.Template) [![GitHub License](https://img.shields.io/github/license/prince272/nextsolution?color=%2317c964)](https://github.com/prince272/nextsolution/blob/main/LICENSE) [![NuGet Version](https://img.shields.io/nuget/v/NextSolution.Template?color=%237828c8)](https://www.nuget.org/packages/NextSolution.Template)
 
