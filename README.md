@@ -12,6 +12,12 @@ This starter template combines an [ASP.NET API](https://dotnet.microsoft.com/app
 
 🙏 If you find this next solution helpful, please consider giving it a star ⭐ and supporting the project through sponsorship. Your support makes ongoing enhancements and improvements possible. Thank you! 🙌
 
+## Roadmap
+
+- Add support for healthchecks to monitor critical services.
+- Upgrade to .NET 9 for enhanced compatibility.
+- Implement comprehensive unit testing using **xUnit**, **Substitute**, and **FluentAssertions**.
+
 ## Expo App Demo
 
 https://github.com/user-attachments/assets/e33f0f81-c978-48c2-9a82-1f90102e6b7b
