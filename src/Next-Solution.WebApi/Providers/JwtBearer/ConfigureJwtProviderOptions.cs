@@ -25,10 +25,17 @@ namespace Next_Solution.WebApi.Providers.JwtBearer
                   .AddFileToken(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, $"jwt-secret.txt")).ToString());
 
             var httpContext = (_httpContextAccessor?.HttpContext) ?? throw new InvalidOperationException("Unable to determine the current HttpContext.");
-            string currentOrigin = string.Concat(httpContext.Request.Scheme, "://", httpContext.Request.Host.ToUriComponent()).ToLower();
+            string currentOrigin = $"{httpContext.Request.Scheme}://{httpContext.Request.Host}".ToLowerInvariant();
 
-            options.Issuer ??= currentOrigin;
-            options.Audience ??= currentOrigin;
+            options.Issuer = string.Join(";",
+                (options.Issuer?.Split(';') ?? [])
+                .Append(currentOrigin)
+                .Where(issuer => !string.IsNullOrWhiteSpace(issuer)));
+
+            options.Audience = string.Join(";",
+                (options.Audience?.Split(';') ?? [])
+                .Append(currentOrigin)
+                .Where(audience => !string.IsNullOrWhiteSpace(audience)));
         }
     }
 }
