@@ -26,6 +26,10 @@ using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Next_Solution.WebApi.Options;
+using Microsoft.OpenApi.Models;
+using System.Reflection;
+
+
 #if (configureNgrok)
 using Next_Solution.WebApi.Providers.Ngrok;
 #endif
@@ -205,8 +209,46 @@ try
     // Configure Swagger/OpenAPI
     builder.Services.AddEndpointsApiExplorer();
 
-    builder.Services.ConfigureOptions<ConfigureSwaggerGenOptions>();
-    builder.Services.AddSwaggerGen();
+    builder.Services.AddSwaggerGen(options =>
+    {
+        // Add the JWT security scheme
+        var jwtSecurityScheme = new OpenApiSecurityScheme
+        {
+            BearerFormat = "JWT",
+            Name = "JWT Authentication",
+            In = ParameterLocation.Header,
+            Type = SecuritySchemeType.Http,
+            Scheme = JwtBearerDefaults.AuthenticationScheme,
+            Description = "Put **_ONLY_** your JWT Bearer token on the textbox below!",
+
+            Reference = new OpenApiReference
+            {
+                Id = JwtBearerDefaults.AuthenticationScheme,
+                Type = ReferenceType.SecurityScheme
+            }
+        };
+
+
+
+        // .NET 7 introduce Typed Http Results, but Swashbuckle don't generate the Open Api Response from this types.
+        // This filter will generate the Open Api Response for Typed Http Results.
+        // source: https://github.com/vernou/Vernou.Swashbuckle.HttpResultsAdapter
+        options.OperationFilter<HttpResultsOperationFilter>();
+
+        options.AddSecurityDefinition(jwtSecurityScheme.Reference.Id, jwtSecurityScheme);
+
+        options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        { jwtSecurityScheme, Array.Empty<string>() }
+    });
+
+        // Include XML comments (optional)
+        var xmlFilePath = Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml");
+        if (File.Exists(xmlFilePath))
+        {
+            options.IncludeXmlComments(xmlFilePath);
+        }
+    });
 
     builder.Services.Configure<IdentityServiceOptions>(options =>
     {
@@ -255,9 +297,20 @@ try
     // Configure the HTTP request pipeline
     if (app.Environment.IsDevelopment())
     {
-        app.UseSwagger(options =>
+        app.UseSwagger(c =>
         {
-            options.SerializeAsV2 = true;
+            c.PreSerializeFilters.Add((swaggerDoc, httpReq) =>
+            {
+                string currentOrigin = $"{httpReq.Scheme}://{httpReq.Host}";
+                swaggerDoc.Servers = new List<OpenApiServer>
+        {
+            new OpenApiServer
+            {
+                Url = currentOrigin,
+                Description = "Defines the server URL and configuration for API operations."
+            }
+        };
+            });
         });
 
         app.UseSwaggerUI(swaggerUiOptions =>
